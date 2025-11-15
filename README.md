@@ -5,4 +5,4 @@
     </picture>
 </p>
 <p>The repository for BombSquda, a stupid modpack for BombSquad.<br>
-Mainly made to allow people to edit the modpack easily.</p>
+This repository was made primarily to allow anyone to edit the code.</p>

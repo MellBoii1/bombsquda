@@ -25,7 +25,6 @@ class TitleWindow(bui.MainWindow):
         assert bui.app.classic is not None
         uiscale = bui.app.ui_v1.uiscale
         self._height= 0
-        self.choice2 = 'MENU'
         super().__init__(
             root_widget=bui.containerwidget(
                 size=(self._width, self._height),
@@ -53,7 +52,7 @@ class TitleWindow(bui.MainWindow):
             textcolor=(1, 1, 1),
             scale=0.8,
             text_scale=1.3,
-            label='',
+            label='hi im the select button your supposed \nto press me with a button twin',
             on_activate_call=self.close,
         )
     def close(self) -> None:

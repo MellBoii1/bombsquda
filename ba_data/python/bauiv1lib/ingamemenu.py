@@ -44,7 +44,7 @@ class InGameMenuWindow(bui.MainWindow):
         self._width = 100.0
         self._height = 100.0
         self._refresh()
-        boomboxbtn = bui.buttonwidget(
+        self.boomboxbtn = bui.buttonwidget(
             parent=self._root_widget,
             position=(-510, -220),
             button_type='square',

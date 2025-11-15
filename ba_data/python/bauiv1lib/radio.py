@@ -155,7 +155,7 @@ class RadioWindow(bui.Window):
             h_align='center',
             v_align='center',
         )
-        self.play_button = btn = bui.buttonwidget(
+        self.play_button = bui.buttonwidget(
             parent=self._root_widget,
             autoselect=False,
             position=(self._width - 440, self._height - 330),
@@ -167,7 +167,7 @@ class RadioWindow(bui.Window):
             label=bui.charstr(bui.SpecialChar.PLAY_BUTTON),
             on_activate_call=self.playmusic,
         )
-        self.stop_button = btn = bui.buttonwidget(
+        self.stop_button = bui.buttonwidget(
             parent=self._root_widget,
             autoselect=False,
             position=(self._width - 340, self._height - 330),
@@ -193,12 +193,14 @@ class RadioWindow(bui.Window):
             texture=bui.gettexture('boomboxon1'),
             opacity=0.0,
         )
+        
         if ba.app.config.get("isplayingmusic", True):
             bui.imagewidget(edit=self.animboombox, opacity=1.0)
             bui.imagewidget(edit=self.normalboombox, opacity=0.0)
         else:
             bui.imagewidget(edit=self.normalboombox, opacity=1.0)
             bui.imagewidget(edit=self.animboombox, opacity=0.0)
+            
         self.prefix = "boomboxon"
         self.frame_count = 2
         self.frame_delay = 0.5

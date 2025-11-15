@@ -38,12 +38,12 @@ class ParrySelectionWindow(bui.Window):
             prevent_main_window_auto_recreate=False,
         )
         uiscale = bui.app.ui_v1.uiscale
-        leftside = self._width / self._width + 30
-        short = 400
+        leftside = self._width / self._width + 100
+        short = 180
         self.parry1button = bui.buttonwidget(
             parent=self._root_widget,
             autoselect=False,
-            position=(leftside + 100, self._height - short),
+            position=(leftside, self._height - short),
             size=(200, 200),
             textcolor=(1, 1, 1),
             scale=0.8,
@@ -54,24 +54,55 @@ class ParrySelectionWindow(bui.Window):
         self.parry2button = bui.buttonwidget(
             parent=self._root_widget,
             autoselect=False,
-            position=(leftside + 300, self._height - short),
+            position=(leftside, self._height - short * 2),
             size=(200, 200),
             textcolor=(1, 1, 1),
             scale=0.8,
             text_scale=1.5,
             label='mid',
-            on_activate_call=self.parrysetup3,
+            on_activate_call=self.parrysetup2,
         )
         self.parry3button = bui.buttonwidget(
             parent=self._root_widget,
             autoselect=False,
-            position=(leftside + 500, self._height - short),
+            position=(leftside, self._height - short * 3),
             size=(200, 200),
             textcolor=(1, 1, 1),
             scale=0.8,
             text_scale=1.3,
             label='precise \nas fuck',
-            on_activate_call=self.parrysetup3,
+            on_activate_call=self.parrysetup1,
+        )
+        textersspace = 210
+        bui.textwidget(
+            parent=self._root_widget,
+            position=(leftside + textersspace, self._height - short),
+            size=(150, 150),
+            text='This will change parry timing to be 0.3. \nEasier to parry, but you get less health.',
+            h_align='left',
+            v_align='center',
+            scale=1.0,
+            maxwidth=500,
+        )
+        bui.textwidget(
+            parent=self._root_widget,
+            position=(leftside + textersspace, self._height - short * 2),
+            size=(150, 150),
+            text='This will change parry timing to be 0.2. \nIt will not affect health, nor will \nadd anything special.',
+            h_align='left',
+            v_align='center',
+            scale=1.0,
+            maxwidth=500,
+        )
+        bui.textwidget(
+            parent=self._root_widget,
+            position=(leftside + textersspace, self._height - short * 3),
+            size=(150, 150),
+            text='This will change parry timing to be 0.1. \nHarder to hit parries, but you can \ncounter and get more health.',
+            h_align='left',
+            v_align='center',
+            scale=1.0,
+            maxwidth=500,
         )
         
     def close(self) -> None:
@@ -250,9 +281,9 @@ class MelWindow(bui.MainWindow):
         )
         self.parrysetup = bui.buttonwidget(
             parent=self._root_widget,
-            position=(500, 100 + thefuckedupuifix),
+            position=(600, 90 + thefuckedupuifix),
             button_type='square',
-            size=(180, 80),
+            size=(180, 50),
             label='setup parrying type',
             autoselect=False,
             on_activate_call=ParrySelectionWindow

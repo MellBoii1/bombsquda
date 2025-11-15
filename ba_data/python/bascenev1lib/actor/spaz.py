@@ -637,7 +637,7 @@ class Spaz(bs.Actor):
     def parry(self):
         """
         Called upon when attempting a parry;
-        Will set a value for 0.2 seconds that determines
+        Will set a value for some seconds that determines
         whether the player is in the parry timeframe.
         """
         # If we're not allowed to parry here, most likely on cooldown.
@@ -651,10 +651,19 @@ class Spaz(bs.Actor):
             self.parrying = False
         def letparryagain():
             self.canparry2 = True
-        # Close our parry timeframe after .2 second(s).
-        bs.timer(0.2, stopparry)
-        # After 0.5 seconds, let us parry again. This is our cooldown.
-        bs.timer(0.5, letparryagain)
+        if ba.app.config.get("parrytype") == 3:
+            parrytime = 0.3
+            parrycooldown = 0.8
+        if ba.app.config.get("parrytype") == 2:
+            parrytime = 0.2
+            parrycooldown = 0.6
+        if ba.app.config.get("parrytype") == 1:
+            parrytime = 0.1
+            parrycooldown = 0.4
+        # Close our parry timeframe after our chosen second(s).
+        bs.timer(parrytime, stopparry)
+        # After some seconds, let us parry again. This is our cooldown.
+        bs.timer(parrycooldown, letparryagain)
         # 'Celebrate' to show we're parrying, n play a sound.
         self.node.handlemessage('celebrate', int(100))
         bs.getsound('parry').play()
@@ -2077,11 +2086,13 @@ class Spaz(bs.Actor):
                         # Play sounds.
                         bs.getsound('bellHigh').play()
                         bs.getsound('orchestraHit').play()
-                    savedscale = self._punch_power_scale
-                    self._punch_power_scale = 3.0
-                    def reset():
-                        self._punch_power_scale = savedscale
-                    bs.timer(0.4, reset)
+                    # let us "counter" if parrytype is 1
+                    if ba.app.config.get("parrytype") == 1:
+                        savedscale = self._punch_power_scale
+                        self._punch_power_scale = 3.0
+                        def reset():
+                            self._punch_power_scale = savedscale
+                        bs.timer(0.4, reset)
                     return True
                 # If we don't have a source node, something that wasn't a spaz hit us.
                 # We can't possibly get the source node of such other spaz, so we don't hurt anyone.
@@ -2112,10 +2123,17 @@ class Spaz(bs.Actor):
                     # Play a sound that will also confirm we parried.
                     bs.getsound('parried').play()
                     # Heal and pulse green.
-                    self.hitpoints += 300
+                    if ba.app.config.get("parrytype") == 1:
+                        healpoints = 450
+                    if ba.app.config.get("parrytype") == 2:
+                        healpoints = 250
+                    if ba.app.config.get("parrytype") == 3:
+                        healpoints = 150
+                    self.hitpoints += healpoints
                     self.pulse_green()
                     # Let us parry again, and increment our times parried.
-                    self.canparry2 = True
+                    if not ba.app.config.get("parrytype") == 3:
+                        self.canparry2 = True
                     self.timesparried += 1
                     self.timesparriedtotal += 1
                     # If we parried a total of above 49 times, grant our player a achievement.
@@ -2132,18 +2150,19 @@ class Spaz(bs.Actor):
                     # Check for if it was a impact damage source.
                     # Fall damage, in basic terms.
                     if msg.hit_type == 'impact':
-                        # Visually show we parried impact with text.
-                        PopupText(
-                        bs.Lstr(resource='traumaParried'),
-                        position=self.node.position,
-                        color=(1, 0.9, 0.1, 1.0),
-                        scale=1.4,
-                        ).autoretain()
-                        # Heal a bit extra.
-                        self.hitpoints += 60
-                        # Play sounds.
-                        bs.getsound('bellHigh').play()
-                        bs.getsound('orchestraHit').play()
+                        if not ba.app.config.get("parrytype") == 3:
+                            # Visually show we parried impact with text.
+                            PopupText(
+                            bs.Lstr(resource='traumaParried'),
+                            position=self.node.position,
+                            color=(1, 0.9, 0.1, 1.0),
+                            scale=1.4,
+                            ).autoretain()
+                            # Heal a bit extra.
+                            self.hitpoints += 40
+                            # Play sounds.
+                            bs.getsound('bellHigh').play()
+                            bs.getsound('orchestraHit').play()
                     return True
             # If we were recently hit, don't count this as another.
             # (so punch flurries and bomb pileups essentially count as 1 hit).
@@ -3380,7 +3399,8 @@ class Spaz(bs.Actor):
         if self.parrying == False:
             self.node.handlemessage('knockout', max(0.0, 50.0 * intensity))
         else:
-            return
+            if not ba.app.config.get("parrytype") == 3:
+                return
         sounds: Sequence[bs.Sound]
         if intensity >= 16.0 and not self._dead:
             sounds = SpazFactory.get().lobotomy

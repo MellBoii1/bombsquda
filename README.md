@@ -1,7 +1,7 @@
 # BombSquda
 <p align="center">
     <picture>
-        <img src="ba_data/textures/logo.dds" width="25%">
+        <img src="title.png">
     </picture>
 </p>
 <p>The repository for BombSquda, a stupid modpack for BombSquad.<br>

@@ -579,7 +579,7 @@ class MainMenuWindow(bui.MainWindow):
             sel = self._root_widget.get_selected_child()
             if sel == self._play_button:
                 sel_name = 'Start'
-            if sel == self.boomboxbtn:
+            elif sel == self.boomboxbtn:
                 sel_name = 'Boombox'
             elif sel == self._gather_button:
                 sel_name = 'Gather'
@@ -613,6 +613,8 @@ class MainMenuWindow(bui.MainWindow):
                 sel_name = 'Start'
             if sel_name == 'HowToPlay':
                 sel = self._how_to_play_button
+            elif sel_name == 'Boombox':
+                sel = self.boomboxbtn
             elif sel_name == 'Gather':
                 sel = self._gather_button
             elif sel_name == 'Watch':

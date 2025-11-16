@@ -326,6 +326,21 @@ class Spaz(bs.Actor):
         self.flashing = False
         self._flash_timer = None
         
+        if self.character == 'Spaz':
+            def doblink():
+                randomnuumber = random.randint(7,14)
+                def unblink():
+                    if not self.node:
+                        return
+                    self.node.color_texture = bs.gettexture('neoSpazColor')
+                def doactblink():
+                    if not self.node:
+                        return
+                    self.node.color_texture = bs.gettexture('spazBlink')
+                    bs.timer(0.2, unblink)
+                bs.timer(randomnuumber, doactblink)
+            self.blinktimer = bs.Timer(0.7, doblink, repeat=True)
+        
         if self.source_player: # Prevent tutorial from dying.
             if self.character == 'Robot': # bombgeon snake shadow
                 # Now define snake shadow's specific attrs
@@ -342,13 +357,6 @@ class Spaz(bs.Actor):
             if ba.app.config.get("parryalways", True) and not source_player == None:
                 self.canparry = True
             if self.character == 'Spaz':
-                # Easter egg for a few 'eye shade' guys
-                def checkifkrissyndrom():
-                    krissy = ['Masked Man', 'Kris', 'Varik']
-                    if self.node.name in krissy:
-                        self.node.color_texture = bs.gettexture('neoSpazColor2')
-                        self.node.color_mask_texture = bs.gettexture('neoSpazColorMask2')
-                bs.timer(0.2, checkifkrissyndrom)
                 # because buddie and gummy asked me to keep it
                 def checkifpeakeyes():
                     if ba.app.config.get("spazfuckedup", True) and not source_player == None:
@@ -725,6 +733,15 @@ class Spaz(bs.Actor):
         """
         if not self.node or self.frozen or self.node.knockout > 0.0:
             return
+        if self.character == 'Spaz':
+            if not self.node:
+                return
+            def unangry():
+                self.node.color_texture = bs.gettexture('neoSpazColor')
+            def angry():
+                self.node.color_texture = bs.gettexture('spazAngry')
+                bs.timer(0.7, unangry)
+            angry()
         t_ms = int(bs.time() * 1000.0)
         assert isinstance(t_ms, int)
         if t_ms - self.last_punch_time_ms >= self._punch_cooldown:
@@ -1281,8 +1298,6 @@ class Spaz(bs.Actor):
                     bs.setmusic(bs.MusicType.NOISESUPER)
                 elif self.character == 'Zoe':
                     bs.setmusic(bs.MusicType.GRAND_ROMP)
-                elif self.node.name == 'Varik' and self.character == 'Spaz':
-                    bs.setmusic(bs.MusicType.RAGE)
                 else:
                     bs.setmusic(bs.MusicType.COOKIN)
             # flashy effect
@@ -2571,6 +2586,17 @@ class Spaz(bs.Actor):
                 if damage_avg >= 1000:
                     # WITHER AND DIE :fire::fire::fire::fire::fire::fire::fire:
                     self.shatter()
+            if self.character == 'Spaz' and not self.hitpoints <= 0:
+                def undod():
+                    if not self.node:
+                        return
+                    self.node.color_texture = bs.gettexture('neoSpazColor')
+                def dod():
+                    if not self.node:
+                        return
+                    self.node.color_texture = bs.gettexture('spazDead')
+                    bs.timer(0.4, undod)
+                dod()
 
         elif isinstance(msg, BombDiedMessage):
             self.bomb_count += 1
@@ -2603,6 +2629,11 @@ class Spaz(bs.Actor):
                 bs.timer(1.0, lambda: self.earthchar.delete())
                 bs.timer(1.0, lambda: self.earthmeter.delete())
                 bs.timer(1.0, lambda: self.earthmetertext.delete())
+            if self.character == 'Spaz':
+                if not self.node:
+                    return
+                self.node.color_texture = bs.gettexture('spazDead')
+                self.blinktimer = None
             if self.earthsptext and self.earthsptext.exists():
                 self.earthsptext.delete()
             if msg.immediate:

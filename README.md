@@ -25,6 +25,6 @@ and 1 (yes, ONE) new coop level.</p>
         <img src="ba_data/textures2/howdoi.png">
     </picture>
 </p>
-Download [Github Desktop](https://desktop.github.com/download/) and clone the repository, 
+<p>Download [GitHub Desktop](https://desktop.github.com/) and clone the repository, 
 make changes to some files, commit and push your changes, then make a pull request. 
-If everything looks fine, i'll accept the merge. :)
+If everything looks fine, i'll accept the merge. :)</p>

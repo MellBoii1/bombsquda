@@ -19,7 +19,7 @@ assets and gameplay, adds ~3 new powerups,
 buncha gameplay mechanics, a LOT of randomization, 
 and 1 (yes, ONE) new coop level.</p>
 
-### So how can I help develop... and.. stuff???
+## So how can I help develop... and.. stuff???
 <p align="center">
     <picture>
         <img src="ba_data/textures2/howdoi.png">

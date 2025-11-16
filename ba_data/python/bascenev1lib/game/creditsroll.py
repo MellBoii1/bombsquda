@@ -42,7 +42,7 @@ class CreditsActivity(bs.TeamGameActivity[bs.Player, bs.Team]):
     def on_begin(self) -> None:
         super().on_begin()
         self._start_credits()
-        bs.timer(222.0, self.dogoodbye)
+        bs.timer(193.0, self.dogoodbye)
         self.showlogo('logo2')
         bs.timer(27.0, lambda: self._start_character_scroll('spaz', leftside=True))
         bs.timer(37.0, lambda: self._start_character_scroll('susie',))
@@ -102,8 +102,8 @@ class CreditsActivity(bs.TeamGameActivity[bs.Player, bs.Team]):
             'attach': 'center'
         })
         bs.animate_array(self._logo_node, 'position', 2, {
-            18.6: (0, 0),
-            44.0: (0, 600) # scroll up slowly
+            5.0: (0, 0),
+            40.0: (0, 600) # scroll up slowly
         })
         bs.timer(45.0, self._logo_node.delete)
         
@@ -155,6 +155,7 @@ class CreditsActivity(bs.TeamGameActivity[bs.Player, bs.Team]):
             "scale": 1.5,
             "h_attach": "center",
             "v_attach": "center",
+            "h_align": "center",
             "color": (1, 1, 1),
             "flatness": 0.5,
             "shadow": 0.5,
@@ -165,8 +166,8 @@ class CreditsActivity(bs.TeamGameActivity[bs.Player, bs.Team]):
             self._text_node,
             "position", 2,  # 2 = number of components (x, y)
             {
-                18.6: (-300, 0),   # start position
-                209.0: (-300, 3500)    # end position
+                5.0: (0, -500),   # start position
+                181.0: (0, 2600)    # end position
             }
         )
 

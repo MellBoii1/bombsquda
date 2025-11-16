@@ -6,7 +6,8 @@
 </p>
 <p>The repository for BombSquda, a stupid modpack for BombSquad.<br>
 This repository was made primarily to allow anyone to edit the code.</p>
-# What the fuuuhhh is BombSquda bro???
+
+## What the fuuuhhh is BombSquda bro???
 <p align="center">
     <picture>
         <img src="ba_data/textures2/about.png">

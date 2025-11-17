@@ -60,7 +60,6 @@ ASSET_SOUNDTRACK_ENTRIES: dict[MusicType, AssetSoundtrackEntry] = {
     MusicType.TUTORIAL: AssetSoundtrackEntry('tutorial', volume=1.4),
     MusicType.RUN_AWAY: AssetSoundtrackEntry('runAwayMusic', volume=1.0),
     MusicType.ONSLAUGHT: AssetSoundtrackEntry('onslaughtMusic', volume=1.0),
-    MusicType.STRONGONE: AssetSoundtrackEntry('strongone', volume=1.5),
     MusicType.METALCAPTIME: AssetSoundtrackEntry('metalMusicALT', volume=2.0),
     MusicType.ONSLAUGHT2: AssetSoundtrackEntry('onslaughtMusic2', volume=1.0),
     MusicType.ONSLAUGHT3: AssetSoundtrackEntry('onslaughtMusic3', volume=1.0),

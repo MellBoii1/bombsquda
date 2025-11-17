@@ -109,7 +109,6 @@ class MusicType(Enum):
     DS1 = 'DS1'
     DS2 = 'DS2'
     DS3 = 'DS3'
-    STRONGONE = 'STRONGONE'
     SURVEY = 'SURVEY'
     LOGOTYPE = 'LOGOTYPE'
     OPENING = 'Opening'
@@ -153,7 +152,7 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.D_RUNNIN: "Runnin from Evil - Doom II", 
             bs.MusicType.BUSINESS: "Porky Means Business! - EarthBound",
             bs.MusicType.PAUSE: "As You Wish - MOTHER 3",
-            bs.MusicType.SCORES: "You Win! - MOTHER 3",
+            bs.MusicType.SCORES: "Result (1st Place ~ 3rd Place)\n - Mario Kart: Double Dash!!",
             bs.MusicType.CHAR_SELECT2: "Sky Map - Mario Kart World",
             bs.MusicType.RACE: "VS Metal Sonic - Sonic Mania",
             bs.MusicType.MENU: "Mother Earth - Mother Encore",
@@ -168,7 +167,7 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.MENU11: "Title Theme -  Mario Kart 7",
             bs.MusicType.MENU12: "Friends no More x Papá Cerdito vs Bebé George",
             bs.MusicType.MENU67: "what the fuck is this",
-            bs.MusicType.CREDITS: "Good Friends, Bad Friends - EarthBound",
+            bs.MusicType.CREDITS: "Staff Roll - Mario Kart DS",
             bs.MusicType.SNESCOURSE: "SNES Battle Course - Mario Kart World",
             bs.MusicType.SNESCOURSE2: "Battle Course - Super Mario Kart",
             bs.MusicType.DEFEAT: "Blues in Velvet Room - Persona 3",
@@ -188,7 +187,6 @@ def show_music_now_playing(music_type: bs.MusicType) -> None:
             bs.MusicType.SURVIVAL: "Tough Guy Alert! - M&L:BIS GaMetal Remix",
             bs.MusicType.ONSLAUGHT3: "Rude Buster - Deltarune",
             bs.MusicType.NOISESUPER: "Unexpectancy Gatcha Remix - ClascyJitto",
-            bs.MusicType.STRONGONE: "Strong One (Masked Man) - Mother 3",
         }
         # Get the music name from the list above.
         # If we don't get any, tell the player it's either unknown

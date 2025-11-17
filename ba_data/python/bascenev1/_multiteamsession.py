@@ -276,10 +276,8 @@ class MultiTeamSession(Session):
         from bascenev1._gameutils import cameraflash
         from bascenev1._freeforallsession import FreeForAllSession
         from bascenev1._messages import CelebrateMessage
-        from bascenev1lib.game.mother3battle import Mother3BattleSystem
-        from bascenev1lib.game.maskedman import MaskedManFight
         
-        if bs.get_foreground_host_activity().ismother3BS == True:
+        if bs.get_foreground_host_activity().shouldntannounce == True:
             return
         bascenev1.setmusic(None)
         if results.winning_sessionteam is None:

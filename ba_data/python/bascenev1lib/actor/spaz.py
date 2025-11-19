@@ -371,6 +371,28 @@ class Spaz(bs.Actor):
                         self.charimage = appearance.earthportrait
                     else:
                         self.charimage = appearance.icon_texture
+            if self.character == 'Kronk':
+                def checkifohmer():
+                    if self.node.name in ['homer', 'homero', 'Homer', 'Homero', 'Homer Simpson']:
+                        homersounds = [
+                            bs.getsound('homer1'),
+                            bs.getsound('homer2'),
+                            bs.getsound('homer3'),
+                            bs.getsound('homer4'),
+                            bs.getsound('homer5'),
+                        ]
+                        homerhurtsfx = [
+                            bs.getsound('homerHit1'),
+                            bs.getsound('homerHit2'),
+                            bs.getsound('homerHit3'),
+                        ]
+                        self.node.jump_sounds = homersounds
+                        self.node.attack_sounds = homersounds
+                        self.node.pickup_sounds = [bs.getsound('homerPickup1')]
+                        self.node.death_sounds = [bs.getsound('homerDeath1')]
+                        self.node.fall_sounds = [bs.getsound('homerFall1')]
+                        self.node.impact_sounds = homerhurtsfx
+                bs.timer(0.21, checkifohmer)
             # Do earthbound-y hp visualizer thing.
             def doearthmeter():
                 self.earthchar = bs.newnode('image', 

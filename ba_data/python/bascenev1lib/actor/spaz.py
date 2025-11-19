@@ -271,6 +271,7 @@ class Spaz(bs.Actor):
         self.earthmeter = None
         self.earthchar = None
         self.earthmetertext = None
+        self.alreadydidanimation = False
         self.frozen = False
         self.shattered = False
         self._has_metalcap = False
@@ -327,19 +328,21 @@ class Spaz(bs.Actor):
         self._flash_timer = None
         
         if self.character == 'Spaz':
+            self.randomnuumber = random.randint(1, 2)
             def doblink():
-                randomnuumber = random.randint(7,14)
                 def unblink():
                     if not self.node:
                         return
                     self.node.color_texture = bs.gettexture('neoSpazColor')
+                    self.randomnuumber = random.randint(1,4)
                 def doactblink():
                     if not self.node:
                         return
                     self.node.color_texture = bs.gettexture('spazBlink')
                     bs.timer(0.2, unblink)
-                bs.timer(randomnuumber, doactblink)
-            self.blinktimer = bs.Timer(0.7, doblink, repeat=True)
+                doactblink()
+                self.blinktimer = bs.Timer(self.randomnuumber, doblink, repeat=True)
+            self.blinktimer = bs.Timer(self.randomnuumber, doblink, repeat=True)
         
         if self.source_player: # Prevent tutorial from dying.
             if self.character == 'Robot': # bombgeon snake shadow
@@ -2427,7 +2430,7 @@ class Spaz(bs.Actor):
                         color=(0.5, 0.5, 1, 1),
                         scale=1.8,
                     ).autoretain()
-                    if damage >=1000 and not self._dead:
+                    if damage >= self.hitpoints and not self._dead:
                         self.handlemessage(bs.DieMessage())
                     bs.timer(1.5, checkifdied)
                 # try to show text if player has a actor position
@@ -2634,8 +2637,9 @@ class Spaz(bs.Actor):
                     bs.setmusic(bs.MusicType.GRAND_ROMP)
                 else:
                     self.remove_from_metal_list()
-            if self.earthmeter:
+            if self.earthmeter and not self.alreadydidanimation == True:
                 self.earthhptext.delete()
+                self.alreadydidanimation == True
                 bs.animate_array(self.earthmeter, "position", 2,{
                     0.0: (self.meterx, self.metery),
                     0.5: (self.meterx, self.metery - 500),

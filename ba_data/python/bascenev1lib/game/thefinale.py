@@ -87,7 +87,7 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
         self._new_wave_sound = bs.getsound('scoreHit01')
         self._winsound = bs.getsound('score')
         self._cashregistersound = bs.getsound('cashRegister')
-        self._spawn_center = (0, 2.0, 0.14)
+        self._spawn_center = (-5, 2.5, -5.14)
         self._tntspawnpos = (0, 5.5, 0.30)
         self._powerup_center = (0, 2, 0.0)
         self._powerup_spread = (7, 2)

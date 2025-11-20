@@ -529,6 +529,45 @@ def register_appearances() -> None:
     0.5333333333333333,
     0.09411764705882353
     )
+    
+    # Noise Noise Noise Noise NOise ###################################
+    t = Appearance('Homer')
+    t.color_texture = 'theSimpsonColor'
+    t.color_mask_texture = 'theSimpsonColorMask'
+    t.icon_texture = 'tsHomerIconColor'
+    t.icon_mask_texture = 'tsHomerIconColorMask'
+    t.head_mesh = 'tsHomerHead'
+    t.torso_mesh = 'tsHomerTorso'
+    t.pelvis_mesh = 'none'
+    t.upper_arm_mesh = 'tsHomerUpperArm'
+    t.forearm_mesh = 'tsHomerForeArm'
+    t.hand_mesh = 'tsHomerHand'
+    t.upper_leg_mesh = 'tsHomerUpperLeg'
+    t.lower_leg_mesh = 'tsHomerLowerLeg'
+    t.toes_mesh = 'tsHomerToes'
+    homersounds = [
+        'homer1',
+        'homer2',
+        'homer3',
+        'homer4',
+        'homer5',
+    ]
+    homerhurtsfx = [
+        'homerHit1',
+        'homerHit2',
+        'homerHit3',
+    ]
+    t.jump_sounds = homersounds
+    t.attack_sounds = homersounds
+    t.impact_sounds = homerhurtsfx
+    t.death_sounds = ['homerDeath1']
+    t.pickup_sounds = ['homerPickup1']
+    t.victory_sounds = ['homer3']
+    t.gloat_sounds = ['homerFall1']
+    t.fall_sounds = ['homerFall1']
+    t.style = 'agent'
+    t.default_color = (0.3, 0.3, 0.33)
+    t.default_highlight = (1, 0.5, 0.3)
 
     # orange guy with the cap... like some kinda buddy... ###################################
     t = Appearance('Grumbledorf')

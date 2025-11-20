@@ -143,6 +143,7 @@ class Spaz(bs.Actor):
         extras_material = []
         self.issuper = False
         self.dashing = False
+        self.times_slashed = 0
 
         if can_accept_powerups:
             pam = PowerupBoxFactory.get().powerup_accept_material
@@ -326,23 +327,23 @@ class Spaz(bs.Actor):
         self.pick_up_powerup_callback: Callable[[Spaz], Any] | None = None
         self.flashing = False
         self._flash_timer = None
-        
-        if self.character == 'Spaz':
-            self.randomnuumber = random.randint(1, 2)
-            def doblink():
-                def unblink():
-                    if not self.node:
-                        return
-                    self.node.color_texture = bs.gettexture('neoSpazColor')
-                    self.randomnuumber = random.randint(1,4)
-                def doactblink():
-                    if not self.node:
-                        return
-                    self.node.color_texture = bs.gettexture('spazBlink')
-                    bs.timer(0.2, unblink)
-                doactblink()
+        if self.source_player:
+            if self.character == 'Spaz':
+                self.randomnuumber = random.randint(1, 2)
+                def doblink():
+                    def unblink():
+                        if not self.node:
+                            return
+                        self.node.color_texture = bs.gettexture('neoSpazColor')
+                        self.randomnuumber = random.randint(1,4)
+                    def doactblink():
+                        if not self.node:
+                            return
+                        self.node.color_texture = bs.gettexture('spazBlink')
+                        bs.timer(0.2, unblink)
+                    doactblink()
+                    self.blinktimer = bs.Timer(self.randomnuumber, doblink, repeat=True)
                 self.blinktimer = bs.Timer(self.randomnuumber, doblink, repeat=True)
-            self.blinktimer = bs.Timer(self.randomnuumber, doblink, repeat=True)
         
         if self.source_player: # Prevent tutorial from dying.
             if self.character == 'Robot': # bombgeon snake shadow
@@ -374,28 +375,6 @@ class Spaz(bs.Actor):
                         self.charimage = appearance.earthportrait
                     else:
                         self.charimage = appearance.icon_texture
-            if self.character == 'Kronk':
-                def checkifohmer():
-                    if self.node.name in ['homer', 'homero', 'Homer', 'Homero', 'Homer Simpson']:
-                        homersounds = [
-                            bs.getsound('homer1'),
-                            bs.getsound('homer2'),
-                            bs.getsound('homer3'),
-                            bs.getsound('homer4'),
-                            bs.getsound('homer5'),
-                        ]
-                        homerhurtsfx = [
-                            bs.getsound('homerHit1'),
-                            bs.getsound('homerHit2'),
-                            bs.getsound('homerHit3'),
-                        ]
-                        self.node.jump_sounds = homersounds
-                        self.node.attack_sounds = homersounds
-                        self.node.pickup_sounds = [bs.getsound('homerPickup1')]
-                        self.node.death_sounds = [bs.getsound('homerDeath1')]
-                        self.node.fall_sounds = [bs.getsound('homerFall1')]
-                        self.node.impact_sounds = homerhurtsfx
-                bs.timer(0.21, checkifohmer)
             # Do earthbound-y hp visualizer thing.
             def doearthmeter():
                 self.earthchar = bs.newnode('image', 
@@ -611,7 +590,7 @@ class Spaz(bs.Actor):
         self.cansay = True
         def setfalse():
             self.cansay = False
-        bs.timer(1.0, setfalse)
+        bs.timer(1.3, setfalse)
 
     def on_jump_press(self) -> None:
         """
@@ -784,6 +763,30 @@ class Spaz(bs.Actor):
                         0.8,
                     ),
                 )
+                if self.character == 'Jack Morgan':
+                    if self.times_slashed >= 4 and self._has_boxing_gloves == True:
+                            bs.getsound('swordlunge').play()
+                            self.NINJA_DASHES = 10
+                            self.on_jump_dash()
+                            self.times_slashed = 0
+                    else:
+                        bs.getsound('swordslash').play()
+                        if self._has_boxing_gloves == True:
+                            if self.times_slashed >= 3:
+                                PopupText(
+                                    'LUNGE READY',
+                                    position=self.node.position,
+                                    color=(1, 1, 1, 1.0),
+                                    scale=1.2,
+                                ).autoretain()
+                                bs.getsound('deek2').play()
+                            self.times_slashed += 1
+                            PopupText(
+                                str(self.times_slashed),
+                                position=self.node.position,
+                                color=(1, 1, 1, 1.0),
+                                scale=1.1,
+                            ).autoretain()
         self._turbo_filter_add_press('punch')
         
     def explode(self) -> None:

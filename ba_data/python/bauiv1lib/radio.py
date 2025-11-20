@@ -21,7 +21,6 @@ class RadioWindow(bui.Window):
     """
 
     def __init__(self, origin: Sequence[float] = (0, 0)):
-        bui.set_party_window_open(True)
         self._width = 700
         assert bui.app.classic is not None
         uiscale = bui.app.ui_v1.uiscale
@@ -139,7 +138,6 @@ class RadioWindow(bui.Window):
                 'DS1',
                 'DS2',
                 'DS3',
-                'StrongOne',
                 'SURVEY',
                 'Opening',
             ],

@@ -26,7 +26,7 @@ class TipsText(bs.Actor):
             attrs={
                 'text': '',
                 'scale': self._tip_scale,
-                'h_align': 'left',
+                'h_align': 'center',
                 'maxwidth': 800,
                 'vr_depth': -20,
                 'v_align': 'center',
@@ -83,8 +83,8 @@ class TipsText(bs.Actor):
         )
         spc = self._message_spacing
         assert self.node
-        self.node.position = (-200, self._offs_y)
-        self.title_node.position = (-220, self._offs_y + 3)
+        self.node.position = (0, self._offs_y)
+        self.title_node.position = (0, self._offs_y + 3)
         keys = {
             spc: 0,
             spc + 1000: 1.0,

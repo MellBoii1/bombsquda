@@ -1199,7 +1199,7 @@
     "howToPlayText": "how i play bruh",
     "justPlayerText": "only ${NAME}",
     "leaveGameText": "leave session",
-    "leavePartyConfirmText": "are you sure about this cuh you can win",
+    "leavePartyConfirmText": "are you sure about this \ncuh you can win",
     "leavePartyText": "ragequit buttn",
     "quitText": "get outt",
     "resumeText": "continue",

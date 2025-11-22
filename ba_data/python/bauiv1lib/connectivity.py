@@ -47,7 +47,7 @@ class WaitForConnectivityWindow(bui.Window):
     ) -> None:
         self._on_connected = on_connected
         self._on_cancel = on_cancel
-        self._width = 650
+        self._width = 500
         self._height = 300
         super().__init__(
             root_widget=bui.containerwidget(
@@ -56,14 +56,13 @@ class WaitForConnectivityWindow(bui.Window):
                 parent=bui.get_special_widget('overlay_stack'),
             )
         )
-
-        # --- LOOPING SOUND ---
         self._sound_playing = True
         def _loop_sound():
             if self._sound_playing:
-                bui.getsound('connecting2').play()
-                bui.apptimer(1.35, _loop_sound)  # adjust interval to sound length
+                self.theound = bui.getsound('connecting2')
+                self.theound.play()
         _loop_sound()
+        self.looptimer = bui.AppTimer(1.35, _loop_sound, repeat=True)
 
         bui.textwidget(
             parent=self._root_widget,
@@ -100,7 +99,7 @@ class WaitForConnectivityWindow(bui.Window):
         cancel_button = bui.buttonwidget(
             parent=self._root_widget,
             autoselect=True,
-            position=(50, 30),
+            position=(self._width * 0.35, 30),
             size=(150, 50),
             label=bui.Lstr(resource='cancelText'),
             on_activate_call=self._cancel,
@@ -109,23 +108,48 @@ class WaitForConnectivityWindow(bui.Window):
         self._update_timer = bui.AppTimer(
             0.113, bui.WeakCall(self._update), repeat=True
         )
+        
+    def _update(self) -> None:
+
+        plus = bui.app.plus
+        assert plus is not None
+
+        if plus.cloud.connected:
+            self._connected()
+            return
+
+        # Show what connectivity is up to if we don't have any published
+        # zone-pings yet (or if we do but there's no transport state to
+        # show yet).
+        if not bui.app.net.zone_pings or not bui.app.net.transport_state:
+            infotext = bui.app.net.connectivity_state
+        else:
+            infotext = bui.app.net.transport_state
+        if infotext != self._info_text_str:
+            self._info_text_str = infotext
+            bui.textwidget(edit=self._info_text, text=infotext)
 
     def _connected(self) -> None:
         if not self._root_widget or self._root_widget.transitioning_out:
             return
-        self._sound_playing = False  # stop loop
+        self._sound_playing = False
+        self.theound.stop()
+        self.looptimer = None
         bui.textwidget(
             edit=self._info_text, text=bui.Lstr(resource='remote_app.connected')
         )
         if self._spinner:
             self._spinner.delete()
+        bui.getsound('dingSmallHigh').play()
         bui.containerwidget(edit=self._root_widget, transition='out_scale')
         bui.pushcall(self._on_connected)
 
     def _cancel(self) -> None:
         if not self._root_widget or self._root_widget.transitioning_out:
             return
-        self._sound_playing = False  # stop loop
+        self._sound_playing = False
+        self.theound.stop()
+        self.looptimer = None
         bui.containerwidget(edit=self._root_widget, transition='out_scale')
         if self._on_cancel is not None:
             bui.pushcall(self._on_cancel)

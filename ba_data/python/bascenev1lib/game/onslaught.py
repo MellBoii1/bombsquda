@@ -311,12 +311,16 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
             )
     
     def _show_pizzatime_sequence(self):
-        """Defines the Pizza Tower Pizza Time sequence... kinda. It's technically just a animation but shh..."""
+        """Defines the Pizza Tower Pizza Time sequence... 
+        kinda. 
+        It's technically just a animation but shh...
+        UPDATE: now we're gonna make a timer
+        """
         # Create image node
         self._pizzatime_node = bs.newnode('image', attrs={
             'texture': bs.gettexture('pizzatime1'),
-            'position': (0, 0),  # adjust if needed
-            'scale': (450, 450),
+            'position': (0, 650),
+            'scale': (410, 410),
             'opacity': 1.0,
             'attach': 'center'
         })
@@ -332,17 +336,60 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         # Here we can change how fast it'll loop.
         bs.timer(0.05, swap_texture, repeat=True)
 
-        # And then we move it upwards, and delete after doing so.
-        def moveitupwards():
+        # wwowww animation cool
+        def moveitboy():
             if not self._pizzatime_node.exists():
                 return
-            # Animate position upward (y + 300 for example)
             x, y = self._pizzatime_node.position
-            bs.animate_array(self._pizzatime_node, 'position', 2, {0.0: (x, y), 1.5: (x, y + 800)})
+            bs.animate_array(self._pizzatime_node, 'position', 2, 
+                {
+                    0.0: (x, y), 
+                    1.0: (x, y - 650), # move it down
+                    4.0: (x, y - 650), # period onscreen 
+                    7.0: (x, y + 650) # flooaaat upwards
+                }
+            )
             # Delete after animation
-            bs.timer(3.5, self._pizzatime_node.delete)
-
-        bs.timer(3.0, moveitupwards)
+            bs.timer(7.0, self._pizzatime_node.delete)
+        moveitboy()
+        
+        def pizzatimer():
+            self.thugshaketimer = bs.Timer(0.040, lambda: bs.camerashake(intensity=0.1), repeat=True)
+            self.timebeforedeath = 200
+            self.pizzatimertext = bs.newnode(
+                'text',
+                attrs={
+                    'text': str(self.timebeforedeath),
+                    'h_align': 'center',
+                    'v_attach': 'bottom',
+                    'position': (0, -50),
+                    'scale': 1.0,
+                    'color': (1, 1, 1),
+                    'shadow': 0.7,
+                    'flatness': 0.6,
+                },
+            )
+            bs.animate_array(self.pizzatimertext, 'position', 2, 
+                {
+                    0.0: (0, -50), 
+                    1.0: (0, 0), # move it down
+                }
+            )
+            def tick():
+                self.timebeforedeath -= 1
+                self.pizzatimertext.text = str(self.timebeforedeath)
+                if self.timebeforedeath <= 60:
+                    self.pizzatimertext.color = (1, 0.1, 0.1)
+                else:
+                    self.pizzatimertext.color = (1, 1, 1)
+                if self.timebeforedeath <= 0:
+                    for player in self.players:
+                        player.actor.explode()
+                        self.tickintimer = None
+                        self.thugshaketimer = None
+            self.tickintimer = bs.Timer(1.0, tick, repeat=True)
+        bs.timer(4.0, pizzatimer)
+           
 
     
     @override
@@ -1251,11 +1298,17 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
             # Short celebration after waves.
             if self._wavenum > 1:
                 self.celebrate(0.5)
-            bs.timer(base_delay, bs.WeakCall(self._start_next_wave))
-            if self._wavenum == 10:
+            if self._wavenum == 5:
                 for player in self.players:
                     player.actor.gosuper()
+                self.timebeforedeath += 20
+            if self._wavenum == 10:
+                for player in self.players:
+                    player.actor.equip_shields()
+                self.timebeforedeath += 20
+            bs.timer(base_delay, bs.WeakCall(self._start_next_wave))
             self._wavenum += 1
+            self.timebeforedeath += 20
 
         # Check milestone every 10 waves starting at 20
         if self._wavenum >= 20 and self._wavenum % 10 == 0:
@@ -1266,6 +1319,10 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                 self._last_lap_triggered = lap_num  # Mark it as triggered
                 
                 bs.getsound("newlapsound").play()
+                if self._wavenum >= 30:
+                    self.timebeforedeath += 100
+                else:
+                    self.timebeforedeath += 200
                 
                 start_pos = (0, 700)
                 center_pos = (0, 250)  # visible position

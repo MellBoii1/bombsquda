@@ -79,7 +79,7 @@ class RichPresence:
                     self.presence.set(
                     {  
                         
-                        "details": 'Browsing the Menus...',
+                        "details": 'lookin around in the menu..',
                         "assets": {
                             "large_image": "logo",
 
@@ -93,7 +93,7 @@ class RichPresence:
                     self.presence.set(
                     {  
                         
-                        "details": 'Waiting around in the Menus...',
+                        "details": 'afk in the menu..',
                         "assets": {
                             "large_image": "logo",
                         },
@@ -111,14 +111,24 @@ class RichPresence:
                     self.presence.set(
                     {  
                         "details": 
-                        'Playing ' + bs.get_foreground_host_activity().name
+                        'playin ' + bs.get_foreground_host_activity().name
                         if not isinstance(bs.get_foreground_host_session(), bs.CoopSession)
-                        else
-                        (
-                        'Score:'
-                        )
-                        + ' ' + str(bs.get_foreground_host_activity()._score)
-                        ,
+                        else(
+                            f"score: {bs.get_foreground_host_activity()._score} (lost)"
+                            if bs.get_foreground_host_activity().has_ended() == True 
+                            and not bs.get_foreground_host_activity().globalsnode.music == 'VictoryFinal'
+                            else(
+                                f"score: {bs.get_foreground_host_activity()._score} (won)"
+                                if bs.get_foreground_host_activity().globalsnode.music == 'Victory'
+                                else(
+                                    f"score: {bs.get_foreground_host_activity()._score} (won)"
+                                    if bs.get_foreground_host_activity().globalsnode.music == 'VictoryFinal'
+                                    else(
+                                        f"score: {bs.get_foreground_host_activity()._score}"
+                                    )
+                                )
+                            )
+                        ),
                         "state": 'Party',
                         "assets": {
                             "large_image": map_image,
@@ -145,7 +155,7 @@ class RichPresence:
                 elif self.mode == 'lobby':
                     self.presence.set(
                     {  
-                        "details": 'Choosing a Character',
+                        "details": 'choosing profiles',
                         "state": 'Party',
                         "assets": {
                             "large_image": 'logo',
@@ -177,7 +187,7 @@ class RichPresence:
 
                     self.presence.set(
                         {  
-                        "details": f'Playing in {name}',
+                        "details": f'playin online in {name}',
                         "state": 'Party',
                         "assets": {
                             "large_image": 'online',
@@ -196,11 +206,11 @@ class RichPresence:
                     self.presence.set(
                         {  
                         "details": 
-                            'Watching a replay',
+                            'watching a replay',
                         "state": 'Party',
                         "assets": {
                             "large_image": 'replay',
-                            "large_text": 'In a replay',
+                            "large_text": 'replay',
                         },
                         "timestamps": {"start": self.starting_time},
                         "party": {
@@ -215,7 +225,7 @@ class RichPresence:
                     self.presence.set(
                         {  
                         "details": 
-                            'Watching the Credits scene',
+                            'watching the credits.',
                         "assets": {
                             "large_image": 'logo',
                             "small_image": 'replay'
@@ -223,27 +233,10 @@ class RichPresence:
                         "timestamps": {"start": self.starting_time},
                         }
                     )
-                elif self.mode == 'thefinalewin':
                     
-                    self.presence.set(
-                        {  
-                        "details": 
-                            'Score: WON!!!',
-                        "assets": {
-                            "large_image": 'football_stadium',
-                            "large_text": 'Football Stadium',
-                            "small_image": 'coop',
-                            "small_text": 'Co-op (The Finale)'
-                            },
-                        "timestamps": {"start": self.starting_time},
-                        },
-                    )
-
-
-        
             except Exception as e:
                 # comment this out for now.
-                # print(f'Error updating rich presence. ({e})')
+                print(f'Error updating rich presence. ({e})')
                 pass
             babase.apptimer(0.1, self.check)
         
@@ -271,11 +264,7 @@ class RichPresence:
             ):
                 self.mode = 'replay'
                 self.last_mode = 'replay'
-                self.starting_time = int(time.time())
-            elif isinstance(bs.get_foreground_host_activity(), TheFinaleGame) and bs.get_foreground_host_activity()._score >= 1500:
-                self.mode = 'thefinalewin'
-                self.last_mode = 'gameplay'
-                self.starting_time = int(time.time())   
+                self.starting_time = int(time.time())  
             elif isinstance(
                 bs.get_foreground_host_activity(),
                 GameActivity

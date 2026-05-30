@@ -201,7 +201,8 @@ class PlayerSpaz(Spaz):
     
     @override
     def updatemeter(self):
-        self.eb_meter.refresh()
+        if self.eb_meter:
+            self.eb_meter.refresh()
     
     def create_earth_meter(self):
         self.eb_meter = EarthboundMeter(
@@ -323,7 +324,6 @@ class PlayerSpaz(Spaz):
                                 killerplayer = player
                             else:
                                 killerplayer = None
-
                 # We should never wind up with a dead-reference here;
                 # we want to use None in that case.
                 assert killerplayer is None or killerplayer

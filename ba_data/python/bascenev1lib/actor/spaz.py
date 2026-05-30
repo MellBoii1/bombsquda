@@ -57,7 +57,7 @@ POWERUP_WEAR_OFF_TIME_K = 65000
 BASE_PUNCH_POWER_SCALE = 1.2
 BASE_PUNCH_COOLDOWN = 400
 
-SUPPORTED_STYLES = ['normal', 'metallic']
+SUPPORTED_STYLES = ['normal', 'metallic', 'robot']
 
 RAINBOW_SPEED = 0.4  # determine speed
 RAINBOW_COLORS = [
@@ -65,7 +65,9 @@ RAINBOW_COLORS = [
     (1.0, 0.5, 0.0),  # orange
     (1.0, 1.0, 0.0),  # yellow
     (0.0, 1.0, 0.0),  # green
+    (0.0, 1.0, 1.0),  # cyan
     (0.0, 0.0, 1.0),  # blue
+    (1.0, 0.0, 1.0),  # pink???
 ]
 
 def build_rainbow(speed: float):
@@ -475,7 +477,7 @@ class Spaz(bs.Actor):
         self.media = media
         self.char_style = media['general_style']
         if self.char_style not in SUPPORTED_STYLES:
-            print(f'{self.char_style} IS NOT A SUPPORTED GENERAL STYLE. FALLING BACK TO NORMAL')
+            squdalog.error(f'{self.char_style} IS NOT A SUPPORTED GENERAL STYLE. FALLING BACK TO NORMAL')
             self.char_style = 'normal'
         self.expression_list = media['expression_changes']
         punchmats = (factory.punch_material, shared.attack_material)
@@ -620,6 +622,8 @@ class Spaz(bs.Actor):
         self._saved_color = self.node.color
         self._saved_highlight = self.node.highlight
         self._saved_materials = self.node.color_texture
+        self._saved_style = None
+        self._saved_gen_style = None
 
     @override
     def exists(self) -> bool:
@@ -765,9 +769,6 @@ class Spaz(bs.Actor):
                     self._turbo_filter_counts.get(source, 0) + 1
                 )
                 self._turbo_filter_times[source] = t_ms
-                # (uncomment to debug; prints what this count is at)
-                # bs.broadcastmessage( str(source) + " "
-                #                   + str(self._turbo_filter_counts[source]))
                 if self._turbo_filter_counts[source] == 15 and not self._dead:
                     # WHY just knock em out? at this rate, 
                     # we'll explode them and have them die
@@ -1994,6 +1995,8 @@ class Spaz(bs.Actor):
         self.node.color = self._saved_color
         self.node.highlight = self._saved_highlight
         self.node.color_texture = self._saved_materials
+        self.node.style = self._saved_style
+        self.char_style = self._saved_gen_style
         self.impact_scale = self.impact_scale + 0.5
         self.remove_from_metal_list()
     
@@ -2103,6 +2106,10 @@ class Spaz(bs.Actor):
 
         # make us metal...
         self.node.color_texture = bs.gettexture('metal')
+        self._saved_style = self.node.style
+        self._saved_gen_style = self.char_style
+        self.node.style = 'cyborg'
+        self.char_style = 'metallic'
         self.node.color = (1.0, 1.0, 1.0)  # pure white
         self.node.highlight = (1.0, 1.0, 1.0)  # also pure white
         
@@ -2725,9 +2732,8 @@ class Spaz(bs.Actor):
                 best_dist_sq = dist_sq
                 close = True
                 # o and owner too
-                owner = node.getdelegate(Bomb)
-                if owner:
-                    owner = owner.owner
+                bomb = node.getdelegate(Bomb)
+                owner = bomb.get_source_player(bs.Player)
         return close, owner
         
     def mpa(self, heal: bool = True, healpoints: int = 250):
@@ -3160,12 +3166,14 @@ class Spaz(bs.Actor):
             # Eww; seems we have to do this in a timer or it wont work right.
             # (since we're getting called from within update() perhaps?..)
             bomb, owner = self.is_bomb_impactdmg()
-            if bomb:
-                # give kill credit to bomb owner's player
-                self.last_player_attacked_by = getattr(owner, 'source_player', None)
-                bs.timer(0.001, bs.WeakCall(self._hit_self, msg.intensity * 18.0, True))
-            else:
-                bs.timer(0.001, bs.WeakCall(self._hit_self, msg.intensity, False))
+            bs.timer(0.001, 
+                bs.WeakCall(
+                    self._hit_self, 
+                    msg.intensity * 18.0, 
+                    explode_head=bomb, 
+                    source=owner,
+                )
+            )
 
         elif isinstance(msg, bs.PowerupMessage):
             if self._dead or not self.node:
@@ -3177,7 +3185,7 @@ class Spaz(bs.Actor):
                 name = msg.poweruptype
                 config = ENTITY_CONFIG.get(name)
                 self.scary_text(
-                    config['appearsLstr'].evaluate(),
+                    config.get('appearsLstr').evaluate(),
                     color=(1, 0.2, 0.2),
                     xpos=-5,
                     endtime=7,
@@ -4749,7 +4757,10 @@ class Spaz(bs.Actor):
                 offset_z = random.uniform(-0.3, 0.3)
                 offset_y = random.uniform(0, 0.5)
                 particle_pos = (pos[0] + offset_x, pos[1] + offset_y, pos[2] + offset_z)
-                particle = particle_type(position=particle_pos)
+                particle = particle_type(
+                    position=particle_pos, 
+                    spaz_type=self.char_style
+                )
                 particle.autoretain()
                 num = random.randint(3, 13)
                 y = num = random.randint(6, 9)
@@ -4850,7 +4861,10 @@ class Spaz(bs.Actor):
                     offset_z = random.uniform(-0.3, 0.3)
                     offset_y = random.uniform(0, 0.5)
                     particle_pos = (pos[0] + offset_x, pos[1] + offset_y, pos[2] + offset_z)
-                    particle = particle_type(position=particle_pos)
+                    particle = particle_type(
+                        position=particle_pos, 
+                        spaz_type=self.char_style
+                    )
                     particle.autoretain()
                     num = random.randint(6, 17)
                     particle.node.handlemessage('impulse', 
@@ -4863,7 +4877,12 @@ class Spaz(bs.Actor):
             mell.add_spaz(30, 'tix', self.node.position, 'popup')
         self.node.shattered = 2 if extreme else 1
 
-    def _hit_self(self, intensity: float, explode_head: bool = False):
+    def _hit_self(
+        self, 
+        intensity: float, 
+        source: bs.Player | None,
+        explode_head: bool = False, 
+    ):
         if not self.node:
             return
         if explode_head == True:
@@ -4904,6 +4923,7 @@ class Spaz(bs.Actor):
                 pos=pos,
                 force_direction=self.node.velocity,
                 hit_type='impact',
+                source_player=source,
             )
         )
 
@@ -5229,7 +5249,7 @@ class Spaz(bs.Actor):
             
         self.char_style = media['general_style']
         if self.char_style not in SUPPORTED_STYLES:
-            print(f'{self.char_style} IS NOT A SUPPORTED GENERAL STYLE. FALLING BACK TO NORMAL')
+            squdalog.error(f'{self.char_style} IS NOT A SUPPORTED GENERAL STYLE. FALLING BACK TO NORMAL')
             self.char_style = 'normal'
             
         if do_funny_poof:

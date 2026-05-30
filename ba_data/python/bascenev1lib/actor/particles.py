@@ -71,7 +71,7 @@ class ParticleActor(bs.Actor):
         bs.animate(
             self.node,
             'mesh_scale',
-            {0: 0, 0.1: self.mscale},
+            {0: 0, 0.2: self.mscale},
         )
         self.dead = False
 
@@ -108,10 +108,20 @@ class ParticleActor(bs.Actor):
 
 class BloodParticle(ParticleActor):
     """A blood particle."""
-    def __init__(self, position: Sequence[float]):
+    def __init__(self, position: Sequence[float], spaz_type: str):
+        texture = (
+            'oil' 
+            if spaz_type == 'robot' 
+            else 'blood'
+        )
+        self.color = (
+            (0.1, 0.1, 0.1) 
+            if spaz_type == 'robot' else 
+            (1.2, 0.1, 0.1)
+        )
         super().__init__(
             position=position,
-            texture=bs.gettexture('blood'),
+            texture=bs.gettexture(texture),
             mesh=bs.getmesh('bomb'),
             body_scale=0.4,
             mesh_scale=0.4
@@ -126,7 +136,7 @@ class BloodParticle(ParticleActor):
                 'size': self.bscale,
             },
         )
-        scorch.color = (1.3, 0, 0)
+        scorch.color = self.color
         bs.animate(scorch, 'presence', {3: self.bscale, 7: 0})
         bs.timer(13.0, scorch.delete)
 
@@ -145,7 +155,9 @@ class BloodParticle(ParticleActor):
 
 class ConfettiParticle(ParticleActor):
     """Confetti particles! Usually a replacement for blood."""
-    def __init__(self, position: Sequence[float]):
+    def __init__(self, position: Sequence[float], spaz_type: str):
+        # delete spaz type (unused)
+        del spaz_type
         # Choose between a random color
         # tex before we initiate
         choices = [
@@ -194,7 +206,7 @@ class SparkParticle(ParticleActor):
             texture=bs.gettexture(tex),
             mesh=bs.getmesh('flash'),
             body_scale=0.2,
-            mesh_scale=0.1,
+            mesh_scale=0.2,
             reflection=1.4
         )
         self.scheduling = False
@@ -215,9 +227,6 @@ class SparkParticle(ParticleActor):
         else:
             return super().handlemessage(msg)
         return None
-
-
-
    
 
 class BloodRaindrop(bs.Actor):

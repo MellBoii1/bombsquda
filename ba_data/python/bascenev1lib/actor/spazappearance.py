@@ -153,7 +153,7 @@ def register_appearances() -> None:
     t.earthportrait = 'earthbound/krisbound'
     t.EBwin = 'earthbound/krisbound'
     t.EBlose = 'earthbound/krisbound_lose'
-    t.icon_mask_texture = 'krisIconColorMask'
+    t.icon_mask_texture = 'krisIconCM'
     t.head_mesh = 'krisHead'
     t.torso_mesh = 'krisTorso'
     t.pelvis_mesh = 'krisPelvis'
@@ -874,7 +874,7 @@ def register_appearances() -> None:
     t.victory_sounds = ['voicelines/toad/win']
     t.gloat_sounds = ['voicelines/toad/gloat']
     t.style = 'bones'
-    t.general_style = 'metallic'
+    t.general_style = 'robot'
     t.default_color = mell.hex_to_color('2a3ba4')
     t.default_highlight = mell.hex_to_color('c6a598')
 

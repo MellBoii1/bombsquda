@@ -3166,10 +3166,11 @@ class Spaz(bs.Actor):
             # Eww; seems we have to do this in a timer or it wont work right.
             # (since we're getting called from within update() perhaps?..)
             bomb, owner = self.is_bomb_impactdmg()
+            intensity = msg.intensity * 18.0 if bomb else msg.intensity
             bs.timer(0.001, 
                 bs.WeakCall(
                     self._hit_self, 
-                    msg.intensity * 18.0, 
+                    intensity,
                     explode_head=bomb, 
                     source=owner,
                 )

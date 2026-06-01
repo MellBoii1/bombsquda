@@ -6,7 +6,7 @@ like lists, dicts, server address, game version, and some useful functions.
 screams = ['screams/scream' + str(i + 1) + '' for i in range(15)]
 server = "https://bombsquda.tailc76b25.ts.net/"
 version = '2.5'
-update_date = '4/30/2026'
+update_date = '6/1/2026'
 
 # A dict for each store character that stores their price.
 # They are hardcoded to be spaz tickets only, for now.

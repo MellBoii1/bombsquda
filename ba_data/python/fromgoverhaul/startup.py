@@ -61,7 +61,7 @@ class Startup():
     if not file.is_file():
         os._exit(1)
     # alright we're ready to do startup stuff
-    print(f'welcome to bombsquda v{mell.version}, updated as of {mell.update_date}.')
+    squdalog.info(f'bombsquda v{mell.version}, updated as of {mell.update_date}')
     # very important stuff that needs to be set on startup
     _last_error_time = None
     _recent_error = False

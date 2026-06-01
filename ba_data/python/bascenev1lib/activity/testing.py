@@ -27,7 +27,6 @@ class TestSession(bs.Session):
         self.lobby_autojoin = True
         self.setactivity(bs.newactivity(TestActivity))
     
-# ba_meta export bascenev1.GameActivity
 class TestActivity(bs.GameActivity[bs.Player, bs.Team]):
     name = ''
     description = ''

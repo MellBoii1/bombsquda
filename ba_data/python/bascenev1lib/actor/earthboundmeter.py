@@ -9,6 +9,11 @@ class EarthboundMeter(bs.Actor):
     @override
     def exists(self) -> bool:
         return bool(self.meter)
+    
+    @override
+    def on_expire(self):
+        super().on_expire()
+        self.spaz = None
         
     def __init__(
         self,

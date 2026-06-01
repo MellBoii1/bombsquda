@@ -367,7 +367,7 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
         app.classic.invoke_main_menu_ui()
     
     def fade_out_to_test(self):
-        from bascenev1lib.game.testing import TestSession
+        from bascenev1lib.activity.testing import TestSession
         node = bs.newnode(
             'image',
             attrs={

@@ -89,7 +89,7 @@ class MainMenuWindow(bui.MainWindow):
         
     def _start_online_activity(self) -> None:
         """Pushcall a new session (our online activity)"""
-        from bascenev1lib.game.online_menu import OnlineMenuSession
+        from bascenev1lib.activity.online_menu import OnlineMenuSession
         bs.pushcall(lambda: bs.new_host_session(OnlineMenuSession))
 
     @staticmethod

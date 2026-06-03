@@ -877,6 +877,33 @@ def register_appearances() -> None:
     t.general_style = 'robot'
     t.default_color = mell.hex_to_color('2a3ba4')
     t.default_highlight = mell.hex_to_color('c6a598')
+    
+    # ow! ###################################
+    t = Appearance('Fancy Pants')
+    t.color_texture = 'fancyColor'
+    t.color_mask_texture = 'fancyColorMask'
+    t.icon_texture = 'fancyIcon'
+    t.icon_mask_texture = 'fancyIconCM'
+    t.head_mesh = 'fancyHead'
+    t.torso_mesh = 'fancyTorso'
+    t.pelvis_mesh = 'none'
+    t.upper_arm_mesh = 'fancyUpperArm'
+    t.forearm_mesh = 'fancyForeArm'
+    t.hand_mesh = 'fancyHand'
+    t.upper_leg_mesh = 'fancyUpperLeg'
+    t.lower_leg_mesh = 'fancyLowerLeg'
+    t.toes_mesh = 'fancyToes'
+    t.jump_sounds = ['voicelines/fancy/jump' + str(i + 1) + '' for i in range(3)]
+    t.attack_sounds = ['voicelines/fancy/attack' + str(i + 1) + '' for i in range(4)]
+    t.impact_sounds = ['voicelines/fancy/hurt']
+    t.death_sounds = ['voicelines/fancy/death']
+    t.pickup_sounds = t.attack_sounds
+    t.fall_sounds = ['voicelines/fancy/fall']
+    t.victory_sounds = ['voicelines/fancy/win']
+    t.style = 'bones'
+    t.general_style = 'fancy'
+    t.default_color = mell.hex_to_color('f89a04')
+    t.default_highlight = (0, 0, 0)
 
     # The Original      Spaz ###################################
     t = Appearance('OG Spaz')

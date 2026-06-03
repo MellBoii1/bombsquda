@@ -52,6 +52,12 @@ class SpazFactory:
             bs.getsound('impactHard2'),
             bs.getsound('impactHard3'),
         )
+
+        self.impact_sounds_harder = (
+            bs.getsound('bigImpact'),
+            bs.getsound('bigImpact2'),
+            bs.getsound('bigImpact3'),
+        )
         self.impact_sounds_medium_metal = (
             bs.getsound('bombDrop02'),
         )
@@ -61,10 +67,17 @@ class SpazFactory:
         self.impact_sounds_harder_metal = (
             bs.getsound('bigImpact2'),
         )
-        self.impact_sounds_harder = (
-            bs.getsound('bigImpact'),
-            bs.getsound('bigImpact2'),
-            bs.getsound('bigImpact3'),
+        self.impact_sounds_medium_fancy = (
+            bs.getsound('fancyBonk'),
+        )
+        self.impact_sounds_hard_fancy = (
+            bs.getsound('fancyBoing'),
+        )
+        self.impact_sounds_harder_fancy = (
+            bs.getsound('fancyHardBonk01'),
+            bs.getsound('fancyHardBonk02'),
+            bs.getsound('fancyHardBonk03'),
+            bs.getsound('fancyHardBonk04'),
         )
         self.single_player_death_sound = (
             bs.getsound('playerDeath'),

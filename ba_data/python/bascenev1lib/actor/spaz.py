@@ -57,7 +57,7 @@ POWERUP_WEAR_OFF_TIME_K = 65000
 BASE_PUNCH_POWER_SCALE = 1.2
 BASE_PUNCH_COOLDOWN = 400
 
-SUPPORTED_STYLES = ['normal', 'metallic', 'robot']
+SUPPORTED_STYLES = ['normal', 'metallic', 'robot', 'fancy']
 
 RAINBOW_SPEED = 0.4  # determine speed
 RAINBOW_COLORS = [
@@ -4944,29 +4944,30 @@ class Spaz(bs.Actor):
             return
         
         self.node.handlemessage('knockout', max(0.0, 50.0 * intensity))
-        sounds: Sequence[bs.Sound]
+        factory = SpazFactory.get()
         if intensity >= 16.0 and not self._dead:
-            sounds = SpazFactory.get().lobotomy
-            ba.app.classic.ach.award_local_achievement(
-                'Big Fall'
-            )
+            sounds = factory.lobotomy
+            bs.app.classic.ach.award_local_achievement('Big Fall')
             self.sugarcoat_overlay(sound='block', image='white')
             self.shatter()
-        elif intensity >= 5.0:
-            if self.char_style in ['metallic', 'robot']:
-                sounds = SpazFactory.get().impact_sounds_harder_metal
-            else:
-                sounds = SpazFactory.get().impact_sounds_harder
-        elif intensity >= 3.0:
-            if self.char_style in ['metallic', 'robot']:
-                sounds = SpazFactory.get().impact_sounds_hard_metal
-            else:
-                sounds = SpazFactory.get().impact_sounds_hard
         else:
-            if self.char_style in ['metallic', 'robot']:
-                sounds = SpazFactory.get().impact_sounds_medium_metal
+            if intensity >= 5.0:
+                level = 'harder'
+            elif intensity >= 3.0:
+                level = 'hard'
             else:
-                sounds = SpazFactory.get().impact_sounds_medium
+                level = 'medium'
+
+            material = {
+                'metallic': '_metal',
+                'robot': '_metal',
+                'fancy': '_fancy',
+            }.get(self.char_style, '')
+
+            sounds = getattr(
+                factory,
+                f'impact_sounds_{level}{material}'
+            )
         sound = sounds[random.randrange(len(sounds))]
         sound.play(position=pos, volume=1.3)
 

@@ -36,6 +36,7 @@ store_prices = {
     'characters.homer': 870,
     'characters.ogspaz': 700,
     'characters.kookoo': 1300,
+    'characters.fancypants': 1100,
 }
 # A dict for store character names (basically coded 
 # names like characters.charname) that correspond to a spazappearance name.
@@ -68,6 +69,7 @@ appearance_dict = {
     'characters.ire': 'Ire',
     'characters.dozer': 'Dozer',
     'characters.kookoo': 'Kookoo',
+    'characters.fancypants': 'Fancy Pants',
 }
 # A dict we use in character select, profile edit, 
 # etc... to swapout vanilla or Gummy's Overhaul characters for ours.

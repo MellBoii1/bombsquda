@@ -418,7 +418,7 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
     def _drop_confetti(
         self, position: Sequence[float], velocity: Sequence[float]
     ) -> None:
-        actor = ConfettiParticle(position=position).autoretain()
+        actor = ConfettiParticle(position=position, spaz_type='').autoretain()
         actor.node.velocity = velocity
         
 

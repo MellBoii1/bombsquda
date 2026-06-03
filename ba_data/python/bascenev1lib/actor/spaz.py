@@ -330,7 +330,8 @@ class Spaz(bs.Actor):
         # We need to behave slightly different in the tutorial.
         self._demo_mode = demo_mode
 
-        # Specific settings for alerting if a spaz died.
+        # Specific settings for alerting if a spaz died
+        self.is_cry = False
         self.play_big_death_sound = False
         self.broadcast_death = False     
         self.impact_scale = 1.0
@@ -884,19 +885,22 @@ class Spaz(bs.Actor):
         Called to 'press jump' on this spaz;
         used by player or AI connections.
         """
-        if not self.node:
-            return
-        if self.cansay == True:
-            self.say(wave=True, shouldcelb=True)
-        t_ms = int(bs.time() * 1000.0)
-        assert isinstance(t_ms, int)
-        if self.canparry == True and self.parrybtn == 'jump':
-            self.attempt_parry()
-            return
-        if t_ms - self.last_jump_time_ms >= self._jump_cooldown:
-            self.node.jump_pressed = True
-            self.last_jump_time_ms = t_ms
-        self._turbo_filter_add_press('jump')
+        if self.character == "Isaac":
+            self._shoot_tear("down")
+        else:
+            if not self.node:
+                return
+            if self.cansay == True:
+                self.say(wave=True, shouldcelb=True)
+            t_ms = int(bs.time() * 1000.0)
+            assert isinstance(t_ms, int)
+            if self.canparry == True and self.parrybtn == 'jump':
+                self.attempt_parry()
+                return
+            if t_ms - self.last_jump_time_ms >= self._jump_cooldown:
+                self.node.jump_pressed = True
+                self.last_jump_time_ms = t_ms
+            self._turbo_filter_add_press('jump')
 
     def on_jump_release(self) -> None:
         """
@@ -1186,7 +1190,7 @@ class Spaz(bs.Actor):
             self.attempt_parry()
             return
         
-        if not self.node:
+        if not self.node or self.character == "Isaac":
             return
         t_ms = int(bs.time() * 1000.0)
         assert isinstance(t_ms, int)
@@ -1230,7 +1234,8 @@ class Spaz(bs.Actor):
         Called to 'press punch' on this spaz;
         used for player or AI connections.
         """
-        if not self.node or self.frozen or self.node.knockout > 0.0:
+
+        if not self.node or self.frozen or self.node.knockout > 0.0 or self.character == "Isaac":
             return
         t_ms = int(bs.time() * 1000.0)
         assert isinstance(t_ms, int)
@@ -1559,7 +1564,72 @@ class Spaz(bs.Actor):
             self.fireballed = False
             self.node.counter_text = ''
         SoundFactory.get().fireball_throw.play(position=pos)
-    
+
+    def _shoot_tear(self, shootdir):
+        # --- just a copypaste of fireball for now ---
+        # Get pos and velocity
+        pos = self.node.position
+        vel = self.node.velocity
+        # Normalize forward direction
+        length = math.sqrt(vel[0]**2 + vel[1]**2 + vel[2]**2)
+        forward = (
+            vel[0] / length,
+            5.5,
+            vel[2] / length
+        )
+        # Combine forward + spread
+        dir_x = forward[0] 
+        dir_y = forward[1]
+        dir_z = forward[2] 
+        # This multiplier depends on the
+        # player's velocity. Don't change too much.
+        mult = 21.0
+        dir_x *= mult
+        dir_z *= mult
+        spawn_distance = 0.9
+        spawn_height = 0.6
+
+        spawn_pos = (
+            pos[0] + forward[0] * spawn_distance,
+            pos[1] + spawn_height,
+            pos[2] + forward[2] * spawn_distance
+        )
+        fireball = Fireball(
+            position=spawn_pos,
+            owner=self,
+        ).autoretain()
+        # This is the default force. It's "multiplied" persay
+        # by the velocity, so if you also make it too strong it overshoots.
+        force = 260
+        fireball.node.handlemessage(
+            'impulse',
+            spawn_pos[0],
+            spawn_pos[1],
+            spawn_pos[2],
+            0, 0, 0,
+            force,
+            force,
+            0,
+            0,
+            dir_x,
+            dir_y,
+            dir_z,
+        )
+        # Punch
+        self.node.punch_pressed = True
+        self.node.punch_pressed = False
+        # Update our counter and play sound
+        # self.fireballs -= 1
+        # self.node.counter_text = 'x' + str(self.fireballs)
+        # self.node.counter_texture = (
+            # PowerupBoxFactory.get().tex_fireball
+        # )
+        # if self.fireballs == 0:
+            # self.fireballed = False
+            # self.node.counter_text = ''
+        # SoundFactory.get().fireball_throw.play(position=pos)
+        print("[ISAAC] tried to fire down")
+
     def _shoot_hook(self):
         pos = self.node.position
         vel = self.node.velocity
@@ -1612,7 +1682,7 @@ class Spaz(bs.Actor):
         Called to 'press bomb' on this spaz;
         used for player or AI connections.
         """
-        if not self.node:
+        if not self.node or self.character == "Isaac":
             return
         if (
             not self.is_alive()

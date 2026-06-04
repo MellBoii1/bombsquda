@@ -70,11 +70,11 @@ class Appearance:
         self.upper_leg_mesh = 'none'
         self.lower_leg_mesh = 'none'
         self.toes_mesh = 'none'
-        self.jump_sounds: list[str] = []
-        self.attack_sounds: list[str] = []
-        self.impact_sounds: list[str] = []
-        self.death_sounds: list[str] = []
-        self.pickup_sounds: list[str] = []
+        self.jump_sounds: list[str] = ['trublank']
+        self.attack_sounds: list[str] = ['trublank']
+        self.impact_sounds: list[str] = ['trublank']
+        self.death_sounds: list[str] = ['trublank']
+        self.pickup_sounds: list[str] = ['trublank']
         self.victory_sounds: list[str] = ['default_win']
         self.gloat_sounds: list[str] = ['default_gloat']
         self.fall_sounds: list[str] = []
@@ -85,6 +85,7 @@ class Appearance:
         self.general_style = 'normal'
         self.default_color: tuple[float, float, float] | None = None
         self.default_highlight: tuple[float, float, float] | None = None
+        self.is_gimmick_character: bool = False
 
 def validate_appearance(name, app):
     required = [
@@ -386,7 +387,7 @@ def register_appearances() -> None:
     t.gloat_sounds = ['voicelines/mell/gloat']
     t.pickup_sounds = mell_sounds
     t.fall_sounds = ['voicelines/mell/fall' + str(i + 1) + '' for i in range(2)]
-    t.style = 'bones'
+    t.style = 'ali'
     t.default_color = (1, 1, 1)
     t.default_highlight = (0, 1, 0)
 
@@ -621,7 +622,7 @@ def register_appearances() -> None:
     t.victory_sounds = ['voicelines/bowser/win']
     t.gloat_sounds = ['voicelines/bowser/gloat']
     t.fall_sounds = ['voicelines/bowser/fall']
-    t.style = 'bones'
+    t.style = 'ali'
     t.default_color = (
         0.996078431372549, 
         0.8372549019607842, 
@@ -884,6 +885,9 @@ def register_appearances() -> None:
     t.color_mask_texture = 'fancyColorMask'
     t.icon_texture = 'fancyIcon'
     t.icon_mask_texture = 'fancyIconCM'
+    t.earthportrait = 'earthbound/fancybound'
+    t.EBlose = 'earthbound/fancybound_lose'
+    t.EBwin = 'earthbound/fancybound_win'
     t.head_mesh = 'fancyHead'
     t.torso_mesh = 'fancyTorso'
     t.pelvis_mesh = 'none'
@@ -907,32 +911,31 @@ def register_appearances() -> None:
 
     # Isaac of the Binding ###################################
     t = Appearance('Isaac')
-    t.color_texture = 'buddieColor'
-    t.color_mask_texture = 'buddieColorMask'
-    t.icon_texture = 'buddieIcon'
-    t.earthportrait = 'earthbound/budbound'
-    t.EBlose = 'earthbound/budbound_lose'
-    t.EBwin = 'earthbound/budbound_win'
-    t.icon_mask_texture = 'buddieIconCM'
-    t.head_mesh = 'buddieHead'
-    t.torso_mesh = 'buddieTorso'
+    t.color_texture = 'isaacColor'
+    t.color_mask_texture = 'isaacColorMask'
+    t.icon_texture = 'isaacIcon'
+    t.earthportrait = 'earthbound/isaacbound'
+    t.EBlose = 'earthbound/isaacbound_lose'
+    t.EBwin = 'earthbound/isaacbound_win'
+    t.icon_mask_texture = 'isaacIconCM'
+    t.head_mesh = 'isaacHead'
+    t.torso_mesh = 'isaacTorso'
     t.pelvis_mesh = 'none'
-    t.upper_arm_mesh = 'buddieUpperArm'
-    t.forearm_mesh = 'buddieForeArm'
-    t.hand_mesh = 'buddieHand'
-    t.upper_leg_mesh = 'buddieUpperLeg'
-    t.lower_leg_mesh = 'buddieLowerLeg'
-    t.toes_mesh = 'buddieToes'
-    t.jump_sounds = ['voicelines/buddie/jump' + str(i + 1) + '' for i in range(3)]
-    t.attack_sounds = ['voicelines/buddie/punch' + str(i + 1) + '' for i in range(2)]
-    t.impact_sounds = ['voicelines/buddie/hurt' + str(i + 1) + '' for i in range(5)]
-    t.death_sounds = ['voicelines/buddie/death' + str(i + 1) + '' for i in range(4)]
-    t.pickup_sounds = ['voicelines/buddie/pickup' + str(i + 1) + '' for i in range(4)]
-    t.fall_sounds = ['voicelines/buddie/fall' + str(i + 1) + '' for i in range(3)]
-    t.victory_sounds = t.jump_sounds
-    t.style = 'bones'
-    t.default_color = (251 / 255, 242 / 255, 51 / 255)
-    t.default_highlight = (43 / 255, 41 / 255, 65 / 255)
+    t.upper_arm_mesh = 'isaacUpperArm'
+    t.forearm_mesh = 'isaacForeArm'
+    t.hand_mesh = 'isaacHand'
+    t.upper_leg_mesh = 'isaacUpperLeg'
+    t.lower_leg_mesh = 'isaacLowerLeg'
+    t.toes_mesh = 'isaacToes'
+    t.impact_sounds = ['voicelines/isaac/hurt' + str(i + 1) + '' for i in range(3)]
+    t.death_sounds = ['voicelines/isaac/death']
+    t.fall_sounds = ['voicelines/isaac/fall']
+    t.victory_sounds = ['voicelines/isaac/win']
+    t.gloat_sounds = ['voicelines/isaac/win']
+    t.style = 'ali'
+    t.is_gimmick_character = True
+    t.default_color = mell.hex_to_color('ffdcda')
+    t.default_highlight = mell.hex_to_color('7cf4ff')
 
     # The Original      Spaz ###################################
     t = Appearance('OG Spaz')

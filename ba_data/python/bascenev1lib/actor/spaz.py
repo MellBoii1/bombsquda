@@ -1193,7 +1193,9 @@ class Spaz(bs.Actor):
         
         if self.canparry == True and self.parrybtn == 'grab':
             self.attempt_parry()
-            return
+            # isaac can shoot tears AND parry
+            if self.character != "Isaac":
+                return
         
         if not self.node:
             return
@@ -1659,7 +1661,6 @@ class Spaz(bs.Actor):
             position=spawn_pos,
             owner=self,
         ).autoretain()
-        tear.gravity_scale = 0
         # this is the dihfault force. It's "muldihplied" perdih
         # by the dihlocity, so if you also make it too strong it overgoons.
         force = 260
@@ -1678,8 +1679,10 @@ class Spaz(bs.Actor):
             dir_z,
         )
         # --- here's a sound i can probably replace this with tboi tear sound ---
-        # SoundFactory.get().fireball_throw.play(position=pos)
-        print(f"[ISAAC] tried to fire {shootdir}")
+        random.choice(
+            SoundFactory.get().tear_fire
+        ).play(position=pos)
+        self.impulse(y=-60)
         self.can_cry = False
 
     def _shoot_hook(self):
@@ -2435,7 +2438,7 @@ class Spaz(bs.Actor):
         self._has_hot_potato = True
         self.activity.spongebob_time = time  # seconds remaining
         self._potato_speed = speed
-        name = self.node.name if self.node.name else self.character
+        name = self.node.name if self.node.name else mell.translate_char_name(self.character)
         xoffs = 500
         usualy = 120
         self._potato_holder_text = bs.newnode(
@@ -3063,11 +3066,15 @@ class Spaz(bs.Actor):
             volume=1.5, position=self.node.position
         )
         self.updatemeter()
+        name = (
+            self.node.name if self.node.name
+            else mell.translate_char_name(self.character)
+        )
         PopupText(
             bs.Lstr(
                 resource='playerMortalDamage',
                 subs=[
-                    ('${NAME}', self.node.name if self.node.name else self.character)
+                    ('${NAME}', name)
                 ],
             ),
             position=self.node.position,
@@ -4568,7 +4575,7 @@ class Spaz(bs.Actor):
                 subs=[
                     # Include some useful subs for phrases
                     ('${PLAYERNAME}', self.node.name),
-                    ('${PLAYERCHAR}', self.character),
+                    ('${PLAYERCHAR}', mell.translate_char_name(self.character)),
                     ('${VICTIMNAME}', self.last_victim_name),
                     ('${VICTIMCHAR}', self.last_victim_character),
                 ]
@@ -4614,7 +4621,10 @@ class Spaz(bs.Actor):
         self.hitpoints += 210
         self.updatemeter()
         bs.getsound('cheer2').play(position=self.node.position)
-        name = self.node.name if self.node.name else self.character
+        name = (
+            self.node.name if self.node.name 
+            else mell.translate_char_name(self.character)
+        )
         PopupText(
             bs.Lstr(
                 resource='cheeredPlayer',

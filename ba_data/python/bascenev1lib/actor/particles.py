@@ -43,7 +43,6 @@ class ParticleActor(bs.Actor):
         # so it can be handled by another actor.
         footing_material = shared.footing_material
         region_material = shared.region_material
-        self.material = bs.Material()
         # node
         self.mesh = mesh
         self.tex = texture

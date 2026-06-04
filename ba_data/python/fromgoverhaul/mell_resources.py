@@ -7,6 +7,7 @@ screams = ['screams/scream' + str(i + 1) + '' for i in range(15)]
 server = "https://bombsquda.tailc76b25.ts.net/"
 version = '2.5'
 update_date = '6/1/2026'
+from babase._logging import squdalog
 
 # A dict for each store character that stores their price.
 # They are hardcoded to be spaz tickets only, for now.
@@ -111,6 +112,12 @@ def get_festivity():
         return "christmas"
     if easter:
         return "easter"
+
+def translate_char_name(name: str):
+    import babase
+    return babase.Lstr(
+        translate=('characterNames', name)
+    ).evaluate()
 
 def add_spaz(
     amount: int | float = 50,
@@ -270,7 +277,7 @@ def announcer_say(voiceline: str):
             choice.play(volume=volume)
     else:
         gs('unknown').play(volume=volume)
-        print(f'ANNOUNCER VOICELINE {voiceline} IS UNKNOWN')
+        squdalog.info(f'ANNOUNCER VOICELINE {voiceline} IS UNKNOWN')
 
 def hex_to_color(hex_color: str) -> tuple:
     # Remove the '#' from the string if provided.
@@ -896,6 +903,12 @@ def get_status_from_id(id: str):
 
 def set_profile_data(data: dict):
     return _request('api/set_profile_data', data)
+
+def submit_score(data: dict):
+    request = _request('api/submit_score', data)
+    call = data['done_call']
+    call(request)
+    return request
 
 def get_online():
     try:

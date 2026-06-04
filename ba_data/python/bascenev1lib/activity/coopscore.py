@@ -15,6 +15,7 @@ from bacommon.login import LoginType
 import bascenev1 as bs
 import bauiv1 as bui
 import babase as ba
+import fromgoverhaul.mell_resources as mell
 
 from bascenev1lib.actor.text import Text
 from bascenev1lib.actor.zoomtext import ZoomText
@@ -905,22 +906,20 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
         else:
             assert self._game_name_str is not None
             assert self._game_config_str is not None
-            plus.submit_score(
-                self._game_name_str,
-                self._game_config_str,
-                name_str,
-                self._score,
-                bs.WeakCall(self._got_score_results),
-                order=self._score_order,
-                tournament_id=self.session.tournament_id,
-                score_type=self._score_type,
-                campaign=self._campaign.name,
-                level=self._level_name,
+            mell.submit_score(
+                {
+                    'game_name': self._game_name_str,
+                    'game_config': self._game_config_str,
+                    'name': name_str,
+                    'score': self._score,
+                    'done_call': bs.WeakCall(self._got_score_results),
+                    'order': self._score_order,
+                    'tournament_id': self.session.tournament_id,
+                    'score_type': self._score_type,
+                    'campaign': self._campaign.name,
+                    'level': self._level_name,
+                }
             )
-
-        # Apply the transactions we've been adding locally.
-        plus.run_v1_account_transactions()
-
         # If we're not doing the world's-best button, just show a title
         # instead.
         ts_height = 300
@@ -1289,7 +1288,10 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
             base_delay = max(0, 2.7 - (bs.time() - self._begin_time))
             # v_offs = 20
             v_offs = 64
-            if results is None:
+            if (
+                results.get('error')
+                or results.get('status', '') == 'fail'
+            ):
                 self._score_loading_status = Text(
                     bs.Lstr(resource='worldScoresUnavailableText'),
                     position=(300, 130 + v_offs),
@@ -1298,232 +1300,185 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
                     transition_delay=base_delay + 0.3,
                     scale=0.7,
                 )
-            else:
-
-                # If there's a score-uuid bundled, ship it along to the
-                # v2 master server to ask about any rewards from that
-                # end.
-                score_token = results.get('token')
-                if (
-                    isinstance(score_token, str)
-                    and plus.accounts.primary is not None
-                ):
-                    with plus.accounts.primary:
-                        plus.cloud.send_message_cb(
-                            bacommon.bs.ScoreSubmitMessage(score_token),
-                            on_response=bui.WeakCall(self._on_v2_score_results),
-                        )
-
-                self._score_link = results['link']
-                assert self._score_link is not None
-                # Prepend our master-server addr if its a relative addr.
-                if not self._score_link.startswith(
-                    'http://'
-                ) and not self._score_link.startswith('https://'):
-                    self._score_link = (
-                        plus.get_master_server_address()
-                        + '/'
-                        + self._score_link
-                    )
-                self._score_loading_status = None
-                if 'tournamentSecondsRemaining' in results:
-                    secs_remaining = results['tournamentSecondsRemaining']
-                    assert isinstance(secs_remaining, int)
-                    self._tournament_time_remaining = secs_remaining
-                    self._tournament_time_remaining_text_timer = bs.BaseTimer(
-                        1.0,
-                        bs.WeakCall(
-                            self._update_tournament_time_remaining_text
-                        ),
-                        repeat=True,
-                    )
-
+                return
             assert self._show_info is not None
             self._show_info['results'] = results
-            if results is not None:
-                if results['tops'] != '':
-                    self._show_info['tops'] = results['tops']
-                else:
-                    self._show_info['tops'] = []
+            if results.get('tops', '') != '':
+                self._show_info['tops'] = results.get('tops')
+            else:
+                self._show_info['tops'] = []
             offs_x = -195
-            available = self._show_info['results'] is not None
-            if self._score is not None:
-                bs.basetimer(
-                    (1.5 + base_delay),
-                    bs.WeakCall(self._show_world_rank, offs_x),
-                )
+
             ts_h_offs = 280
             ts_height = 300
 
-            # Show world tops.
-            if available:
-                # Show the number of games represented by this
-                # list (except for in tournaments).
-                if self.session.tournament_id is None:
-                    Text(
-                        bs.Lstr(
-                            resource='lastGamesText',
-                            subs=[
-                                (
-                                    '${COUNT}',
-                                    str(self._show_info['results']['total']),
-                                )
-                            ],
+            # Show the number of games represented by this
+            # list (except for in tournaments).
+            if self.session.tournament_id is None:
+                Text(
+                    bs.Lstr(
+                        resource='lastGamesText',
+                        subs=[
+                            (
+                                '${COUNT}',
+                                str(self._show_info['results']['total']),
+                            )
+                        ],
+                    ),
+                    position=(
+                        ts_h_offs - 35 + 95,
+                        ts_height / 2 + 6 + v_offs - 41,
+                    ),
+                    color=(0.4, 0.4, 0.4, 1.0),
+                    scale=0.7,
+                    transition=Text.Transition.IN_RIGHT,
+                    transition_delay=base_delay + 0.3,
+                ).autoretain()
+            else:
+                v_offs += 40
+
+            h_offs_extra = 0
+            v_offs_names = 0
+            scale = 1.0
+            p_count = len(self._playerinfos)
+            if p_count > 1:
+                h_offs_extra -= 40
+            if self._score_type != 'points':
+                h_offs_extra += 60
+            if p_count == 2:
+                scale = 0.9
+            elif p_count == 3:
+                scale = 0.65
+            elif p_count == 4:
+                scale = 0.5
+
+            # Make sure there's at least 10.
+            while len(self._show_info['tops']) < 10:
+                self._show_info['tops'].append([0, '-'])
+
+            times: list[tuple[float, float]] = []
+            for i in range(len(self._show_info['tops'])):
+                times.insert(
+                    random.randrange(0, len(times) + 1),
+                    (base_delay + i * 0.05, base_delay + 0.4 + i * 0.05),
+                )
+
+            # Conundrum: We want to place line numbers to the
+            # left of our score column based on the largest
+            # score width. However scores may use Lstrs and thus
+            # may have different widths in different languages.
+            # We don't want to bake down the Lstrs we display
+            # because then clients can't view scores in their
+            # own language. So as a compromise lets measure
+            # max-width based on baked down Lstrs but then
+            # display regular Lstrs with max-width set based on
+            # that. Hopefully that'll look reasonable for most
+            # languages.
+            max_score_width = 10.0
+            for tval in self._show_info['tops']:
+                score = int(tval[0])
+                name_str = tval[1]
+                if name_str != '-':
+                    max_score_width = max(
+                        max_score_width,
+                        bui.get_string_width(
+                            (
+                                str(score)
+                                if self._score_type == 'points'
+                                else bs.timestring(
+                                    (score * 10) / 1000.0
+                                ).evaluate()
+                            ),
+                            suppress_warning=True,
                         ),
-                        position=(
-                            ts_h_offs - 35 + 95,
-                            ts_height / 2 + 6 + v_offs - 41,
-                        ),
-                        color=(0.4, 0.4, 0.4, 1.0),
-                        scale=0.7,
-                        transition=Text.Transition.IN_RIGHT,
-                        transition_delay=base_delay + 0.3,
-                    ).autoretain()
-                else:
-                    v_offs += 40
-
-                h_offs_extra = 0
-                v_offs_names = 0
-                scale = 1.0
-                p_count = len(self._playerinfos)
-                if p_count > 1:
-                    h_offs_extra -= 40
-                if self._score_type != 'points':
-                    h_offs_extra += 60
-                if p_count == 2:
-                    scale = 0.9
-                elif p_count == 3:
-                    scale = 0.65
-                elif p_count == 4:
-                    scale = 0.5
-
-                # Make sure there's at least 10.
-                while len(self._show_info['tops']) < 10:
-                    self._show_info['tops'].append([0, '-'])
-
-                times: list[tuple[float, float]] = []
-                for i in range(len(self._show_info['tops'])):
-                    times.insert(
-                        random.randrange(0, len(times) + 1),
-                        (base_delay + i * 0.05, base_delay + 0.4 + i * 0.05),
                     )
 
-                # Conundrum: We want to place line numbers to the
-                # left of our score column based on the largest
-                # score width. However scores may use Lstrs and thus
-                # may have different widths in different languages.
-                # We don't want to bake down the Lstrs we display
-                # because then clients can't view scores in their
-                # own language. So as a compromise lets measure
-                # max-width based on baked down Lstrs but then
-                # display regular Lstrs with max-width set based on
-                # that. Hopefully that'll look reasonable for most
-                # languages.
-                max_score_width = 10.0
-                for tval in self._show_info['tops']:
-                    score = int(tval[0])
-                    name_str = tval[1]
-                    if name_str != '-':
-                        max_score_width = max(
-                            max_score_width,
-                            bui.get_string_width(
-                                (
-                                    str(score)
-                                    if self._score_type == 'points'
-                                    else bs.timestring(
-                                        (score * 10) / 1000.0
-                                    ).evaluate()
-                                ),
-                                suppress_warning=True,
-                            ),
-                        )
-
-                for i, tval in enumerate(self._show_info['tops']):
-                    score = int(tval[0])
-                    name_str = tval[1]
-                    if self._name_str == name_str and self._score == score:
-                        flash = True
+            for i, tval in enumerate(self._show_info['tops']):
+                score = int(tval[0])
+                name_str = tval[1]
+                if self._name_str == name_str and self._score == score:
+                    flash = True
+                    color0 = (0.6, 0.4, 0.1, 1.0)
+                    color1 = (0.6, 0.6, 0.6, 1.0)
+                    tdelay1 = base_delay + 1.0
+                    tdelay2 = base_delay + 1.0
+                else:
+                    flash = False
+                    if self._name_str == name_str:
+                        color0 = (0.6, 0.4, 0.1, 1.0)
+                        color1 = (0.9, 1.0, 0.9, 1.0)
+                    else:
                         color0 = (0.6, 0.4, 0.1, 1.0)
                         color1 = (0.6, 0.6, 0.6, 1.0)
-                        tdelay1 = base_delay + 1.0
-                        tdelay2 = base_delay + 1.0
-                    else:
-                        flash = False
-                        if self._name_str == name_str:
-                            color0 = (0.6, 0.4, 0.1, 1.0)
-                            color1 = (0.9, 1.0, 0.9, 1.0)
-                        else:
-                            color0 = (0.6, 0.4, 0.1, 1.0)
-                            color1 = (0.6, 0.6, 0.6, 1.0)
-                        tdelay1 = times[i][0]
-                        tdelay2 = times[i][1]
+                    tdelay1 = times[i][0]
+                    tdelay2 = times[i][1]
 
-                    if name_str != '-':
-                        sstr = (
-                            str(score)
-                            if self._score_type == 'points'
-                            else bs.timestring((score * 10) / 1000.0)
-                        )
+                if name_str != '-':
+                    sstr = (
+                        str(score)
+                        if self._score_type == 'points'
+                        else bs.timestring((score * 10) / 1000.0)
+                    )
 
-                        # Line number.
-                        Text(
-                            str(i + 1),
-                            position=(
-                                ts_h_offs
-                                + 20
-                                + h_offs_extra
-                                - max_score_width
-                                - 8.0,
-                                ts_height / 2
-                                + -ts_height * (i + 1) / 10
-                                + v_offs
-                                - 30.0,
-                            ),
-                            scale=0.5,
-                            h_align=Text.HAlign.RIGHT,
-                            v_align=Text.VAlign.CENTER,
-                            color=(0.3, 0.3, 0.3),
-                            transition=Text.Transition.IN_LEFT,
-                            transition_delay=tdelay1,
-                        ).autoretain()
-
-                        # Score.
-                        Text(
-                            sstr,
-                            position=(
-                                ts_h_offs + 20 + h_offs_extra,
-                                ts_height / 2
-                                + -ts_height * (i + 1) / 10
-                                + v_offs
-                                - 30.0,
-                            ),
-                            maxwidth=max_score_width,
-                            h_align=Text.HAlign.RIGHT,
-                            v_align=Text.VAlign.CENTER,
-                            color=color0,
-                            flash=flash,
-                            transition=Text.Transition.IN_LEFT,
-                            transition_delay=tdelay1,
-                        ).autoretain()
-                    # Player name.
+                    # Line number.
                     Text(
-                        bs.Lstr(value=name_str),
+                        str(i + 1),
                         position=(
-                            ts_h_offs + 35 + h_offs_extra,
+                            ts_h_offs
+                            + 20
+                            + h_offs_extra
+                            - max_score_width
+                            - 8.0,
                             ts_height / 2
                             + -ts_height * (i + 1) / 10
-                            + v_offs_names
                             + v_offs
                             - 30.0,
                         ),
-                        maxwidth=80.0 + 100.0 * len(self._playerinfos),
+                        scale=0.5,
+                        h_align=Text.HAlign.RIGHT,
                         v_align=Text.VAlign.CENTER,
-                        color=color1,
-                        flash=flash,
-                        scale=scale,
+                        color=(0.3, 0.3, 0.3),
                         transition=Text.Transition.IN_LEFT,
-                        transition_delay=tdelay2,
+                        transition_delay=tdelay1,
                     ).autoretain()
+
+                    # Score.
+                    Text(
+                        sstr,
+                        position=(
+                            ts_h_offs + 20 + h_offs_extra,
+                            ts_height / 2
+                            + -ts_height * (i + 1) / 10
+                            + v_offs
+                            - 30.0,
+                        ),
+                        maxwidth=max_score_width,
+                        h_align=Text.HAlign.RIGHT,
+                        v_align=Text.VAlign.CENTER,
+                        color=color0,
+                        flash=flash,
+                        transition=Text.Transition.IN_LEFT,
+                        transition_delay=tdelay1,
+                    ).autoretain()
+                # Player name.
+                Text(
+                    bs.Lstr(value=name_str),
+                    position=(
+                        ts_h_offs + 35 + h_offs_extra,
+                        ts_height / 2
+                        + -ts_height * (i + 1) / 10
+                        + v_offs_names
+                        + v_offs
+                        - 30.0,
+                    ),
+                    maxwidth=80.0 + 100.0 * len(self._playerinfos),
+                    v_align=Text.VAlign.CENTER,
+                    color=color1,
+                    flash=flash,
+                    scale=scale,
+                    transition=Text.Transition.IN_LEFT,
+                    transition_delay=tdelay2,
+                ).autoretain()
 
     def _show_tips(self) -> None:
         from bascenev1lib.actor.tipstext import TipsText
@@ -1542,195 +1497,6 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
                 centi=False,
             )
             self._tournament_time_remaining_text.node.text = val
-
-    def _show_world_rank(self, offs_x: float) -> None:
-        # FIXME: Tidy this up.
-        # pylint: disable=too-many-locals
-        # pylint: disable=too-many-branches
-        # pylint: disable=too-many-statements
-        assert bs.app.classic is not None
-        assert self._show_info is not None
-        available = self._show_info['results'] is not None
-
-        if available and self._submit_score:
-            error = (
-                self._show_info['results']['error']
-                if 'error' in self._show_info['results']
-                else None
-            )
-            rank = self._show_info['results']['rank']
-            total = self._show_info['results']['total']
-            rating = (
-                10.0
-                if total == 1
-                else 10.0 * (1.0 - (float(rank - 1) / (total - 1)))
-            )
-            player_rank = self._show_info['results']['playerRank']
-            best_player_rank = self._show_info['results']['bestPlayerRank']
-        else:
-            error = False
-            rating = None
-            player_rank = None
-            best_player_rank = None
-
-        # If we've got tournament-seconds-remaining, show it.
-        if self._tournament_time_remaining is not None:
-            Text(
-                bs.Lstr(resource='coopSelectWindow.timeRemainingText'),
-                position=(-360, -70 - 100),
-                color=(1, 1, 1, 0.7),
-                h_align=Text.HAlign.CENTER,
-                v_align=Text.VAlign.CENTER,
-                transition=Text.Transition.FADE_IN,
-                scale=0.8,
-                maxwidth=300,
-                transition_delay=2.0,
-            ).autoretain()
-            self._tournament_time_remaining_text = Text(
-                '',
-                position=(-360, -110 - 100),
-                color=(1, 1, 1, 0.7),
-                h_align=Text.HAlign.CENTER,
-                v_align=Text.VAlign.CENTER,
-                transition=Text.Transition.FADE_IN,
-                scale=1.6,
-                maxwidth=150,
-                transition_delay=2.0,
-            )
-
-        # If we're a tournament, show prizes.
-        try:
-            assert bs.app.classic is not None
-            tournament_id = self.session.tournament_id
-            if tournament_id is not None:
-                if tournament_id in bs.app.classic.accounts.tournament_info:
-                    tourney_info = bs.app.classic.accounts.tournament_info[
-                        tournament_id
-                    ]
-                    # pylint: disable=useless-suppression
-                    # pylint: disable=unbalanced-tuple-unpacking
-                    (pr1, pv1, pr2, pv2, pr3, pv3) = (
-                        bs.app.classic.get_tournament_prize_strings(
-                            tourney_info, include_tickets=False
-                        )
-                    )
-
-                    # pylint: enable=unbalanced-tuple-unpacking
-                    # pylint: enable=useless-suppression
-
-                    Text(
-                        bs.Lstr(resource='coopSelectWindow.prizesText'),
-                        position=(-360, -70 + 77),
-                        color=(1, 1, 1, 0.7),
-                        h_align=Text.HAlign.CENTER,
-                        v_align=Text.VAlign.CENTER,
-                        transition=Text.Transition.FADE_IN,
-                        scale=1.0,
-                        maxwidth=300,
-                        transition_delay=2.0,
-                    ).autoretain()
-                    vval = -107 + 70
-                    for i, rng, val in (
-                        (0, pr1, pv1),
-                        (1, pr2, pv2),
-                        (2, pr3, pv3),
-                    ):
-                        Text(
-                            rng,
-                            position=(-430 + 10, vval),
-                            color=(1, 1, 1, 0.7),
-                            h_align=Text.HAlign.RIGHT,
-                            v_align=Text.VAlign.CENTER,
-                            transition=Text.Transition.FADE_IN,
-                            scale=0.6,
-                            maxwidth=300,
-                            transition_delay=2.0,
-                        ).autoretain()
-                        Text(
-                            val,
-                            position=(-410 + 10, vval),
-                            color=(0.7, 0.7, 0.7, 1.0),
-                            h_align=Text.HAlign.LEFT,
-                            v_align=Text.VAlign.CENTER,
-                            transition=Text.Transition.FADE_IN,
-                            scale=0.8,
-                            maxwidth=300,
-                            transition_delay=2.0,
-                        ).autoretain()
-                        bs.app.classic.create_in_game_tournament_prize_image(
-                            tourney_info, i, (-410 + 70, vval)
-                        )
-                        vval -= 35
-        except Exception:
-            logging.exception('Error showing prize ranges.')
-
-        if self._do_new_rating:
-            if error:
-                ZoomText(
-                    bs.Lstr(resource='failText'),
-                    flash=True,
-                    trail=True,
-                    scale=1.0 if available else 0.333,
-                    tilt_translate=0.11,
-                    h_align='center',
-                    position=(190 + offs_x, -60),
-                    maxwidth=200,
-                    jitter=1.0,
-                ).autoretain()
-                Text(
-                    bs.Lstr(translate=('serverResponses', error)),
-                    position=(0, -140),
-                    color=(1, 1, 1, 0.7),
-                    h_align=Text.HAlign.CENTER,
-                    v_align=Text.VAlign.CENTER,
-                    transition=Text.Transition.FADE_IN,
-                    scale=0.9,
-                    maxwidth=400,
-                    transition_delay=1.0,
-                ).autoretain()
-            elif self._submit_score:
-                ZoomText(
-                    (
-                        ('#' + str(player_rank))
-                        if player_rank is not None
-                        else bs.Lstr(resource='unavailableText')
-                    ),
-                    flash=True,
-                    trail=True,
-                    scale=1.0 if available else 0.333,
-                    tilt_translate=0.11,
-                    h_align='center',
-                    position=(190 + offs_x, -60),
-                    maxwidth=200,
-                    jitter=1.0,
-                ).autoretain()
-
-                Text(
-                    bs.Lstr(
-                        value='${A}:',
-                        subs=[('${A}', bs.Lstr(resource='rankText'))],
-                    ),
-                    position=(0, 36),
-                    maxwidth=300,
-                    transition=Text.Transition.FADE_IN,
-                    h_align=Text.HAlign.CENTER,
-                    v_align=Text.VAlign.CENTER,
-                    transition_delay=0,
-                ).autoretain()
-                if best_player_rank is not None:
-                    Text(
-                        bs.Lstr(
-                            resource='currentStandingText',
-                            fallback_resource='bestRankText',
-                            subs=[('${RANK}', str(best_player_rank))],
-                        ),
-                        position=(0, -155),
-                        color=(1, 1, 1, 0.7),
-                        h_align=Text.HAlign.CENTER,
-                        transition=Text.Transition.FADE_IN,
-                        scale=0.7,
-                        transition_delay=1.0,
-                    ).autoretain()
 
     def _show_fail(self) -> None:
         ZoomText(

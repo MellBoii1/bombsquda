@@ -228,10 +228,99 @@ class Fireball(bs.Actor):
                 'materials': (shared.fireball_material, shared.object_material),
             },
         )
+        self.dying = False
         self.deathTimer = bs.Timer(7, self.autodie)
         self.fireTimer = bs.Timer(0.1, self.spark, repeat=True)
         bs.animate(self.node, 'mesh_scale', {0: 0, 0.2: self.scale})
-
+    
+    def spark(self):
+        if not self.node:
+            self.fireTimer = None
+            return
+        bs.emitfx(
+            position=self.node.position,
+            chunk_type='sweat',
+            velocity=self.node.velocity,
+            count=30,
+            scale=1.1,
+            spread=0.15,
+        )
+    
+    def autodie(self):
+        if not self.node or self.expired:
+            return None
+        self.handlemessage(bs.DieMessage())
+    
+    @override
+    def handlemessage(self, msg: Any) -> Any:
+        if self.expired:
+            return None
+            
+        if isinstance(msg, bs.DieMessage):
+            self.dying = True
+            if msg.immediate:
+                self.node.delete()
+            else:
+                bs.animate(self.node, 'mesh_scale', {0: self.scale, 0.1: 0})
+                bs.timer(0.1, self.node.delete)
+                
+        elif isinstance(msg, TouchedMessage):
+            collision = bs.getcollision()
+            toucher = collision.opposingnode
+            if not toucher:
+                return None
+            ishittable = toucher.getnodetype() in ['spaz', 'prop', 'bomb', 'flag']
+            if not ishittable:
+                return None
+            actor = toucher.getdelegate(bs.Actor)
+            fireball = toucher.getdelegate(Fireball)
+            if (
+                not actor
+                or not actor.is_alive()
+                or actor is self.owner
+                or fireball
+                or self.dying
+            ):
+                return None
+            bs.emitfx(
+                position=self.node.position,
+                chunk_type='sweat',
+                velocity=self.node.velocity,
+                count=95,
+                scale=3.2,
+                spread=0.30,
+            )
+            srcpl = getattr(self.owner, 'source_player', None)
+            toucher.handlemessage(
+                bs.HitMessage(
+                    magnitude=self.hurtpoints,
+                    pos=self.node.position,
+                    velocity=self.node.velocity,
+                    radius=0,
+                    srcnode=self.node,
+                    source_player=srcpl,
+                    hit_type='fireball',
+                )
+            )
+            bs.getsound('smb1_kick').play(position=self.node.position)
+            self.handlemessage(bs.DieMessage())
+        
+        elif isinstance(msg, BounceMessage):
+            y = 120 / self.bscale
+            self.node.handlemessage('impulse', 
+                self.node.position[0], 
+                self.node.position[1], 
+                self.node.position[2],
+                0, 25, 0,
+                y, 0.05, 0, 0,
+                0, 20*800, 0
+            )
+        elif isinstance(msg, bs.OutOfBoundsMessage):
+            self.handlemessage(bs.DieMessage(immediate=True))
+        else:
+            return super().handlemessage(msg)
+        return None
+        
 class Tear(bs.Actor):
     """One of Isaac's tears that bounces around, gives a 
     hitmessage when getting touched by a Spaz and dies."""
@@ -256,6 +345,7 @@ class Tear(bs.Actor):
             attrs={
                 'body': 'sphere',
                 'body_scale': self.bscale,
+                'gravity_scale': 0,
                 'position': position,
                 'mesh': self.mesh,
                 'mesh_scale': 0,
@@ -267,6 +357,7 @@ class Tear(bs.Actor):
                 'materials': (shared.fireball_material, shared.object_material),
             },
         )
+        self.dying = False
         self.deathTimer = bs.Timer(7, self.autodie)
         self.fireTimer = bs.Timer(0.1, self.spark, repeat=True)
         bs.animate(self.node, 'mesh_scale', {0: 0, 0.2: self.scale})
@@ -282,11 +373,11 @@ class Tear(bs.Actor):
             return
         bs.emitfx(
             position=self.node.position,
-            chunk_type='sweat',
+            chunk_type='ice',
             velocity=self.node.velocity,
-            count=25,
-            scale=1.7,
-            spread=0.17,
+            count=1,
+            scale=0.5,
+            spread=0.1,
         )
         
     @override
@@ -295,6 +386,7 @@ class Tear(bs.Actor):
             return None
 
         if isinstance(msg, bs.DieMessage):
+            self.dying = True
             if msg.immediate:
                 self.node.delete()
             else:
@@ -306,7 +398,7 @@ class Tear(bs.Actor):
             toucher = collision.opposingnode
             if not toucher:
                 return None
-            ishittable = toucher.getnodetype() in ['spaz', 'prop', 'bomb']
+            ishittable = toucher.getnodetype() in ['spaz', 'prop', 'bomb', 'flag']
             if not ishittable:
                 return None
             actor = toucher.getdelegate(bs.Actor)
@@ -316,14 +408,15 @@ class Tear(bs.Actor):
                 or not actor.is_alive()
                 or actor is self.owner
                 or fireball
+                or self.dying
             ):
                 return None
             bs.emitfx(
                 position=self.node.position,
-                chunk_type='sweat',
+                chunk_type='ice',
                 velocity=self.node.velocity,
-                count=95,
-                scale=3.2,
+                count=10,
+                scale=0.6,
                 spread=0.30,
             )
             srcpl = getattr(self.owner, 'source_player', None)
@@ -338,20 +431,20 @@ class Tear(bs.Actor):
                     hit_type='fireball',
                 )
             )
-            bs.getsound('smb1_kick').play(position=self.node.position)
-            self.handlemessage(bs.DieMessage(immediate=True))
+            bs.getsound('tear_hit').play(position=self.node.position)
+            self.handlemessage(bs.DieMessage())
         
         elif isinstance(msg, BounceMessage):
-            y = 120 / self.bscale
-            self.node.handlemessage('impulse', 
-                self.node.position[0], 
-                self.node.position[1], 
-                self.node.position[2],
-                0, 25, 0,
-                y, 0.05, 0, 0,
-                0, 20*800, 0
+            bs.emitfx(
+                position=self.node.position,
+                chunk_type='ice',
+                velocity=self.node.velocity,
+                count=10,
+                scale=0.7,
+                spread=0.30,
             )
-
+            self.handlemessage(bs.DieMessage())
+            bs.getsound('tear_bonk').play(position=self.node.position)
         elif isinstance(msg, bs.OutOfBoundsMessage):
             self.handlemessage(bs.DieMessage(immediate=True))
 

@@ -470,6 +470,18 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
                     # note; since we save to config, we should also
                     # schedule uploads for later if it fails here.
                     self.submit_pb()
+        if not results.get('fail_message'):
+            for player in self.players:
+                char = bs.app.classic.spaz_appearances[
+                    player.character
+                ]
+                tr = mell.translate_char_name
+                if char.is_gimmick_character:
+                    results['score'] = None
+                    results['fail_message'] = bs.Lstr(
+                        r='failGimmickCharacter',
+                        s=[('${CHAR}', tr(player.character))],
+                    )
         super().end(results, delay, force)
     
     @override

@@ -413,6 +413,7 @@
   "clutchTimerFail": "No one respawned before the period.",
   "clutchTimerFail2": "Skill issue",
   "endingSoonCoop": "The current game will end soon if there are no players. Please join to cancel the timer.",
+  "failGimmickCharacter": "One of the players is playing as a gimmick\ncharacter (${CHAR}). Play as a vanilla\ncharacter to upload scores.",
   "speedrunPB": "Personal \nbest is: ${TIME}",
   "newRecord": "NEW RECORD!!!",
   "noShield": "No shield, hardmode is on!",

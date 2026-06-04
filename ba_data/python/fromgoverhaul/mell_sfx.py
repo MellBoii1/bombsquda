@@ -48,6 +48,10 @@ class SoundFactory:
         self.crit = bs.getsound('criticalHit')
         self.cola_drink = bs.getsound('cola')
         self.heal = bs.getsound('heal')
+        self.tear_fire = (
+            bs.getsound('tear_fire1'), 
+            bs.getsound('tear_fire2'),
+        )
     
     @classmethod
     def get(cls):

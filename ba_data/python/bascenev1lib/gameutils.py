@@ -266,7 +266,7 @@ class SharedObjects:
             mat.add_actions(
                 conditions=(
                     (
-                        ('we_are_younger_than', 90),
+                        ('we_are_younger_than', 70),
                         'and',
                         ('they_are_different_node_than_us',),
                     ),

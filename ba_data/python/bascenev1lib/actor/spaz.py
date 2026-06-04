@@ -1590,7 +1590,10 @@ class Spaz(bs.Actor):
             return
         if not self.is_cry or not self.can_cry or not self.is_alive():
             return
-        tear_cooldown = 0.4 # seconds
+        if self.fireballs > 0:
+            tear_cooldown = 0.1
+        else:
+            tear_cooldown = 0.4
         # set up cooldown
         def tearcd():
             self.can_cry = True
@@ -1657,10 +1660,16 @@ class Spaz(bs.Actor):
                 pos[2] + forward[2] * spawn_distance + 0.5
             )
 
-        tear = Tear(
-            position=spawn_pos,
-            owner=self,
-        ).autoretain()
+        if self.fireballs > 0:
+            tear = Fireball(
+                position=spawn_pos,
+                owner=self,
+            ).autoretain()
+        else:
+            tear = Tear(
+                position=spawn_pos,
+                owner=self,
+            ).autoretain()
         # this is the dihfault force. It's "muldihplied" perdih
         # by the dihlocity, so if you also make it too strong it overgoons.
         force = 260
@@ -1678,10 +1687,22 @@ class Spaz(bs.Actor):
             dir_y,
             dir_z,
         )
-        # --- here's a sound i can probably replace this with tboi tear sound ---
-        random.choice(
-            SoundFactory.get().tear_fire
-        ).play(position=pos)
+        # --- sounds ---
+        if self.fireballs > 0:
+            # Update our counter and play sound
+            self.fireballs -= 1
+            self.node.counter_text = 'x' + str(self.fireballs)
+            self.node.counter_texture = (
+                PowerupBoxFactory.get().tex_fireball
+            )
+            if self.fireballs == 0:
+                self.fireballed = False
+                self.node.counter_text = ''
+            SoundFactory.get().fireball_throw.play(position=pos)
+        else:
+            random.choice(
+                SoundFactory.get().tear_fire
+            ).play(position=pos)
         self.impulse(y=-60)
         self.can_cry = False
 

@@ -1591,8 +1591,10 @@ class Spaz(bs.Actor):
         if not self.is_cry or not self.can_cry or not self.is_alive():
             return
    
-        if self.fireballs > 0 or self.weak_punches or self._has_boxing_gloves:
-            tear_cooldown = 0.1
+        if self.fireballs > 0 or self.weak_punches:
+            tear_cooldown = 0.15
+        elif self._has_boxing_gloves:
+            tear_cooldown = 0.55
         else:
             tear_cooldown = 0.4
         # set up cooldown

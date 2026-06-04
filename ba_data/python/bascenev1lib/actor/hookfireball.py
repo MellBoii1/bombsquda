@@ -231,6 +231,45 @@ class Fireball(bs.Actor):
         self.deathTimer = bs.Timer(7, self.autodie)
         self.fireTimer = bs.Timer(0.1, self.spark, repeat=True)
         bs.animate(self.node, 'mesh_scale', {0: 0, 0.2: self.scale})
+
+class Tear(bs.Actor):
+    """One of Isaac's tears that bounces around, gives a 
+    hitmessage when getting touched by a Spaz and dies."""
+    node: bs.Node
+    
+    def __init__(
+        self,
+        position: Sequence[float],
+        owner: bs.Actor,
+    ):
+        super().__init__()
+        self.mesh = bs.getmesh('bomb')
+        self.tex = bs.gettexture('confetti_colors/blue')
+        self.scale = 0.8
+        self.bscale = 0.9
+        self.owner = owner
+        self.hurtpoints = random.randint(80, 200)
+        shared = SharedObjects.get()
+        self.node = bs.newnode(
+            'prop',
+            delegate=self,
+            attrs={
+                'body': 'sphere',
+                'body_scale': self.bscale,
+                'position': position,
+                'mesh': self.mesh,
+                'mesh_scale': 0,
+                'light_mesh': self.mesh,
+                'shadow_size': self.bscale,
+                'color_texture': self.tex,
+                'reflection': 'powerup',
+                'reflection_scale': [1.0],
+                'materials': (shared.fireball_material, shared.object_material),
+            },
+        )
+        self.deathTimer = bs.Timer(7, self.autodie)
+        self.fireTimer = bs.Timer(0.1, self.spark, repeat=True)
+        bs.animate(self.node, 'mesh_scale', {0: 0, 0.2: self.scale})
     
     def autodie(self):
         if not self.node or self.expired:

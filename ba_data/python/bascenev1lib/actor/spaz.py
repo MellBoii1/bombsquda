@@ -25,7 +25,7 @@ from bascenev1lib.actor.bomb import Bomb, Blast, BombFactory
 from bascenev1lib.actor.powerupbox import PowerupBoxFactory, PowerupBox
 from bascenev1lib.actor.spazfactory import SpazFactory
 from bascenev1lib.actor.particles import BloodParticle, ConfettiParticle, SparkParticle
-from bascenev1lib.actor.hookfireball import UKHook, Fireball
+from bascenev1lib.actor.hookfireball import UKHook, Fireball, Tear
 from bascenev1lib.actor.image_looped import LoopingImageAnimation
 from bascenev1lib.gameutils import SharedObjects, TouchedMessage
 from babase._logging import squdalog
@@ -330,7 +330,9 @@ class Spaz(bs.Actor):
         # We need to behave slightly different in the tutorial.
         self._demo_mode = demo_mode
 
-        # Specific settings for alerting if a spaz died.
+        # Specific settings for alerting if a spaz died
+        self.is_cry = False
+        self.can_cry = True
         self.play_big_death_sound = False
         self.broadcast_death = False     
         self.impact_scale = 1.0
@@ -884,19 +886,23 @@ class Spaz(bs.Actor):
         Called to 'press jump' on this spaz;
         used by player or AI connections.
         """
-        if not self.node:
-            return
-        if self.cansay == True:
-            self.say(wave=True, shouldcelb=True)
-        t_ms = int(bs.time() * 1000.0)
-        assert isinstance(t_ms, int)
-        if self.canparry == True and self.parrybtn == 'jump':
-            self.attempt_parry()
-            return
-        if t_ms - self.last_jump_time_ms >= self._jump_cooldown:
-            self.node.jump_pressed = True
-            self.last_jump_time_ms = t_ms
-        self._turbo_filter_add_press('jump')
+        if self.character == "Isaac":
+            self.is_cry = True
+            self._shoot_tear("down")
+        else:
+            if not self.node:
+                return
+            if self.cansay == True:
+                self.say(wave=True, shouldcelb=True)
+            t_ms = int(bs.time() * 1000.0)
+            assert isinstance(t_ms, int)
+            if self.canparry == True and self.parrybtn == 'jump':
+                self.attempt_parry()
+                return
+            if t_ms - self.last_jump_time_ms >= self._jump_cooldown:
+                self.node.jump_pressed = True
+                self.last_jump_time_ms = t_ms
+            self._turbo_filter_add_press('jump')
 
     def on_jump_release(self) -> None:
         """
@@ -905,6 +911,8 @@ class Spaz(bs.Actor):
         """
         if not self.node:
             return
+        self.is_cry = False
+        
         self.node.jump_pressed = False
     
     def scary_text(
@@ -1107,7 +1115,8 @@ class Spaz(bs.Actor):
         Called to 'press pick-up' on this spaz;
         used by player or AI connections.
         """
-        bs.timer(0.3, self._start_screaming)
+        if self.character != "Isaac":
+            bs.timer(0.3, self._start_screaming)
         self.pickup_pressed = True
         if self._roulette_active:
             # If rouletting, give our item to the player.
@@ -1188,12 +1197,16 @@ class Spaz(bs.Actor):
         
         if not self.node:
             return
-        t_ms = int(bs.time() * 1000.0)
-        assert isinstance(t_ms, int)
-        if t_ms - self.last_pickup_time_ms >= self._pickup_cooldown:
-            self.node.pickup_pressed = True
-            self.last_pickup_time_ms = t_ms
-        self._turbo_filter_add_press('pickup')
+        if self.character == "Isaac":
+            self.is_cry = True
+            self._shoot_tear("up")
+        else:
+            t_ms = int(bs.time() * 1000.0)
+            assert isinstance(t_ms, int)
+            if t_ms - self.last_pickup_time_ms >= self._pickup_cooldown:
+                self.node.pickup_pressed = True
+                self.last_pickup_time_ms = t_ms
+            self._turbo_filter_add_press('pickup')
 
     def on_pickup_release(self) -> None:
         """
@@ -1205,6 +1218,7 @@ class Spaz(bs.Actor):
         self.node.pickup_pressed = False
         self.pickup_pressed = False
         self._stop_screaming()
+        self.is_cry = False
 
     def on_hold_position_press(self) -> None:
         """
@@ -1230,29 +1244,34 @@ class Spaz(bs.Actor):
         Called to 'press punch' on this spaz;
         used for player or AI connections.
         """
+
         if not self.node or self.frozen or self.node.knockout > 0.0:
             return
-        t_ms = int(bs.time() * 1000.0)
-        assert isinstance(t_ms, int)
-        if self.canparry == True and self.parrybtn == 'punch':
-            self.attempt_parry()
-            return
-        if t_ms - self.last_punch_time_ms >= self._punch_cooldown:
-            if self.punch_callback is not None:
-                self.punch_callback(self)
-            self._punched_nodes = set()  # Reset this.
-            self.last_punch_time_ms = t_ms
-            self.node.punch_pressed = True
-            if not self.node.hold_node:
-                bs.timer(
-                    0.1,
-                    bs.WeakCall(
-                        self._safe_play_sound,
-                        SpazFactory.get().swish_sound,
-                        0.8,
-                    ),
-                )
-        self._turbo_filter_add_press('punch')
+        if self.character == "Isaac":
+            self.is_cry = True
+            self._shoot_tear("left")
+        else:
+            t_ms = int(bs.time() * 1000.0)
+            assert isinstance(t_ms, int)
+            if self.canparry == True and self.parrybtn == 'punch':
+                self.attempt_parry()
+                return
+            if t_ms - self.last_punch_time_ms >= self._punch_cooldown:
+                if self.punch_callback is not None:
+                    self.punch_callback(self)
+                self._punched_nodes = set()  # Reset this.
+                self.last_punch_time_ms = t_ms
+                self.node.punch_pressed = True
+                if not self.node.hold_node:
+                    bs.timer(
+                        0.1,
+                        bs.WeakCall(
+                            self._safe_play_sound,
+                            SpazFactory.get().swish_sound,
+                            0.8,
+                        ),
+                    )
+            self._turbo_filter_add_press('punch')
         
     def firework_explode(self, 
         on_die_call: Callable = None,
@@ -1371,6 +1390,7 @@ class Spaz(bs.Actor):
         if not self.node:
             return
         self.node.punch_pressed = False
+        self.is_cry = False
         
     def _give_item(self):
         if not self.node or not self.is_alive():
@@ -1559,7 +1579,109 @@ class Spaz(bs.Actor):
             self.fireballed = False
             self.node.counter_text = ''
         SoundFactory.get().fireball_throw.play(position=pos)
-    
+
+    def _shoot_tear(self, shootdir):
+        # --- most code borrowed from the fireball function (see self._shoot_fireball()) ---
+        
+        # if player is dih sabled we dih sable his tears
+        if not self.node or self.frozen or self.node.knockout > 0.0:
+            return
+        if not self.is_cry or not self.can_cry or not self.is_alive():
+            return
+        
+        # set up cooldown
+        def tearcd():
+            self.can_cry = True
+        bs.timer(0.5, tearcd)
+        
+        # get pos and dihlocity
+        pos = self.node.position
+        vel = self.node.velocity
+        # normadihze forward dih rection
+        length = math.sqrt(vel[0]**2 + vel[1]**2 + vel[2]**2)
+        forward = (
+            vel[0] / length,
+            5.5,
+            vel[2] / length
+        )
+        # there's an infection in my eye helppppp Hopefully this works!
+        if shootdir == "down":
+            dir_x = 0
+            dir_y = forward[1]
+            dir_z = 20
+        elif shootdir == "left":
+            dir_x = -20
+            dir_y = forward[1]
+            dir_z = 0      
+        elif shootdir == "right":
+            dir_x = 20
+            dir_y = forward[1]
+            dir_z = 0
+        elif shootdir == "up":
+            dir_x = 0
+            dir_y = forward[1]
+            dir_z = -20
+        
+        
+        # this muldihplier depends on the
+        # player's dihlocity.
+        mult = 21.0
+        dir_x *= mult
+        dir_z *= mult
+        spawn_distance = 0.9
+        spawn_height = 0.6
+        if shootdir == "up":
+            spawn_pos = (
+                pos[0] + forward[0] * spawn_distance,
+                pos[1] + spawn_height,
+                pos[2] + forward[2] * spawn_distance - 2
+            )
+        elif shootdir == "left":
+            spawn_pos = (
+                pos[0] + forward[0] * spawn_distance - 2,
+                pos[1] + spawn_height,
+                pos[2] + forward[2] * spawn_distance
+            )
+        elif shootdir == "right":
+            spawn_pos = (
+                pos[0] + forward[0] * spawn_distance + 2,
+                pos[1] + spawn_height,
+                pos[2] + forward[2] * spawn_distance
+            )
+        elif shootdir == "down":
+            spawn_pos = (
+                pos[0] + forward[0] * spawn_distance,
+                pos[1] + spawn_height,
+                pos[2] + forward[2] * spawn_distance + 2
+            )
+
+        tear = Tear(
+            position=spawn_pos,
+            owner=self,
+        ).autoretain()
+        tear.gravity_scale = 0
+        # this is the dihfault force. It's "muldihplied" perdih
+        # by the dihlocity, so if you also make it too strong it overgoons.
+        force = 260
+        tear.node.handlemessage(
+            'impulse',
+            spawn_pos[0],
+            spawn_pos[1],
+            spawn_pos[2],
+            0, 0, 0,
+            force,
+            force,
+            0,
+            0,
+            dir_x,
+            dir_y,
+            dir_z,
+        )
+        # --- here's a sound i can probably replace this with tboi tear sound ---
+        # SoundFactory.get().fireball_throw.play(position=pos)
+        print(f"[ISAAC] tried to fire {shootdir}")
+        self.can_cry = False
+
     def _shoot_hook(self):
         pos = self.node.position
         vel = self.node.velocity
@@ -1614,32 +1736,38 @@ class Spaz(bs.Actor):
         """
         if not self.node:
             return
-        if (
-            not self.is_alive()
-            or self.node.knockout > 0.04
-            or self.frozen
-        ):
-            return
-        t_ms = int(bs.time() * 1000.0)
-        assert isinstance(t_ms, int)
-        # If we have a shotgun, use it
-        if self.shotgunned:
-            if t_ms - self.last_bomb_time_ms >= self._bomb_cooldown:
-                self._shoot_shotgun()
+        if self.character == "Isaac":
+            # set player's crying status to true
+            self.is_cry = True
+            self._shoot_tear("right")
+            
+        else:
+            if (
+                not self.is_alive()
+                or self.node.knockout > 0.04
+                or self.frozen
+            ):
                 return
-        if self.fireballed:
-            if t_ms - self.last_bomb_time_ms >= self._bomb_cooldown:
-                self._shoot_fireball()
+            t_ms = int(bs.time() * 1000.0)
+            assert isinstance(t_ms, int)
+            # If we have a shotgun, use it
+            if self.shotgunned:
+                if t_ms - self.last_bomb_time_ms >= self._bomb_cooldown:
+                    self._shoot_shotgun()
+                    return
+            if self.fireballed:
+                if t_ms - self.last_bomb_time_ms >= self._bomb_cooldown:
+                    self._shoot_fireball()
+                    return
+            if self.canparry == True and self.parrybtn == 'bomb':
+                self.attempt_parry()
                 return
-        if self.canparry == True and self.parrybtn == 'bomb':
-            self.attempt_parry()
-            return
-        if t_ms - self.last_bomb_time_ms >= self._bomb_cooldown:
-            self.last_bomb_time_ms = t_ms
-            self.node.bomb_pressed = True
-            if not self.node.hold_node:
-                self.drop_bomb()
-        self._turbo_filter_add_press('bomb')
+            if t_ms - self.last_bomb_time_ms >= self._bomb_cooldown:
+                self.last_bomb_time_ms = t_ms
+                self.node.bomb_pressed = True
+                if not self.node.hold_node:
+                    self.drop_bomb()
+            self._turbo_filter_add_press('bomb')
 
     def on_bomb_release(self) -> None:
         """
@@ -1649,7 +1777,7 @@ class Spaz(bs.Actor):
         if not self.node:
             return
         self.node.bomb_pressed = False
-
+        self.is_cry = False
     def on_run(self, value: float) -> None:
         """
         Called to 'press run' on this spaz;

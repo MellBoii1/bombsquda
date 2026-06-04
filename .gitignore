@@ -3,3 +3,6 @@ bs_device_id.json
 .vscode
 .github
 *.pyc
+ba_data/audio/music/warneverends.ogg
+ba_data/audio/music/fastEpicMusic.ogg
+ba_data/audio/music/pausemusic.ogg

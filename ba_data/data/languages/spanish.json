@@ -1965,7 +1965,8 @@
   "translations": {
     "characterNames": {
 		"GummyBoiYT": "Snakeling",
-		"Spaz": "Spazling"
+		"Spaz": "Spazling",
+		"Roaring Knight": "Caballero Rugiente"
     },
     "coopLevelNames": {
       "${GAME} Training": "${GAME} ez",

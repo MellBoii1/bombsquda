@@ -905,8 +905,7 @@ def register_appearances() -> None:
     t.default_color = mell.hex_to_color('f89a04')
     t.default_highlight = (0, 0, 0)
 
-    # testing spazappearance shyt - buddie ###################################
-    # also this is iseck
+    # Isaac of the Binding ###################################
     t = Appearance('Isaac')
     t.color_texture = 'buddieColor'
     t.color_mask_texture = 'buddieColorMask'

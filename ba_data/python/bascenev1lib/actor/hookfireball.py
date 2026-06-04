@@ -332,9 +332,9 @@ class Tear(bs.Actor):
         owner: bs.Actor,
     ):
         super().__init__()
-        self.mesh = bs.getmesh('bomb')
+        self.mesh = bs.getmesh('shield')
         self.tex = bs.gettexture('confetti_colors/blue')
-        self.scale = 0.8
+        self.scale = 0.25
         self.bscale = 0.9
         self.owner = owner
         self.hurtpoints = random.randint(80, 200)

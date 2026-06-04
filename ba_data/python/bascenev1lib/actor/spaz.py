@@ -1590,7 +1590,8 @@ class Spaz(bs.Actor):
             return
         if not self.is_cry or not self.can_cry or not self.is_alive():
             return
-        if self.fireballs > 0:
+   
+        if self.fireballs > 0 or self.weak_punches or self._has_boxing_gloves:
             tear_cooldown = 0.1
         else:
             tear_cooldown = 0.4
@@ -1627,10 +1628,15 @@ class Spaz(bs.Actor):
             dir_y = forward[1]
             dir_z = -20
         
+       
+        
         
         # this muldihplier depends on the
         # player's dihlocity.
         mult = 21.0
+        if self.weak_punches:
+            # faster.
+            mult *= 1.2
         dir_x *= mult
         dir_z *= mult
         spawn_distance = 0.9
@@ -1660,6 +1666,8 @@ class Spaz(bs.Actor):
                 pos[2] + forward[2] * spawn_distance + 0.5
             )
 
+        
+
         if self.fireballs > 0:
             tear = Fireball(
                 position=spawn_pos,
@@ -1670,6 +1678,13 @@ class Spaz(bs.Actor):
                 position=spawn_pos,
                 owner=self,
             ).autoretain()
+        if self.weak_punches:
+            # weaker.
+            tear.hurtpoints *= 0.6
+        elif self._has_boxing_gloves:
+            # stronger.
+            tear.hurtpoints *= 2
+
         # this is the dihfault force. It's "muldihplied" perdih
         # by the dihlocity, so if you also make it too strong it overgoons.
         force = 260
@@ -1990,6 +2005,7 @@ class Spaz(bs.Actor):
         Give this spaz some boxing gloves.
         """
         assert self.node
+        self.weak_punches = False
         self.node.boxing_gloves = True
         self._has_boxing_gloves = True
         if self._demo_mode:  # Preserve old behavior.
@@ -2006,6 +2022,7 @@ class Spaz(bs.Actor):
         """
         assert self.node
         # If we have gloves, replace them
+        self.weak_punches = True
         self._has_boxing_gloves = False
         self.node.boxing_gloves = False
         if self._demo_mode:
@@ -2024,6 +2041,7 @@ class Spaz(bs.Actor):
         it's still coded in so... i dunno, add it if you want
         """
         assert self.node
+        self.weak_punches = False
         self.node.boxing_gloves = True
         self._has_boxing_gloves = True
         if self._demo_mode:
@@ -5172,6 +5190,7 @@ class Spaz(bs.Actor):
             self.node.billboard_cross_out = True
 
     def _gloves_wear_off(self) -> None:
+        self.weak_punches = False
         if self._demo_mode:  # Preserve old behavior.
             self._punch_power_scale = 1.2
             self._punch_cooldown = BASE_PUNCH_COOLDOWN

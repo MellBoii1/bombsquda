@@ -262,6 +262,19 @@ class SharedObjects:
                     ('message', 'our_node', 'at_connect', BounceMessage()),
                 ),
             )
+            # disallow collisions if we JUST spawned recently
+            mat.add_actions(
+                conditions=(
+                    (
+                        ('we_are_younger_than', 90),
+                        'and',
+                        ('they_are_different_node_than_us',),
+                    ),
+                    'and',
+                    ('they_dont_have_material', self.region_material),
+                ),
+                actions=('modify_node_collision', 'collide', False),
+            )
         return self._fireball_material
 
     @property

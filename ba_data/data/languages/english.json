@@ -1791,7 +1791,7 @@
 	"tapStart": "TAP THE SCREEN",
 	"rpcText": "at the Titlescreen"
   },
-  "npUnknownMusic": "TBA/Unknown",
+  "npUnknownMusic": "TBA/Unknown (${MUSIC})",
   "npPlaying": "Now playing: ${MUSIC}",
   "menuOverhead1": "According to all known laws of aviation, there is no way a bee should be able to fly.",
   "menuOverhead2": "Well would you look at that, more useless eye candy! Neat, don'tcha think?",

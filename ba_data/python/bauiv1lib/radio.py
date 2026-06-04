@@ -54,7 +54,6 @@ class RadioWindow(bui.Window):
             autoselect=False,
             position=(self._width - 700, self._height - 80),
             size=(80, 80),
-            color=(0.65, 0.2, 0.2),
             textcolor=(1, 1, 1),
             scale=0.8,
             text_scale=1.3,
@@ -65,6 +64,13 @@ class RadioWindow(bui.Window):
         bui.containerwidget(edit=self._root_widget, cancel_button=btn)
         
         musics = [music_type for music_type in dir(bs.MusicType) if not music_type.startswith('__')]
+        choices_display = []
+        choices_display.extend(
+            bs.Lstr(
+                value=bs._music.get_music_value(music)
+            )
+            for music in musics
+        )
         self.popup = PopupMenu(
             parent=self._root_widget,
             position=(self._width - 500, self._height - 250),
@@ -73,7 +79,8 @@ class RadioWindow(bui.Window):
             on_value_change_call=bui.WeakCall(self._on_menu_choice),
             # You're welcome
             # - gummy
-            choices = musics,
+            choices=musics,
+            choices_display=choices_display,
             button_size=(300, 70),
         )
         self.choice2 = musics[0]

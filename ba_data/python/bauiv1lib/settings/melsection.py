@@ -263,6 +263,13 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
         )
         choices = [str(None)]
         choices.extend('MENU' + str(i + 1) for i in range(MENU_MUSIC_AMOUNT))
+        choices_display = [bs.Lstr(v=str(None))]
+        choices_display.extend(
+            bs.Lstr(
+                value=bs._music.get_music_value(music)
+            )
+            for music in choices if music != 'None'
+        )
         self._music_popup = PopupMenu(
             parent=self._subcontainer,
             position=(col_x + 280 - xoffset, y),
@@ -270,6 +277,7 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
             autoselect=False,
             on_value_change_call=bui.WeakCall(self._music_choice),
             choices=choices,
+            choices_display=choices_display,
             button_size=(200, 50),
             current_choice=bui.app.config.get("squda_menumusic"),
         )

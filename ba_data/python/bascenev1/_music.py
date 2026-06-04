@@ -148,6 +148,30 @@ def _get_free_slot(slots: dict) -> int:
     while slot in slots:
         slot += 1
     return slot  
+
+def get_music_value(music_name: str):
+    path = os.path.join(
+        babase.app.env.data_directory,
+        'ba_data',
+        'data',
+        'musicvals.json',
+    )
+    with open(path, encoding='utf-8') as infile:
+        music_names = json.loads(infile.read())
+    # Get the music name from the list.
+    # If we don't get any, tell the player it's either unknown
+    # or will be added later down the line. Laziness kills the 'Squda. 
+    for type in bs.MusicType:
+        if type.value.lower() == music_name.lower():
+            music_name = str(type)
+    name = music_names.get(
+        music_name, 
+        ba.Lstr(
+            resource='npUnknownMusic',
+            subs=[('${MUSIC}', music_name)],
+        ).evaluate()
+    )
+    return name
   
 def show_music_now_playing(music_type: bs.MusicType | str) -> None:
     """Display current music on screen."""
@@ -175,7 +199,10 @@ def show_music_now_playing(music_type: bs.MusicType | str) -> None:
     # or will be added later down the line. Laziness kills the 'Squda. 
     name = music_names.get(
         str(music_type), 
-        ba.Lstr(resource='npUnknownMusic')
+        ba.Lstr(
+            resource='npUnknownMusic',
+            subs=[('${MUSIC}', str(music_type))],
+        )
     )
     if str(music_type) not in music_names:
         squdalog.error(f'{str(music_type)} is missing from the music popup list.')

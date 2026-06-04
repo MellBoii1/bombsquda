@@ -1588,11 +1588,11 @@ class Spaz(bs.Actor):
             return
         if not self.is_cry or not self.can_cry or not self.is_alive():
             return
-        
+        tear_cooldown = 0.4 # seconds
         # set up cooldown
         def tearcd():
             self.can_cry = True
-        bs.timer(0.5, tearcd)
+        bs.timer(tear_cooldown, tearcd)
         
         # get pos and dihlocity
         pos = self.node.position
@@ -1634,17 +1634,17 @@ class Spaz(bs.Actor):
             spawn_pos = (
                 pos[0] + forward[0] * spawn_distance,
                 pos[1] + spawn_height,
-                pos[2] + forward[2] * spawn_distance - 2
+                pos[2] + forward[2] * spawn_distance - 0.5
             )
         elif shootdir == "left":
             spawn_pos = (
-                pos[0] + forward[0] * spawn_distance - 2,
+                pos[0] + forward[0] * spawn_distance - 0.5,
                 pos[1] + spawn_height,
                 pos[2] + forward[2] * spawn_distance
             )
         elif shootdir == "right":
             spawn_pos = (
-                pos[0] + forward[0] * spawn_distance + 2,
+                pos[0] + forward[0] * spawn_distance + 0.5,
                 pos[1] + spawn_height,
                 pos[2] + forward[2] * spawn_distance
             )
@@ -1652,7 +1652,7 @@ class Spaz(bs.Actor):
             spawn_pos = (
                 pos[0] + forward[0] * spawn_distance,
                 pos[1] + spawn_height,
-                pos[2] + forward[2] * spawn_distance + 2
+                pos[2] + forward[2] * spawn_distance + 0.5
             )
 
         tear = Tear(

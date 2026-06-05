@@ -16,6 +16,7 @@ import bascenev1 as bs
 import bauiv1 as bui
 import babase as ba
 import fromgoverhaul.mell_resources as mell
+import threading
 
 from bascenev1lib.actor.text import Text
 from bascenev1lib.actor.zoomtext import ZoomText
@@ -43,6 +44,7 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
         self.use_fixed_vr_overlay = True
         self._win_music = settings['win_music_override']
         self._lose_music = settings['lose_music_override']
+        self.submit_thread = None
 
         self._do_new_rating: bool = self.session.tournament_id is not None
 
@@ -798,30 +800,17 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
             Text(
                 bs.Lstr(resource='coopScorePlayerPress', subs=subs),
                 maxwidth=300,
-                transition=Text.Transition.FADE_IN,
+                transition=Text.Transition.IN_BOTTOM_SLOW,
                 transition_delay=time_till_assign,
-                scale=1.4,
+                scale=1.1,
                 h_align=Text.HAlign.CENTER,
                 v_align=Text.VAlign.CENTER,
-                color=(1, 1, 0, 1),
-                position=(0, -140),
-            ).autoretain()
-        else:
-            # In headless build, anyone can continue the game.
-            sval = bs.Lstr(resource='pressAnyButtonPlayAgainText')
-            Text(
-                sval,
                 v_attach=Text.VAttach.BOTTOM,
-                h_align=Text.HAlign.CENTER,
-                flash=True,
-                vr_depth=50,
-                position=(0, 60),
-                scale=0.8,
                 color=(0.5, 0.7, 0.5, 0.5),
-                transition=Text.Transition.IN_BOTTOM_SLOW,
-                transition_delay=self._min_view_time,
+                position=(0, 60),
+                flash=True,
             ).autoretain()
-
+            
         if self._score is not None:
             bs.timer(0.35, self._score_display_sound_small.play)
 
@@ -906,20 +895,26 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
         else:
             assert self._game_name_str is not None
             assert self._game_config_str is not None
-            mell.submit_score(
-                {
-                    'game_name': self._game_name_str,
-                    'game_config': self._game_config_str,
-                    'name': name_str,
-                    'score': self._score,
-                    'done_call': bs.WeakCall(self._got_score_results),
-                    'order': self._score_order,
-                    'tournament_id': self.session.tournament_id,
-                    'score_type': self._score_type,
-                    'campaign': self._campaign.name,
-                    'level': self._level_name,
-                }
+            def submit_er():
+                mell.submit_score(
+                    {
+                        'game_name': self._game_name_str,
+                        'game_config': self._game_config_str,
+                        'name': name_str,
+                        'score': self._score,
+                        'done_call': bs.WeakCall(self._got_score_results),
+                        'order': self._score_order,
+                        'tournament_id': self.session.tournament_id,
+                        'score_type': self._score_type,
+                        'campaign': self._campaign.name,
+                        'level': self._level_name,
+                    }
+                )
+            self.submit_thread = threading.Thread(
+                target=submit_er,
             )
+            self.submit_thread.start()
+            
         # If we're not doing the world's-best button, just show a title
         # instead.
         ts_height = 300
@@ -1301,6 +1296,9 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
                     scale=0.7,
                 )
                 return
+            if self.submit_thread:
+                self.submit_thread = None
+            self._score_loading_status = None
             assert self._show_info is not None
             self._show_info['results'] = results
             if results.get('tops', '') != '':

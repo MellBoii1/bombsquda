@@ -171,11 +171,14 @@ class QuitWindow:
             ui.quit_window = None
         try:
             thelist = []
+            path = os.path.join(
+                bui.app.env.data_directory,
+                'ba_data',
+                'audio',
+            )
             thelist.extend(                
                 item for item 
-                in os.listdir(
-                    bui.app.env.data_directory + '\\ba_data' + '\\audio\\'
-                ) 
+                in os.listdir(path) 
                 if '.ogg' in item
             )
             chosen = random.choice(thelist)

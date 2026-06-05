@@ -431,7 +431,7 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
         cfg = bui.app.config
         cfg[key] = choice
         cfg.apply_and_commit()
-        bs.debprint(f'{key} changed into {choice}')
+        squdalog.debug(f'{key} changed into {choice}')
         activity = bs.get_foreground_host_activity()
         if isinstance(activity, MainMenuActivity):
             activity.menu_music()

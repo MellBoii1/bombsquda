@@ -255,8 +255,9 @@ class GatherWindow(bui.MainWindow):
             opacity=0.4,
         )
         self._tab_container: bui.Widget | None = None
+        if not ba.app.config.get('squda_disable_online_music', False):
         
-        ba.apptimer(0.11, lambda: bs.setmusic(bs.MusicType.ONLINE))
+            ba.apptimer(0.11, lambda: bs.setmusic(bs.MusicType.ONLINE))
 
         self._restore_state()
 
@@ -272,7 +273,7 @@ class GatherWindow(bui.MainWindow):
 
     @override
     def on_main_window_close(self) -> None:
-        ba.apptimer(0.1, lambda: bs.setmusic(bs.get_foreground_host_activity().chosen_music))
+        ba.apptimer(0.1, lambda: bs.setmusic(bs.get_foreground_host_activity().chosen_music, continuous=True))
         self._save_state()
 
     def playlist_select(

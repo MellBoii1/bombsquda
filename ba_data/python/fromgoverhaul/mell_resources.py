@@ -4,7 +4,7 @@ like lists, dicts, server address, game version, and some useful functions.
 """
 
 screams = ['screams/scream' + str(i + 1) + '' for i in range(15)]
-server = "https://bombsquda.tailc76b25.ts.net/"
+server = "http://104.196.199.18:5000"
 version = '2.5'
 update_date = '6/1/2026'
 from babase._logging import squdalog
@@ -38,7 +38,6 @@ store_prices = {
     'characters.ogspaz': 700,
     'characters.kookoo': 1300,
     'characters.fancypants': 1100,
-    'characters.isaac': 500
 }
 # A dict for store character names (basically coded 
 # names like characters.charname) that correspond to a spazappearance name.
@@ -72,7 +71,6 @@ appearance_dict = {
     'characters.dozer': 'Dozer',
     'characters.kookoo': 'Kookoo',
     'characters.fancypants': 'Fancy Pants',
-    'characters.isaac': 'Isaac'
 }
 # A dict we use in character select, profile edit, 
 # etc... to swapout vanilla or Gummy's Overhaul characters for ours.
@@ -907,10 +905,9 @@ def set_profile_data(data: dict):
     return _request('api/set_profile_data', data)
 
 def submit_score(data: dict):
-    import bascenev1 as bs
-    call = data.pop('done_call')
     request = _request('api/submit_score', data)
-    bs.pushcall(bs.Call(call, request), from_other_thread=True)
+    call = data['done_call']
+    call(request)
     return request
 
 def get_online():

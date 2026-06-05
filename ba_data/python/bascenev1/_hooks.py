@@ -182,7 +182,7 @@ def cmd_end(ctx: CommandContext):
 
     global reset_timer
     _end_votes.add(player)
-    needed = len(bs.get_game_roster())
+    needed = int(len(bs.get_game_roster()) * 0.5 - 1)
     current = len(_end_votes)
     with ctx.activity.context:
         if len(_end_votes) <= 1:

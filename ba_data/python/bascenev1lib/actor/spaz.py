@@ -1600,7 +1600,7 @@ class Spaz(bs.Actor):
         
         if self.fireballs > 0:
             tear_cooldown = 0.001
-        elif self._has_boxing_gloves:
+        elif self._has_boxing_gloves and not self.bomb_type == "impact": # 'lil override 2 holy shit impact is fucked
             tear_cooldown = 0.55
         elif self.weak_punches:
             tear_cooldown = 0.15            

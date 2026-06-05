@@ -8,7 +8,6 @@ server = "http://104.196.199.18:5000"
 version = '2.5'
 update_date = '6/1/2026'
 from babase._logging import squdalog
-
 # A dict for each store character that stores their price.
 # They are hardcoded to be spaz tickets only, for now.
 store_prices = {
@@ -349,10 +348,12 @@ def withdraw_currency(amount: int, type: str):
             "Content-Type": "application/json"
         },
     )
+    
     try:
         with urllib.request.urlopen(request, timeout=2) as response:
             read = response.read()
             thefuckingjson = json.loads(read.decode('utf-8'))
+            squdalog.debug(f'Withdrawing currency {thefuckingjson}')
             return thefuckingjson
     except urllib.error.URLError as e:
         return None
@@ -378,6 +379,7 @@ def get_currency(type: str):
         with urllib.request.urlopen(request, timeout=2) as response:
             read = response.read()
             thefuckingjson = json.loads(read.decode('utf-8'))
+            squdalog.debug(f'Got currency {thefuckingjson}')
             return thefuckingjson
     except urllib.error.URLError as e:
         return None
@@ -405,6 +407,7 @@ def send_currency(amount: int, currency: str):
         with urllib.request.urlopen(request, timeout=2) as response:
             read = response.read()
             thefuckingjson = json.loads(read.decode('utf-8'))
+            squdalog.debug(f'sending currency {thefuckingjson}')
             return thefuckingjson
     except urllib.error.URLError as e:
         return None
@@ -847,7 +850,9 @@ def _request(endpoint: str, payload: dict):
         )
 
         with urllib.request.urlopen(req, timeout=2) as response:
-            return json.loads(response.read().decode('utf-8'))
+            thefuckingjson = json.loads(response.read().decode('utf-8'))
+            squdalog.debug(f'Requested: {thefuckingjson}')
+            return thefuckingjson
 
     except Exception as exc:
         return {'status': 'fail', 'message': str(exc)}

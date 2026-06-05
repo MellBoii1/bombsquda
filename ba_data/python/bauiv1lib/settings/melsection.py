@@ -101,7 +101,9 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
             ("squda_showerrors", "showErrorsText", ['randomnoises/noisePolution8', 'default_win']),
             ("squda_noonline", "noOnlineText", ['connected', 'connecting']),
             ("squda_botnames", "botNamesText", None),
+            ("squda_skipintro", "skipIntroText", None),
             ("squda_randomgrace", "randomEntitiesText", ['mikiwhatthefuck', 'mikiwhatthefuck2']),
+            ("squda_disable_online_music", "disableOnlineMusic", None),
         ]
         self._settings = [
             (key, text, start_y - i * spacing, sound)

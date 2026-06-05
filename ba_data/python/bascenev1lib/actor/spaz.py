@@ -398,6 +398,7 @@ class Spaz(bs.Actor):
         self.weakcwd = 90
         self.last_victim_character = ''
         self.last_victim_name = ''
+        self.weak_punches = False
         aprilfools = mell.get_festivity() == 'april_fools'
         # we replace various things if it's AF
         if aprilfools:

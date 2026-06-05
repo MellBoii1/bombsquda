@@ -128,11 +128,12 @@ class Startup():
     try:
         squdalog.debug('attempting to check config')
         cfg['squda_playersfirsttime']
-    except:
+    except Exception as e:
         logging.critical(
             (
                 'An error occured; default config values couldn\'t'
                 'be set. Please contact @mellboii on Discord...'
+                '\nError: {e}' 
             )
         )
 
@@ -236,19 +237,21 @@ class Startup():
     # Install the hook
     sys.excepthook = my_global_exception_hook
     squdalog.debug('global exception hook is ready!')
-    
-    def set_bs_id():
-        import fromgoverhaul.mell_resources as mell
-        global BS_ID
-        BS_ID = mell.get_unique_bs_id()
-    ba.apptimer(1.5, set_bs_id)
     # define our thread loop
     def loop():
         global status
         loopt = stupid_attribute_holder()
         status = {}
+        def set_bs_id():
+            import fromgoverhaul.mell_resources as mell
+            global BS_ID
+            BS_ID = mell.get_unique_bs_id()
+        
+        while not getattr(ba.app.mode, '_active', False):
+            time.sleep(2)
 
         while BS_ID is None:
+            set_bs_id()
             time.sleep(0.2)  # wait until ID is ready
         
         # while we exist, keep pinging the server

@@ -47,6 +47,7 @@ class ClassicAppMode(babase.AppMode):
 
         self._purchase_ui_pause: bauiv1.RootUIUpdatePause | None = None
         self._last_tokens_value = 0
+        self._active: bool = False
 
     @override
     @classmethod
@@ -69,6 +70,7 @@ class ClassicAppMode(babase.AppMode):
 
         # Let the native layer do its thing.
         _baclassic.classic_app_mode_activate()
+        self._active = True
 
         app = babase.app
         plus = app.plus
@@ -149,6 +151,7 @@ class ClassicAppMode(babase.AppMode):
     def on_deactivate(self) -> None:
 
         classic = babase.app.classic
+        self._active = False
 
         # Store latest league vis vals for any active account.
         self._save_account_display_state()

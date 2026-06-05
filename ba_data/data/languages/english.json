@@ -1607,6 +1607,7 @@
     "nameSetup": "rename characters",
     "entityChance": "chance for entities appearing",
     "menuMusic": "menu music preference",
+    "disableOnlineMusic": "disable music in the gather window",
 	"favChar": "i really, REALLY like;",
 	"pickChar": "pick...",
 	"resetText": "reset",

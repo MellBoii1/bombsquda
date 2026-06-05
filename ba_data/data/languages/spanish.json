@@ -1571,6 +1571,7 @@
     "nameSetup": "renombrar personajes",
     "entityChance": "chance de entidades aparenciendo",
     "menuMusic": "preferencia de musica\nde menu principal",
+    "disableOnlineMusic": "desactivar musica en la ventana de reunir",
 	"favChar": "me gusta, me gusta MUCHO;",
 	"pickChar": "elejir...",
 	"resetText": "reset",

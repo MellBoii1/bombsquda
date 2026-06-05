@@ -118,6 +118,7 @@ class Startup():
         "squda_menumusic": 'None',
         "squda_storeowned": {},
         "squda_achievements": {},
+        'squda_disable_online_music': False,
     }
     # "setdefault" to create config settings
     # won't affect already existing ones.

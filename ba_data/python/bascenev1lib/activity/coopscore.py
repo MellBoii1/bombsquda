@@ -1305,6 +1305,7 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
                 self._show_info['tops'] = results.get('tops')
             else:
                 self._show_info['tops'] = []
+            self._score_link = results.get('link')
             offs_x = -195
 
             ts_h_offs = 280

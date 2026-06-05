@@ -1585,17 +1585,27 @@ class Spaz(bs.Actor):
 
     def _shoot_tear(self, shootdir):
         # --- most code borrowed from the fireball function (see self._shoot_fireball()) ---
+        # --- everything that wasn't copied over, or modified by mell, coded by buddie! ---
+        # (with help of course)
         
         # if player is dih sabled we dih sable his tears
         if not self.node or self.frozen or self.node.knockout > 0.0:
             return
         if not self.is_cry or not self.can_cry or not self.is_alive():
             return
-   
-        if self.fireballs > 0 or self.weak_punches:
-            tear_cooldown = 0.15
+        
+        # don't forget to set the tear rate from highest to lowest!
+        # unless it overrides tears, like fireballs!
+        # or unless it's on another powerup 'slot' like antigloves and impact bombs
+        
+        if self.fireballs > 0:
+            tear_cooldown = 0.001
         elif self._has_boxing_gloves:
             tear_cooldown = 0.55
+        elif self.weak_punches:
+            tear_cooldown = 0.15            
+        elif self.bomb_type == "impact" and not self.weak_punches: # 'lil override cuz it's PISSING ME OFF
+            tear_cooldown = 2
         else:
             tear_cooldown = 0.4
         # set up cooldown
@@ -1613,7 +1623,7 @@ class Spaz(bs.Actor):
             5.5,
             vel[2] / length
         )
-        # there's an infection in my eye helppppp Hopefully this works!
+        # aiming
         if shootdir == "down":
             dir_x = 0
             dir_y = forward[1]
@@ -1644,6 +1654,9 @@ class Spaz(bs.Actor):
         dir_z *= mult
         spawn_distance = 0.9
         spawn_height = 0.6
+        
+        # tear offsets
+        
         if shootdir == "up":
             spawn_pos = (
                 pos[0] + forward[0] * spawn_distance,
@@ -1669,25 +1682,60 @@ class Spaz(bs.Actor):
                 pos[2] + forward[2] * spawn_distance + 0.5
             )
 
+        tear_size = 0.25
+        coolrandomchance = random.randint(0,15)
+        if self.weak_punches:
+            tear_texture = 'confetti_colors/yellow'
+        elif self.bomb_type == "impact":
+            tear_texture = 'confetti_colors/green'
+        else:
+            tear_texture = 'confetti_colors/blue'
         
+        if self.weak_punches:
+            # make it small!
+            tear_size = 0.15
+        elif self.bomb_type == "impact":
+            # make it bigger!
+            tear_size = 0.40
+        else:
+            # make it default!
+            tear_size = 0.25
 
         if self.fireballs > 0:
             tear = Fireball(
                 position=spawn_pos,
                 owner=self,
             ).autoretain()
+        elif self._has_boxing_gloves and coolrandomchance == 7:
+            tear = Tear(
+                position=spawn_pos,
+                owner=self,
+                scale=2,
+                mesher='boxingGlove',
+                texturer='boxingGlovesColor',
+            ).autoretain()
         else:
             tear = Tear(
                 position=spawn_pos,
                 owner=self,
+                scale=tear_size,
+                mesher='shield',
+                texturer=tear_texture,
             ).autoretain()
-        if self.weak_punches:
+
+
+        if self.weak_punches and self.fireballs == 0:
             # weaker.
             tear.hurtpoints *= 0.6
-        elif self._has_boxing_gloves:
+        elif self.bomb_type == "impact" and self.fireballs == 0:
+            # strongest!
+            tear.hurtpoints *= 5
+        elif self._has_boxing_gloves and self.fireballs == 0 and coolrandomchance == 7:
             # stronger.
-            tear.hurtpoints *= 2
-
+            tear.hurtpoints *= 4
+        
+        
+        
         # this is the dihfault force. It's "muldihplied" perdih
         # by the dihlocity, so if you also make it too strong it overgoons.
         force = 260
@@ -1705,7 +1753,7 @@ class Spaz(bs.Actor):
             dir_y,
             dir_z,
         )
-        # --- sounds ---
+        # --- sounds + fireball logic (if spaz has fireballs) ---
         if self.fireballs > 0:
             # Update our counter and play sound
             self.fireballs -= 1

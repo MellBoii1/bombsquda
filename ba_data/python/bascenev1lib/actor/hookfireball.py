@@ -322,22 +322,26 @@ class Fireball(bs.Actor):
         return None
         
 class Tear(bs.Actor):
-    """One of Isaac's tears that bounces around, gives a 
-    hitmessage when getting touched by a Spaz and dies."""
+    """One of Isaac's tears that flies forward, gives a hitmessage when
+    getting touched by a Spaz and dies upon colliding with any surface."""
     node: bs.Node
     
     def __init__(
         self,
         position: Sequence[float],
         owner: bs.Actor,
+        body_scale: float = 0.9,
+        scale: float = 0.25,
+        mesher = 'shield',
+        texturer = 'confetti_colors/blue'
     ):
         super().__init__()
-        self.mesh = bs.getmesh('shield')
-        self.tex = bs.gettexture('confetti_colors/blue')
-        self.scale = 0.25
-        self.bscale = 0.9
+        self.mesh = bs.getmesh(mesher)
+        self.tex = bs.gettexture(texturer)
+        self.scale = scale
+        self.bscale = body_scale
         self.owner = owner
-        self.hurtpoints = random.randint(80, 200)
+        self.hurtpoints = random.randint(80,200)
         shared = SharedObjects.get()
         self.node = bs.newnode(
             'prop',

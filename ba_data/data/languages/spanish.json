@@ -391,6 +391,7 @@
   "kookooBreaksShield4": "NO.",
   "bombCritted": "¡DAÑO\nCRÍTICO!",
   "youWon": "¡GANASTE!",
+  "drawMSGText": "Es un empate...",
   "traumaParried": "¡¡TRAUMA PARRY!!",
   "curseParried": "¡¡PARRY DE MALDICIÓN!!",
   "oobParried": "¡¡¡PARRY FUERA DE\nLÍMITES!!!",
@@ -678,7 +679,7 @@
   "discordFriendsText": "Want to look for new people to play with?\nJoin our Discord and find new friends!",
   "discordJoinText": "buenito",
   "doneText": "Hecho",
-  "drawText": "Draw",
+  "drawText": "Empate",
   "duplicateText": "Duplicar",
   "editGameListWindow": {
     "addGameText": "Agregar\nJuego",
@@ -1753,7 +1754,7 @@
 	"tapStart": "TOCA LA PANTALLA",
 	"rpcText": "en el Menú Principal"
   },
-  "npUnknownMusic": "TBA/Desconocido",
+  "npUnknownMusic": "TBA/Desconocido (${MUSIC})",
   "npPlaying": "Ahora escuchando: ${MUSIC}",
   "menuOverhead1": "Según todas las leyes conocidas de la aviación, no hay forma de que una abeja pueda volar. ",
   "menuOverhead2": "¡Bueno mira eso, más caramelo de ojos inutil! ¿Cool, no crees?",

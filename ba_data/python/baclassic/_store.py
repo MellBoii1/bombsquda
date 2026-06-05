@@ -125,6 +125,7 @@ class StoreSubsystem:
                 'characters.sparkii': {'character': 'Sparkii'},
                 'characters.kookoo': {'character': 'Kookoo'},
                 'characters.fancypants': {'character': 'Fancy Pants'},
+                'characters.isaac': {'character': 'Isaac'},
                 'maps.lake_frigid': {'map_type': maps.LakeFrigid},
             }
         return babase.app.classic.store_items
@@ -222,7 +223,8 @@ class StoreSubsystem:
                     'characters.rem',
                     'characters.sparkii',
                     'characters.kookoo',
-                    'characters.fancypants'
+                    'characters.fancypants',
+                    'characters.isaac'
                 ]
             }
         ]

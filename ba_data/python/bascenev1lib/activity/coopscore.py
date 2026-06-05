@@ -910,10 +910,11 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
                         'level': self._level_name,
                     }
                 )
-            self.submit_thread = threading.Thread(
-                target=submit_er,
-            )
-            self.submit_thread.start()
+            if self._score is not None:
+                self.submit_thread = threading.Thread(
+                    target=submit_er,
+                )
+                self.submit_thread.start()
             
         # If we're not doing the world's-best button, just show a title
         # instead.

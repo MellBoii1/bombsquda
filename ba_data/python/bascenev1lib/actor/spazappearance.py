@@ -78,6 +78,8 @@ class Appearance:
         self.victory_sounds: list[str] = ['default_win']
         self.gloat_sounds: list[str] = ['default_gloat']
         self.fall_sounds: list[str] = []
+        self.ffire_sounds: list[str] = []
+        self.teamkill_sounds: list[str] = []
         self.style = 'spaz'
         self.expression_changes = {}
         self.general_style = 'normal'
@@ -501,6 +503,8 @@ def register_appearances() -> None:
     t.fall_sounds = ['voicelines/mario64/fall']
     t.victory_sounds = ['voicelines/mario64/win']
     t.gloat_sounds = ['voicelines/mario64/gloat']
+    t.ffire_sounds = ['voicelines/mario64/ffire']
+    t.teamkill_sounds = ['voicelines/mario64/teamkill']
     t.style = 'bones'
     t.default_color = (1, 0, 0)
     t.default_highlight = (0.1, 0.1, 1)

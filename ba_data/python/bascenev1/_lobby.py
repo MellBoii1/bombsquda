@@ -227,7 +227,8 @@ class Chooser:
         }
         self.menu_options = ['ready', 'settings', 'character', 'sound', 'skin']
         self.skins = {
-            'OG Spaz': ['OGSpazMetal']
+            'OG Spaz': ['OGSpazMetal'],
+            'Spaz': ['SMB1Spaz'],
         }
         # For every character, add a 'no skin' option
         for key in self.skins.keys():

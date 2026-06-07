@@ -1021,3 +1021,33 @@ def register_appearances() -> None:
     t.style = 'cyborg'
     t.general_style = 'metallic'
     t.victory_sounds = ['spazJump01']
+    
+    # spazling #######################################
+    t = Appearance('SMB1Spaz')
+    t.skin_name = 'SMB1'
+    t.hidden = True
+    t.color_texture = 'retroSpazColor'
+    t.color_mask_texture = 'retroSpazColorMask'
+    t.icon_texture = 'spazlingIcon'
+    t.icon_mask_texture = 'spazlingIconCM'    
+    t.earthportrait = 'earthbound/spazbound'
+    t.EBwin = 'earthbound/spazbound_win'
+    t.EBlose = 'earthbound/spazbound_lose'
+    t.head_mesh = 'retroSpazHead'
+    t.torso_mesh = 'retroSpazTorso'
+    t.pelvis_mesh = 'retroSpazPelvis'
+    t.upper_arm_mesh = 'retroSpazUpperArm'
+    t.forearm_mesh = 'retroSpazForeArm'
+    t.hand_mesh = 'retroSpazHand'
+    t.upper_leg_mesh = 'retroSpazUpperLeg'
+    t.lower_leg_mesh = 'retroSpazLowerLeg'
+    t.toes_mesh = 'retroSpazToes'
+    t.jump_sounds = ['voicelines/spaz/jump0' + str(i + 1) + '' for i in range(4)]
+    t.attack_sounds = ['voicelines/spaz/attack0' + str(i + 1) + '' for i in range(4)]
+    t.impact_sounds = ['voicelines/spaz/hurt0' + str(i + 1) + '' for i in range(4)]
+    t.death_sounds = ['voicelines/spaz/death0' + str(i + 1) + '' for i in range(4)]
+    t.pickup_sounds = ['voicelines/spaz/pickup']
+    t.victory_sounds = ['voicelines/spaz/win']
+    t.gloat_sounds = ['voicelines/spaz/gloat']
+    t.fall_sounds = ['voicelines/spaz/fall0' + str(i + 1) + '' for i in range(4)]
+    t.style = 'agent'

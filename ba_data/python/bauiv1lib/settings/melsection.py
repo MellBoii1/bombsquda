@@ -69,7 +69,7 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
         self._sub_width = min(500, self._scroll_width * 0.95)
         # remember to ALWAYS increase 
         # by 50 whenever adding a new option
-        self._sub_height = 1600.0
+        self._sub_height = 1700.0
         start_y = self._sub_height - 60
         spacing = 2
         scroll_bottom = yoffs - 56 - self._scroll_height

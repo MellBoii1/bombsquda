@@ -910,9 +910,13 @@ def set_profile_data(data: dict):
     return _request('api/set_profile_data', data)
 
 def submit_score(data: dict):
+    import bascenev1 as bs
+    call = data.pop('done_call')
     request = _request('api/submit_score', data)
-    call = data['done_call']
-    call(request)
+    bs.pushcall(
+        bs.Call(call, request), 
+        from_other_thread=True
+    )
     return request
 
 def get_online():

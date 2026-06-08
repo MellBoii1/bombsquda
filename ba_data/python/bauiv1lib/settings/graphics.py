@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, cast, override
 
 from bauiv1lib.popup import PopupMenu
 from bauiv1lib.config import ConfigCheckBox
+from bauiv1lib.bordersettings import BorderSettingsWindow
 import bauiv1 as bui
 
 if TYPE_CHECKING:
@@ -52,6 +53,9 @@ class GraphicsSettingsWindow(bui.MainWindow):
         show_max_fps = bui.supports_max_fps()
         if show_max_fps:
             height += 60
+        has_border = True
+        if has_border:
+            height += 50
 
         show_resolution = True
         if app.env.vr:
@@ -98,7 +102,7 @@ class GraphicsSettingsWindow(bui.MainWindow):
         )
 
         # Center most of our content in the middle of the window.
-        v = height * 0.5 + (100 if show_max_fps else 85)
+        v = height * 0.5 + (100 if show_max_fps else 85) + (50 if has_border else 0)
         h_offs = width * 0.5 - 220
 
         if uiscale is bui.UIScale.SMALL:
@@ -441,6 +445,17 @@ class GraphicsSettingsWindow(bui.MainWindow):
             bui.widget(edit=tvc.widget, left_widget=fpsc.widget)
 
         v -= spacing
+        
+        if has_border:
+            v -= 50
+            bui.buttonwidget(
+                label=bui.Lstr(r=f'{self._r}.borderSettings'),
+                parent=self._root_widget,
+                position=(width * 0.11, v),
+                autoselect=False,
+                on_activate_call=self.go_to_bordersets,
+                size=(width * 0.8, 50),
+            )
 
         # Make a timer to update our controls in case the config changes
         # under us.
@@ -461,6 +476,9 @@ class GraphicsSettingsWindow(bui.MainWindow):
     @override
     def on_main_window_close(self) -> None:
         self._apply_max_fps()
+    
+    def go_to_bordersets(self):
+        BorderSettingsWindow()
 
     def _set_quality(self, quality: str) -> None:
         cfg = bui.app.config

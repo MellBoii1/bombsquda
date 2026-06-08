@@ -47,7 +47,6 @@ class IntroActivity(bs.GameActivity[bs.Player, bs.Team]):
         self.skip_button = None
         self.skip_info = None
         self.allow_emeralds = None
-        self.button_clicks = 0
   
     def on_transition_in(self) -> None:
         super().on_transition_in()

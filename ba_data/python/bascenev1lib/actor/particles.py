@@ -56,7 +56,7 @@ class ParticleActor(bs.Actor):
             attrs={
                 'body': self.body,
                 'body_scale': self.bscale,
-                'mesh_scale': self.mscale,
+                'mesh_scale': 0,
                 'position': self.spawn_pos,
                 'mesh': self.mesh,
                 'light_mesh': self.mesh,
@@ -204,8 +204,8 @@ class SparkParticle(ParticleActor):
             position=position,
             texture=bs.gettexture(tex),
             mesh=bs.getmesh('flash'),
-            body_scale=0.2,
-            mesh_scale=0.2,
+            body_scale=0.1,
+            mesh_scale=0.1,
             reflection=1.4
         )
         self.scheduling = False

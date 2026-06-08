@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 import babase
 
 import _bascenev1
+from bascenev1lib.screen_border import ScreenBorder
 from bascenev1._player import Player
 
 if TYPE_CHECKING:
@@ -235,6 +236,12 @@ class Session:
         self.lobby = Lobby()
         self.stats = Stats()
         self.plr_sets = {}
+        
+        border = getattr(babase.app, 'screen_border', None)
+        if not border or not getattr(border, 'node', None):
+            if babase.app.config.get('TV Border') == True:
+                with self.context:
+                    babase.app.screen_border: ScreenBorder = ScreenBorder()
 
         # Instantiate our session globals node which will apply its settings.
         self._sessionglobalsnode = _bascenev1.newnode('sessionglobals')

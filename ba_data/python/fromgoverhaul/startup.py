@@ -119,7 +119,8 @@ class Startup():
         "squda_storeowned": {},
         "squda_achievements": {},
         'squda_disable_online_music': False,
-    }
+        'squda_border_res': [1433.6, 806.4],
+    } 
     # "setdefault" to create config settings
     # won't affect already existing ones.
     for k,v in conflist.items():

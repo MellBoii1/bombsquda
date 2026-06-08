@@ -1007,7 +1007,14 @@
     "tvBorderText": "fov toggle",
     "verticalSyncText": "vsync",
     "visualsText": "everything",
+	"borderSettings": "custom border settings",
 	"rpcText": "setting Graphics"
+  },
+  "borderSettings": {
+	  "titleText": "Border Settings",
+	  "infoText": "Change the width and the\nheight of the border until\nit fits the entire screen.\nYou may also disable the border here.",
+	  "widthText": "Width",
+	  "heightText": "Height"
   },
   "helpWindow": {
 	"rpcText": "viewing How to Play",

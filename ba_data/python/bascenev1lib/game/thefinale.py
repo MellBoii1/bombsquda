@@ -120,6 +120,7 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
         self._alrdidach1 = False
         self._alrdidach2 = False
         self._alrdidach3 = False
+        self._ended_in = None
         self.easymode = settings['easy_mode']
         self.win_music_override = bs.MusicType.VICTORYFINAL
 
@@ -344,6 +345,7 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
         """End the game."""
         if outcome == 'defeat':
             delay = self.fade_to_red()
+        self._ended_in = outcome
         self.end(
             delay=delay,
             results={
@@ -530,7 +532,8 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
                 respawn_time, bs.Call(self.spawn_player_if_exists, player)
             )
             player.respawn_icon = RespawnIcon(player, respawn_time)
-            bs.timer(0.1, self._checkroundover)
+            if self._ended_in != 'victory':
+                bs.timer(0.1, self._checkroundover)
             super().handlemessage(msg)
 
         elif isinstance(msg, bs.PlayerScoredMessage):

@@ -237,3 +237,91 @@ class MarioMakerIntro(Intro):
             bs.timer(3.3, jump_logo)
         bs.timer(3, animatehand)
 
+@register
+class MarioKartIntro(Intro):
+    def __init__(self):
+        import fromgoverhaul.mell_resources as mell
+        super().__init__()
+        self.logos = []
+        bs.getsound('mk64_logo')
+        
+    @override
+    def start(self):
+        from bascenev1lib.actor.image_looped import LoopingImageAnimation
+        global this_op
+        global delay
+        hsc = 1.5
+        this_op = 0.7
+        delay = 0.3
+        logo = bs.newnode('image', 
+            attrs={
+                'texture': bs.gettexture(f'{PATH}logo3d_frame1'),
+                'position': (0, 0), 
+                'scale': (512 * hsc, 256 * hsc),
+            }
+        )
+        def part2():
+            global delay
+            bs.timer(0.3, logo.delete)
+            bs.getsound('mk64_logo').play()
+            def make():
+                logo = LoopingImageAnimation(
+                    prefix=f'{PATH}logo3d_frame',
+                    frame_count=8,
+                    frame_delay=0.2,
+                    scale=(512 * hsc, 256 * hsc),
+                )
+                if len(self.logos) == 0:
+                    opacity = 1
+                else:
+                    opacity = 0
+                logo.node.opacity = opacity
+                self.logos.append(logo)
+            for _ in range(15):
+                bs.timer(delay, make)
+                delay += 0.01
+            def speedup():
+                for logo in self.logos:
+                    logo.frame_delay -= 0.02
+            def fade_in_others():
+                global this_op
+                for logo in self.logos:
+                    if logo.node.opacity != 1:
+                        bs.animate(
+                            logo.node, 
+                            'opacity',
+                            {
+                                0.0: 0,
+                                1.0: this_op,
+                            },
+                        )
+                        this_op -= 0.1
+            def fadeout():
+                white_fadeout = bs.newnode('image', 
+                    attrs={
+                        'texture': bs.gettexture('white2'), 
+                        'fill_screen': True,
+                        'opacity': 0,
+                    }
+                )
+                bs.animate(
+                    white_fadeout, 
+                    'opacity',
+                    {
+                        0.0: 0,
+                        1.5: 1,
+                    },
+                )
+                bs.timer(1.9, self.stop)
+            bs.timer(1.3, speedup)
+            bs.timer(2.3, speedup)
+            bs.timer(3.3, speedup)
+            bs.timer(3.5, speedup)
+            bs.timer(3.8, speedup)
+            bs.timer(4.1, speedup)
+            bs.timer(4.5, speedup)
+            bs.timer(5.0, speedup)
+            bs.timer(4, fade_in_others)
+            bs.timer(7, fadeout)
+        bs.timer(1.5, part2)
+        

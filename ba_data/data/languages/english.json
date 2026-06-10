@@ -1013,8 +1013,14 @@
   "borderSettings": {
 	  "titleText": "Border Settings",
 	  "infoText": "Change the width and the\nheight of the border until\nit fits the entire screen.\nYou may also disable the border here.",
+	  "toggleText": "Toggle the Border",
 	  "widthText": "Width",
-	  "heightText": "Height"
+	  "heightText": "Height",
+	  "styleText": "Style",
+	  "stylefancy": "Fancy",
+	  "stylefancy_logo": "Fancy (w/ Logo)",
+	  "stylefancy_dark": "Fancy (Dark)",
+	  "stylebasic": "Basic"
   },
   "helpWindow": {
 	"rpcText": "viewing How to Play",
@@ -1597,15 +1603,13 @@
     "discordRpcText": "enable discord rpc",
     "enableMeterText": "enable earthbound meter",
     "noSugarcoatingText": "no 'im not gonna sugarcoat it'",
-    "disableMetalMusicText": "disable the metal cap music",
-    "customFontWarningText": "custom font (WINDOWS ONLY)",
-    "speedrunTimerText": "speedrun timer in coop levels",
+    "specialMusicText": "toggle special music",
+    "customFontText": "custom font (EXPERIMENTAL)",
     "enableBloodText": "enable blood (not hyperrealistic)",
     "coopNamesText": "use 'canon' names in coop",
     "showErrorsText": "show errors onscreen",
     "pauseMusicText": "music on pause menu",
-    "noOnlineText": "no online server\nfunctionality",
-    "noWiggleText": "no wiggle dance (better in mobile)",
+    "noWiggleText": "no wiggle dance",
     "foxyJumpscareText": "random chance\nfor foxy jumpscare",
     "noParticlesText": "no particles (enable \nif hosting online)",
     "randomEntitiesText": "randomly get entities sometimes",
@@ -1626,7 +1630,14 @@
 	"rpcText": "changin' BombSquda Settings",
 	"resetAchievements": "reset achievements",
 	"confirmReset": "Are you SURE that you want to do this?!\nIf this is correct, press the button a few more times.",
-	"achResetDone": "Action completed. Your achievements have been reset."
+	"achResetDone": "Action completed. Your achievements have been reset.",
+	"infoSpecialMusic": "This toggles whether music will play on special occasions,\nlike getting a star, becoming super, or the metal cap.",
+	"infoCustomFont": "This will change the font to a different one,\nused in earlier versions of BombSquda. It WILL require changing\nthe game's textures, which is why it is experimental.",
+	"infoNoSugarcoating": "Disables the 'jumpscare' that shows up when doing 100% damage to a Spaz and etc.",
+	"infoShowErrors": "Whenever an exception (error) occurs, it'll show up as a message and sound.\nOnly recommended if debugging (or if you're playing with a dev).",
+	"infoNoWiggle": "Disables the wiggle dance, done by repeatedly pressing left-right.\nOriginally added due to a bug in mobile/controllers, which got patched out.",
+	"infoMarioDelay": "Disables the 'Buh-bye!' that plays whenever quitting the game.\nAlso includes the special cutscene for quitting on the main menu.",
+	"infoRandomizeText": "Randomizes EVERY single translated text to another random one.\nDoesn't include this option's label, for obvious reasons."
   },
   "renameWindow": {
 	"titleText": "rename characters",

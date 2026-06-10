@@ -120,6 +120,8 @@ class Startup():
         "squda_achievements": {},
         'squda_disable_online_music': False,
         'squda_border_res': [1433.6, 806.4],
+        'squda_border_style': 'basic',
+        'squda_border_toggle': True,
     } 
     # "setdefault" to create config settings
     # won't affect already existing ones.

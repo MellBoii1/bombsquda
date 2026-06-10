@@ -236,13 +236,7 @@ class Session:
         self.lobby = Lobby()
         self.stats = Stats()
         self.plr_sets = {}
-        
-        border = getattr(babase.app, 'screen_border', None)
-        if not border or not getattr(border, 'node', None):
-            if babase.app.config.get('TV Border') == True:
-                with self.context:
-                    babase.app.screen_border: ScreenBorder = ScreenBorder()
-
+        self._make_border()
         # Instantiate our session globals node which will apply its settings.
         self._sessionglobalsnode = _bascenev1.newnode('sessionglobals')
 
@@ -250,6 +244,16 @@ class Session:
         self._players_on_wait: dict = {}
         self._player_requested_identifiers: dict = {}
         self._waitlist_timers: dict = {}
+    
+    def _make_border(self):
+        border = getattr(babase.app, 'screen_border', None)
+        if not border or not getattr(border, 'node', None):
+            if (
+                babase.app.config.get('TV Border') == True
+                and babase.app.config.get('squda_border_toggle')
+            ):
+                with self.context:
+                    babase.app.screen_border: ScreenBorder = ScreenBorder()
 
     @property
     def context(self) -> bascenev1.ContextRef:

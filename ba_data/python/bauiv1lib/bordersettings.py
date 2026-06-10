@@ -240,7 +240,7 @@ class BorderSettingsWindow(bui.Window):
     def toggle(self, val):
         bui.app.config['squda_border_toggle'] = val
         if val == True:
-            sesh = bs.get_foreground_host_session
+            sesh = bs.get_foreground_host_session()
             sesh._make_border()
         else:
             border = getattr(bui.app, 'screen_border', None)

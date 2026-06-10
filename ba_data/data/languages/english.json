@@ -1619,6 +1619,7 @@
     "entityChance": "chance for entities appearing",
     "menuMusic": "menu music preference",
     "disableOnlineMusic": "disable music in the gather window",
+    "ultraMeter": "ultrakill meter appearance",
 	"favChar": "i really, REALLY like;",
 	"pickChar": "pick...",
 	"resetText": "reset",
@@ -1637,7 +1638,10 @@
 	"infoShowErrors": "Whenever an exception (error) occurs, it'll show up as a message and sound.\nOnly recommended if debugging (or if you're playing with a dev).",
 	"infoNoWiggle": "Disables the wiggle dance, done by repeatedly pressing left-right.\nOriginally added due to a bug in mobile/controllers, which got patched out.",
 	"infoMarioDelay": "Disables the 'Buh-bye!' that plays whenever quitting the game.\nAlso includes the special cutscene for quitting on the main menu.",
-	"infoRandomizeText": "Randomizes EVERY single translated text to another random one.\nDoesn't include this option's label, for obvious reasons."
+	"infoRandomizeText": "Randomizes EVERY single translated text to another random one.\nDoesn't include this option's label, for obvious reasons.",
+	"meterdisabledText": "Disabled",
+	"meterbasicText": "Basic",
+	"meternormalText": "Normal"
   },
   "renameWindow": {
 	"titleText": "rename characters",

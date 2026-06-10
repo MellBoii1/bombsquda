@@ -73,6 +73,16 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
         self._scroll_height = target_height - 45
         self._sub_width = min(500, self._scroll_width * 0.95)
         self._sub_height = 50
+        meter_choices = [
+            'disabled',
+            'basic',
+            'normal',
+        ]
+        def ls(text: str): return bui.Lstr(r=f'{self._r}.{text}')
+        meter_cdisp = [
+            ls(f'meter{text}Text')
+            for text in meter_choices
+        ]
         music_choices = [str(None)]
         music_choices.extend('MENU' + str(i + 1) for i in range(MENU_MUSIC_AMOUNT))
         music_cdisp = [bs.Lstr(v=str(None))]
@@ -240,6 +250,14 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
                 "display": music_cdisp,
                 "current": bui.app.config.get("squda_menumusic"),
                 "callback": self._music_choice,
+            },
+            {
+                "type": "popup",
+                "label": "ultraMeter",
+                "choices": meter_choices,
+                "display": meter_cdisp,
+                "current": bui.app.config.get("squda_ultrameter"),
+                "callback": self._meter_choice,
             },
             {
                 "type": "multi_button",
@@ -578,6 +596,13 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
             edit=btn, 
             label=bui.Lstr(resource=f"{self._r}.pickChar")
         )
+        
+    def _meter_choice(self, choice):
+        key = "squda_ultrameter"
+        cfg = bui.app.config
+        cfg[key] = choice
+        cfg.apply_and_commit()
+        squdalog.debug(f'{key} changed into {choice}')
         
     def _chance_choice(self, choice):
         key = "squda_entitychance"

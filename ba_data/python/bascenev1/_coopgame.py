@@ -79,10 +79,11 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
             )
         self._sb_lasthittype = None
         self._sb_lastsubhittype = None
-        self.doultrameter = True
+        meter_type = babase.app.config.get('squda_ultrameter')
+        self.doultrameter = meter_type != 'disabled'
         if self.doultrameter:
             from bascenev1lib.actor.ultrakillmeter import UltrakillMeter
-            self.ultrameter = UltrakillMeter()
+            self.ultrameter = UltrakillMeter(compact = meter_type == 'basic')
 
         # Preload achievement images in case we get some.
         _bascenev1.timer(2.0, babase.WeakCall(self._preload_achievements))
@@ -329,10 +330,10 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
         if isinstance(msg, SpazBotHitMessage):
             if msg.types == (self._sb_lasthittype, self._sb_lastsubhittype):
                 if self.ultrameter:
-                    self.ultrameter.add_freshness(-0.2)
+                    self.ultrameter.add_freshness(-15)
             else:
                 if self.ultrameter:
-                    self.ultrameter.add_freshness(4)
+                    self.ultrameter.add_freshness(10)
             self._sb_lasthittype, self._sb_lastsubhittype = msg.types
         elif isinstance(msg, bs.PlayerScoredMessage):
             if self.ultrameter:

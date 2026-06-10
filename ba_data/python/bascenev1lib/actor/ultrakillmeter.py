@@ -18,36 +18,63 @@ SCORE_RANKS = {
     None: (bs.Lstr(resource='ultrakillMeterRankN'), (0.5, 0.5, 0.5), None),
 }
 RANK_ORDER = [None, 'D', 'C', 'B', 'A', 'S', 'SS', 'SSS', 'U']
+FRESHNESS_ORDER = [0.0, 0.5, 1.0, 1.5]
+
 def clamp(num, min_val, max_val):
     return max(min(num, max_val), min_val)
-    
+
+
 class UltrakillMeter(bs.Actor):
     """
     A style-meter based on Ultrakill's.
     It handles ranking and a bar that depletes over time.
     WARNING: The bar depends on the width of the window.
     So make sure it isn't too wide or too skinny.
-    As for recommendation, I just recommend 
+    As for recommendation, I just recommend
     you leave the scale as the default.
+    The compact bool allows for a smaller version
+    without style text.
     """
-    
+
     freshness: float = 1.5
-    """The amount of freshness we have. 
-    This is controlled in bascenev1._coopgame, 
-    based on a SpazBot's last hit (simply, if the hit is equal to the last hit and 
-    sub-hit type, decrease freshness and vice versa. This should ONLY control how 
+    """The amount of freshness we have.
+    This is controlled in bascenev1._coopgame,
+    based on a SpazBot's last hit (simply, if the hit is equal to the last hit and
+    sub-hit type, decrease freshness and vice versa. This should ONLY control how
     slow we add to the score. If you want more points, use multiplier."""
 
     multiplier: int = 1
     """Multiplier that multiplies how many points we get.
     Unused for now."""
-    
+
     def __init__(
-        self, 
-        position: tuple[float, float] = (490, 0),
-        scale: tuple[float, float] = (480, 500),
+        self,
+        position: tuple[float, float] | None = None,
+        scale: tuple[float, float] | None = None,
+        compact: bool = False,
     ):
         super().__init__()
+
+        # Layout constants differ between compact and full modes.
+        if compact:
+            _default_position = (430, -300)
+            _default_scale = (450, 110)
+            self._bar_y_frac = 0.1
+            self._freshbar_y_frac = -0.1
+            self._rank_y_frac = 0.2
+            self._freshbar_h_factor = 10
+        else:
+            _default_position = (430, 0)
+            _default_scale = (450, 500)
+            self._bar_y_frac = 0.35
+            self._freshbar_y_frac = -0.35
+            self._rank_y_frac = 0.4
+            self._freshbar_h_factor = 40
+
+        self._compact = compact
+        position = position if position is not None else _default_position
+        scale = scale if scale is not None else _default_scale
+
         self.texts = []
         self.bar_timer: bs.Timer | None = None
         self._bar: bs.Node | None = None
@@ -56,23 +83,24 @@ class UltrakillMeter(bs.Actor):
         self.node = bs.newnode(
             'image',
             attrs={
-                'texture': bs.gettexture('windowHSmallVMed'),
+                'texture': bs.gettexture('softRect'),
                 'position': position,
                 'scale': scale,
-                'color': (0.2, 0.2, 0.2),
-                'opacity': 0.6,
+                'color': (0.1, 0.1, 0.1),
+                'opacity': 0.7,
                 'absolute_scale': True,
             },
             delegate=self,
         )
+        self.freshness_num = 50
+        self.freshness_index = len(FRESHNESS_ORDER)
         width = scale[0] - 25
-        height = 15
         barscale = 0.8
         self._width = width * barscale
-        self._height = height * barscale
+        self._height = 15 * barscale
         self._bar_width = 1 * barscale
         self._freshbar_dwidth = width / 1.3 * barscale
-        self._freshbar_height = 40 * barscale
+        self._freshbar_height = self._freshbar_h_factor * barscale
         self._freshbar_width = width / 2 * barscale
         self._bar_tex = self._backing_tex = bs.gettexture('bar')
         self.score: int = 0
@@ -83,14 +111,14 @@ class UltrakillMeter(bs.Actor):
         self._apply_rank()
 
     def create_bar(self):
-        ps = self.node.position
-        sc = self.node.scale
+        op = 0.3
+        op2 = 0.6
         self._backing = bs.NodeActor(
             bs.newnode(
                 'image',
                 attrs={
                     'scale': (self._width, self._height),
-                    'opacity': 1.0,
+                    'opacity': op,
                     'color': (0.1, 0.1, 0.1),
                     'texture': self._backing_tex,
                 },
@@ -100,7 +128,7 @@ class UltrakillMeter(bs.Actor):
             bs.newnode(
                 'image',
                 attrs={
-                    'opacity': 0.7,
+                    'opacity': op,
                     'color': (0.8, 0.8, 0.8),
                     'texture': self._bar_tex,
                 },
@@ -110,12 +138,12 @@ class UltrakillMeter(bs.Actor):
             bs.animate_array(
                 self._bar.node, 'color', 3,
                 {
-                    0.0:  (1.0, 0.0, 0.0),
-                    0.1:  (1.0, 0.5, 0.0),
-                    0.2:  (1.0, 1.0, 0.0),
-                    0.3:  (0.0, 1.0, 0.0),
-                    0.4:  (0.0, 0.0, 1.0),
-                    0.5:  (1.0, 0.0, 0.0),
+                    0.0: (1.0, 0.0, 0.0),
+                    0.1: (1.0, 0.5, 0.0),
+                    0.2: (1.0, 1.0, 0.0),
+                    0.3: (0.0, 1.0, 0.0),
+                    0.4: (0.0, 0.0, 1.0),
+                    0.5: (1.0, 0.0, 0.0),
                 },
                 loop=True
             )
@@ -135,20 +163,20 @@ class UltrakillMeter(bs.Actor):
             'combine',
             owner=self._bar.node,
             attrs={
-                'size': 2, 
-                'input0': self.node.position[0] - 25, 
-                'input1': self.node.position[1] + self.node.scale[1] * 0.35
+                'size': 2,
+                'input0': self.node.position[0],
+                'input1': self.node.position[1] + self.node.scale[1] * self._bar_y_frac,
             },
         )
         self._bar_position.connectattr('output', self._bar.node, 'position')
         self._bar_position.connectattr('output', self._backing.node, 'position')
-        
+
         self._freshbacking = bs.NodeActor(
             bs.newnode(
                 'image',
                 attrs={
                     'scale': (self._freshbar_dwidth, self._freshbar_height),
-                    'opacity': 1.0,
+                    'opacity': op,
                     'color': (0.1, 0.1, 0.1),
                     'texture': self._backing_tex,
                 },
@@ -158,7 +186,7 @@ class UltrakillMeter(bs.Actor):
             bs.newnode(
                 'image',
                 attrs={
-                    'opacity': 0.7,
+                    'opacity': op2,
                     'color': (0.9, 0.0, 0.0),
                     'texture': self._bar_tex,
                 },
@@ -168,9 +196,9 @@ class UltrakillMeter(bs.Actor):
             'combine',
             owner=self._bar.node,
             attrs={
-                'size': 2, 
-                'input0': self.node.position[0] - 25, 
-                'input1': self.node.position[1] + self.node.scale[1] * -0.35
+                'size': 2,
+                'input0': self.node.position[0],
+                'input1': self.node.position[1] + self.node.scale[1] * self._freshbar_y_frac,
             },
         )
         self._freshbar_text = bs.newnode(
@@ -198,21 +226,21 @@ class UltrakillMeter(bs.Actor):
         self._freshbar_pos.connectattr('output', self._freshbar_text, 'position')
         self._freshbar_pos.connectattr('output', self._freshbacking.node, 'position')
         self.add_freshness(0)
-        
+
     def add_bar_length(self, length: int | float):
         if self._bar is None:
             self.create_bar()
         if self._bar_scale is not None:
             self._bar_scale.input0 += length
             self._bar_width += length
-    
+
     def set_bar_length(self, length: int | float):
         if self._bar is None:
             self.create_bar()
         if self._bar_scale is not None:
             self._bar_scale.input0 = length
             self._bar_width = length
-    
+
     def set_fbar_length(self, length: int | float, text: str | bs.Lstr = ''):
         if self._freshbar is None:
             self.create_bar()
@@ -220,13 +248,20 @@ class UltrakillMeter(bs.Actor):
             self._freshbar_scale.input0 = length
             self._freshbar_width = length
             self._freshbar_text.text = text
-    
+
     def style_text(
-        self, 
-        styletext: bs.Lstr | str, 
+        self,
+        styletext: bs.Lstr | str,
         points: int = 30,
         color: tuple[float, float, float] = (1, 1, 1),
     ):
+        """Show a floating style label and add points.
+        In compact mode only the score callback fires (no text node)
+        """
+        if self._compact:
+            self.on_score_callback(points)
+            return
+
         y = self.node.scale[1] * 0.28
         for text in self.texts:
             y -= self.text_spacing
@@ -260,13 +295,13 @@ class UltrakillMeter(bs.Actor):
         if self.bar_timer is None:
             self.bar_timer = bs.Timer(0.1, self.bar_tick, repeat=True)
         self.add_bar_length(finalscore)
-   
+
     def _apply_rank(self):
         rank = RANK_ORDER[self._rank_index]
         self._rank = rank
         rank_lstr, color, sound = SCORE_RANKS[rank]
         self.set_rank(rank_lstr, color, sound)
-    
+
     def bar_tick(self):
         """Slowly reduce the bar length over time."""
         # Rank up
@@ -275,7 +310,7 @@ class UltrakillMeter(bs.Actor):
             self._apply_rank()
             self.set_bar_length(50)
             bs.getsound('smb1r_rankup').play()
-        
+
         # Decrease bar length RAPIDLY if over the limit
         if self._bar_width >= self._width:
             self.add_bar_length(-10)
@@ -288,27 +323,44 @@ class UltrakillMeter(bs.Actor):
             bs.getsound('smb1r_rankdown').play()
         # reduce the bar length
         self.add_bar_length(-2)
-    
+
     def add_freshness(self, amount: int):
-        """Add **A BIT** of freshness. 
+        """Add **A BIT** of freshness.
         Use this instead of setting the value."""
-        self.freshness += amount
-        self.freshness = clamp(self.freshness, 0.0, 1.5)
-        self.freshness = round(self.freshness, 1)
-        subs=[('${COUNT}', str(self.freshness))]
-        # Ouch
-        if self.freshness >= 1.5:
-            sub = bs.Lstr(resource='ultrakillMeterFresh', subs=subs,)
-        elif self.freshness >= 1.0:
-            sub = bs.Lstr(resource='ultrakillMeterUsed', subs=subs,)
-        elif self.freshness >= 0.5:
-            sub = bs.Lstr(resource='ultrakillMeterStale', subs=subs,)
-        elif self.freshness >= 0.0:
-            sub = bs.Lstr(resource='ultrakillMeterDull', subs=subs,)
-        self.set_fbar_length(self._freshbar_dwidth * clamp(self.freshness, 0, 1), sub)
-    
+        self.freshness_num += amount
+        if self.freshness > 50 and self.freshness_index < len(FRESHNESS_ORDER) - 1:
+            self.freshness_num = 1
+            self.freshness_index += 1
+            self.freshness = FRESHNESS_ORDER[self.freshness_index]
+        if self.freshness_num < 0 and self.freshness_index > 0:
+            self.freshness_num = 50
+            self.freshness_index -= 1
+            self.freshness = FRESHNESS_ORDER[self.freshness_index]
+        self.freshness_num = clamp(self.freshness_num, 0, 50)
+        subs = [('${COUNT}', str(self.freshness))]
+        freshness_dict = {
+            1.5: 'ultrakillMeterFresh',
+            1.0: 'ultrakillMeterUsed',
+            0.5: 'ultrakillMeterStale',
+            0.0: 'ultrakillMeterDull',
+        }
+        for threshold in freshness_dict:
+            if self.freshness >= threshold:
+                sub = bs.Lstr(
+                    r=freshness_dict[threshold],
+                    s=subs
+                )
+                break
+        val = self.freshness_num
+        mini = 0
+        maxi = 50
+        norm = (val - mini) / (maxi - mini)
+        norm = clamp(norm, 0, 1)
+        self.set_fbar_length(self._freshbar_dwidth * norm, sub)
+
     def set_rank(
-        self, rank: str | bs.Lstr | None = None, 
+        self,
+        rank: str | bs.Lstr | None = None,
         color: tuple[float, float, float] = (1, 1, 1),
         sound: str | None = None,
     ):
@@ -327,7 +379,7 @@ class UltrakillMeter(bs.Actor):
                 'text',
                 attrs={
                     'text': rank,
-                    'position': (ps[0] - 30, ps[1] + sc[1] * 0.4),
+                    'position': (ps[0], ps[1] + sc[1] * self._rank_y_frac),
                     'color': color,
                     'h_align': 'center',
                     'v_align': 'center',
@@ -336,17 +388,17 @@ class UltrakillMeter(bs.Actor):
                 },
             )
             bs.animate(
-                self._rank_text, 
+                self._rank_text,
                 'scale',
                 animdict
             )
         else:
             self._rank_text.text = rank
             self._rank_text.color = color
-            # Scale up our text briefly to show that 
+            # Scale up our text briefly to show that
             # we've ranked up.
             bs.animate(
-                self._rank_text, 
+                self._rank_text,
                 'scale',
                 animdict
             )

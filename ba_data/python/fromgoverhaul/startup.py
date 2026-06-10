@@ -122,6 +122,7 @@ class Startup():
         'squda_border_res': [1433.6, 806.4],
         'squda_border_style': 'basic',
         'squda_border_toggle': True,
+        'squda_ultrameter': 'normal',
     } 
     # "setdefault" to create config settings
     # won't affect already existing ones.

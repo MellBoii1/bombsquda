@@ -1428,14 +1428,14 @@ class Spaz(bs.Actor):
             # Get pos and velocity
             pos = self.node.position
             vel = self.node.velocity
+            lr = self.node.move_left_right
+            ud = self.node.move_up_down
             # Normalize forward direction
-            length = math.sqrt(vel[0]**2 + vel[1]**2 + vel[2]**2)
-            if length <= 0.01:
-                continue  # don't spawn if not moving
+            fwd_mult = 7
             forward = (
-                vel[0] / length,
-                pos[1] / length, # Position here since we don't care about upwards vel
-                vel[2] / length
+                lr * fwd_mult,
+                pos[1],
+                -ud * fwd_mult
             )
             # Small random spread
             spread = 0.48
@@ -1525,12 +1525,13 @@ class Spaz(bs.Actor):
         # Get pos and velocity
         pos = self.node.position
         vel = self.node.velocity
+        lr = self.node.move_left_right
+        ud = self.node.move_up_down
         # Normalize forward direction
-        length = math.sqrt(vel[0]**2 + vel[1]**2 + vel[2]**2)
         forward = (
-            vel[0] / length,
+            lr * 1.3,
             5.5,
-            vel[2] / length
+            -ud * 1.3
         )
         # Combine forward + spread
         dir_x = forward[0] 
@@ -1777,10 +1778,13 @@ class Spaz(bs.Actor):
         pos = self.node.position
         vel = self.node.velocity
         length = math.sqrt(vel[0]**2 + vel[1]**2 + vel[2]**2)
+        lr = self.node.move_left_right
+        ud = self.node.move_up_down
+        # Normalize forward direction
         forward = (
-            vel[0] / length,
-            5,
-            vel[2] / length
+            lr * 1.3,
+            5.5,
+            -ud * 1.3
         )
         dir_x = forward[0] 
         dir_y = forward[1]

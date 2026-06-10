@@ -342,6 +342,7 @@ class Spaz(bs.Actor):
         self.spongebob_timer = None
         self._wiggle_count = 0
         self.wiggling = False
+        self._next_wiggle_left = True
         self.charge_flash = None
         self.sparkies = None
         self.super_flash = None
@@ -1929,10 +1930,23 @@ class Spaz(bs.Actor):
         self.on_move(x=value, y=self.last_y)
         def resetwiggle():
             self._wiggle_count = 0
-        # detect any significant fast changes to the value
-        if abs(value) > 0.9:
+        def increase():
             self._wiggle_count += 1
             self.wiggle_reset_timer = bs.Timer(0.3, resetwiggle)
+        # detect any significant fast changes to the value
+        left = self._next_wiggle_left
+        deadzone = 1
+        # value goes to right deadzone
+        if value >= deadzone:
+            if not left:
+                increase()
+                self._next_wiggle_left = True
+        # value goes to the left deadzone
+        if value <= -deadzone:
+            if left:
+                increase()
+                self._next_wiggle_left = False
+            
         # start doin it if we wiggled around so much
         if self._wiggle_count > 14:
             self._start_wiggle_sequence()

@@ -304,12 +304,13 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
     def end(
         self, results: Any = None, delay: float = 0.0, force: bool = False
     ) -> None:
-        if self.hardmode:
+        if self.hardmode and results.get('outcome') == 'victory':
             level = self._get_coop_level_name()
             tdict = bs.app.config.get('squda_coop_levels_beaten_hardmode', {})
             if level not in tdict or not tdict.get('level'):
                 bs.getsound('gooditem').play(volume=0.8)
             tdict[level] = True
+            bs.app.config.commit()
         if not results.get('fail_message'):
             for player in self.players:
                 char = bs.app.classic.spaz_appearances[
@@ -374,6 +375,5 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
             if self.ultrameter:
                 self.ultrameter.style_text(bs.Lstr(resource='styleReturned'), 70, (0, 1.3, 0.2))
         else:
-            super().handlemessage(msg) # Augment standard behavior.
-            
-        super().handlemessage(msg) # Shouldn't happen; but still augment.
+            return super().handlemessage(msg) # Augment standard behavior.
+        return None

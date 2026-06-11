@@ -537,20 +537,19 @@ class Stats:
                             player.actor.handle_betrayal_notice()
                             
             if killed and _bascenev1.getactivity().announce_player_deaths:
-                if killer is player:
-                    hit = killer.actor.lasthittype
-                    resource = SUICIDE_MESSAGES.get(hit, 'nameSuicideText')
+                if killer is not None:
+                    if killer is player:
+                        hit = killer.actor.lasthittype
+                        resource = SUICIDE_MESSAGES.get(hit, 'nameSuicideText')
 
-                    broadcast(
-                        resource,
-                        [('${NAME}', name)],
-                        player.color,
-                        player.get_icon()
-                    )
+                        broadcast(
+                            resource,
+                            [('${NAME}', name)],
+                            player.color,
+                            player.get_icon()
+                        )
 
-                elif killer is not None:
-
-                    if killer.team is player.team:
+                    elif killer.team is player.team:
                         broadcast(
                             'nameBetrayedText',
                             [('${NAME}', killer.getname()), ('${VICTIM}', name)],

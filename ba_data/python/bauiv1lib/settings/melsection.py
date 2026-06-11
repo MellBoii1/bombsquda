@@ -113,6 +113,7 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
                 'key': "squda_spazhardmode", 
                 'label': "spazHardModeText", 
                 'sound': ['hardmode', 'okitem'],
+                'info': 'infoHardMode',
             },
             {
                 'type': 'checkbox',
@@ -144,6 +145,7 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
                 'key': "squda_dontshutdown", 
                 'label': "dontShutdownText", 
                 'sound': ['gooditem', 'baditem'],
+                'info': 'infoNoShutdown',
             },
             {
                 'type': 'checkbox',
@@ -203,6 +205,7 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
                 'type': 'checkbox',
                 'key': "squda_coopnames", 
                 'label': "coopNamesText",
+                'info': 'infoCoopNames',
             },
             {
                 'type': 'checkbox',

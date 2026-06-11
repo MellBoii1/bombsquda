@@ -123,6 +123,7 @@ class Startup():
         'squda_border_style': 'basic',
         'squda_border_toggle': True,
         'squda_ultrameter': 'normal',
+        'squda_coop_levels_beaten_hardmode': {},
     } 
     # "setdefault" to create config settings
     # won't affect already existing ones.

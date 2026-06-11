@@ -185,6 +185,7 @@ class Activity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         self._players_that_left: list[weakref.ref[PlayerT]] = []
         self._teams_that_left: list[weakref.ref[TeamT]] = []
         self._transitioning_out = False
+        self.hardmode = bs.app.config.get("squda_spazhardmode")
 
         # A handy place to put most actors; this list is pruned of dead
         # actors regularly and these actors are insta-killed as the activity

@@ -15,8 +15,6 @@ from bascenev1lib.gameutils import SharedObjects
 if TYPE_CHECKING:
     from typing import Any, Sequence
 
-DEFAULT_POWERUP_INTERVAL = 8.0
-
 
 class _TouchedMessage:
     pass
@@ -220,6 +218,9 @@ class PowerupBox(bs.Actor):
                 return
         shared = SharedObjects.get()
         factory = PowerupBoxFactory.get()
+        self.interval = 8
+        if self.getactivity().hardmode:
+            self.interval = 5.5
         self.poweruptype = poweruptype
         self._powersgiven = False
 
@@ -289,11 +290,11 @@ class PowerupBox(bs.Actor):
 
         if expire:
             bs.timer(
-                DEFAULT_POWERUP_INTERVAL - 3.5,
+                self.interval - 3.5,
                 bs.WeakCall(self._start_flashing),
             )
             bs.timer(
-                DEFAULT_POWERUP_INTERVAL - 1.5,
+                self.interval - 1.5,
                 bs.WeakCall(self.handlemessage, bs.DieMessage()),
             )
 

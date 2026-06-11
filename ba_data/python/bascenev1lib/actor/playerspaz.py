@@ -83,7 +83,7 @@ class PlayerSpaz(Spaz):
             self.canparry = True
         if ba.app.config.get("squda_enablemeter", True):
             bs.timer(0.2, self.create_earth_meter)
-        if ba.app.config.get("squda_spazhardmode", True):
+        if self.getactivity().hardmode == True:
             self.hitpoints_max = 300
             self.hitpoints = self.hitpoints_max
             self.hardmode = True

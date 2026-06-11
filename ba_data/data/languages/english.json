@@ -1639,6 +1639,10 @@
 	"infoNoWiggle": "Disables the wiggle dance, done by repeatedly pressing left-right.\nOriginally added due to a bug in mobile/controllers, which got patched out.",
 	"infoMarioDelay": "Disables the 'Buh-bye!' that plays whenever quitting the game.\nAlso includes the special cutscene for quitting on the main menu.",
 	"infoRandomizeText": "Randomizes EVERY single translated text to another random one.\nDoesn't include this option's label, for obvious reasons.",
+	"infoCoopNames": "Makes it so all 4 players in co-op get set to their\ncorresponding canon character's appearance and name.\nThe rest get set to randomly colored spazzes.",
+	"infoPauseMusic": "Toggles the music that plays whenever the game gets paused.",
+	"infoNoShutdown": "Doesn't shutdown your PC whenever Mell gets airstriked.",
+	"infoHardMode": "Toggles a mode that makes your HP smaller, your damage\nweaker, and etc. Try to beat co-op with it!",
 	"meterdisabledText": "Disabled",
 	"meterbasicText": "Basic",
 	"meternormalText": "Normal"

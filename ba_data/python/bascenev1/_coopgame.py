@@ -87,15 +87,13 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
 
         # Preload achievement images in case we get some.
         _bascenev1.timer(2.0, babase.WeakCall(self._preload_achievements))
-        for player in self.players:
-            if player.actor.hardmode == True:
-                musics = [
-                    bs.MusicType.HARDMODE1,
-                    bs.MusicType.HARDMODE2,
-                    bs.MusicType.HARDMODE3,
-                ]
-                bs.setmusic(random.choice(musics))
-                break
+        if self.hardmode:
+            musics = [
+                bs.MusicType.HARDMODE1,
+                bs.MusicType.HARDMODE2,
+                bs.MusicType.HARDMODE3,
+            ]
+            bs.setmusic(random.choice(musics))
 
     # "FIXME: this is now redundant with activityutils.getscoreconfig();
     #  need to kill this."
@@ -306,6 +304,12 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
     def end(
         self, results: Any = None, delay: float = 0.0, force: bool = False
     ) -> None:
+        if self.hardmode:
+            level = self._get_coop_level_name()
+            tdict = bs.app.config.get('squda_coop_levels_beaten_hardmode', {})
+            if level not in tdict or not tdict.get('level'):
+                bs.getsound('gooditem').play(volume=0.8)
+            tdict[level] = True
         if not results.get('fail_message'):
             for player in self.players:
                 char = bs.app.classic.spaz_appearances[

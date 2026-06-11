@@ -48,6 +48,7 @@ class SoundFactory:
         self.crit = bs.getsound('criticalHit')
         self.cola_drink = bs.getsound('cola')
         self.heal = bs.getsound('heal')
+        self.flight_refilled = bs.getsound('connected')
         self.tear_fire = (
             bs.getsound('tear_fire1'), 
             bs.getsound('tear_fire2'),

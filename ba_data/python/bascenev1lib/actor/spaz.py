@@ -442,6 +442,11 @@ class Spaz(bs.Actor):
         self.parryshield = None
         self.hardmode = False
         self.pickup_pressed = False
+        self.flight_points = self.default_flight_points = 80
+        self.flight_timer = None
+        self.already_refilling = False
+        self.refill_flight_timer = None
+        self.flying = False
 
         if can_accept_powerups:
             pam = PowerupBoxFactory.get().powerup_accept_material
@@ -882,6 +887,100 @@ class Spaz(bs.Actor):
         def setfalse():
             self.cansay = False
         bs.timer(1.3, setfalse) # should maybe use setattr
+    
+    def show_fp_text(self):
+        if not self.node: 
+            return
+        if not getattr(self, 'fp_text', None):
+            mathnode = bs.newnode(
+                'math',
+                owner=self.node,
+                attrs={'input1': (0, 2.3, 0), 'operation': 'add'},
+            )
+            self.node.connectattr('torso_position', mathnode, 'input2')
+            self.fp_text = bs.newnode(
+                'text',
+                owner=self.node,
+                attrs={
+                    'text': '',
+                    'in_world': True,
+                    'scale': 0.01,
+                    'h_align': 'center',
+                    'opacity': 0
+                },
+            )
+            mathnode.connectattr('output', self.fp_text, 'position')
+        bs.animate(self.fp_text, 'opacity',
+            {
+                0: self.fp_text.opacity,
+                0.5: 1,
+            }
+        )
+    
+    def hide_fp_text(self):
+        if not self.node:
+            return
+        bs.animate(self.fp_text, 'opacity',
+            {
+                0: self.fp_text.opacity,
+                0.5: 0,
+            }
+        )
+    
+    def flash_fp_text(self):
+        bs.animate_array(self.fp_text, 'color', 3,
+            {
+                0: self.fp_text.color,
+                0.1: (0, 0.3, 1),
+                0.5: self.fp_text.color,
+            }
+        )
+    
+    def update_fp_text(self):
+        if not self.node:
+            return
+        self.fp_text.text = f'{self.flight_points}/{self.default_flight_points}'
+    
+    def schedule_refill_flight(self):
+        if self.already_refilling:
+            return
+        def refill():
+            if not self.standing or not self.node or self.flying:
+                return
+            if self.flight_points >= self.default_flight_points:
+                self.refill_flight_timer = None
+                SoundFactory.get().flight_refilled.play(
+                    position=self.node.position,
+                    volume=1.3,
+                )
+                self.flash_fp_text()
+                self.hide_fp_text()
+                return
+            self.flight_points += 1
+            self.update_fp_text()
+        def start():
+            if not self.node:
+                return
+            self.already_refilling = False
+            self.refill_flight_timer = bs.Timer(0.11, refill, repeat=True)
+        self.already_refilling = True
+        bs.timer(1.8, start)
+    
+    def super_flight(self):
+        if not self.node or self.node.knockout:
+            return
+        if self.standing:
+            return
+        if self.flight_points <= 0:
+            self.schedule_refill_flight()
+            self.update_fp_text()
+            return
+        if self.refill_flight_timer:
+            self.refill_flight_timer = None
+        self.show_fp_text()
+        self.update_fp_text()
+        self.impulse(y=31)
+        self.flight_points -= 1
 
     def on_jump_press(self) -> None:
         """
@@ -904,6 +1003,9 @@ class Spaz(bs.Actor):
             if t_ms - self.last_jump_time_ms >= self._jump_cooldown:
                 self.node.jump_pressed = True
                 self.last_jump_time_ms = t_ms
+            if self.issuper and not self.standing:
+                self.flight_timer = bs.Timer(0.02, self.super_flight, repeat=True)
+                self.flying = True
             self._turbo_filter_add_press('jump')
 
     def on_jump_release(self) -> None:
@@ -914,7 +1016,10 @@ class Spaz(bs.Actor):
         if not self.node:
             return
         self.is_cry = False
-        
+        if self.flying:
+            self.flight_timer = None
+            self.flying = False
+            self.schedule_refill_flight()
         self.node.jump_pressed = False
     
     def scary_text(
@@ -2285,7 +2390,8 @@ class Spaz(bs.Actor):
             return
         gnode = self.activity.globalsnode
         self.prev_music2 = gnode.music.upper()
-        bs.setmusic(bs.MusicType.STARMAN)
+        if bs.app.config.get('squda_specialmusic'):
+            bs.setmusic(bs.MusicType.STARMAN)
         def flash_func():
             if (
                 not self.node
@@ -2298,7 +2404,18 @@ class Spaz(bs.Actor):
         # Instead of using looped array animation,
         # use a timer which allows us to override any color changes
         self.star_flash = bs.Timer(RAINBOW_SPEED, flash_func, repeat=True) 
-        self.star_sparkies = bs.Timer(RAINBOW_SPEED + 0.2, self.super_spark, repeat=True) 
+        def emit():
+            if not self.node:
+                return
+            bs.emitfx(
+                position=self.node.position,
+                velocity=self.node.velocity,
+                count=45,
+                scale=1.2,
+                spread=1.2,
+                chunk_type='spark',
+            )
+        self.star_sparkies = bs.Timer(RAINBOW_SPEED + 0.2, emit, repeat=True) 
         self._has_star = True
         self.node.invincible = True
         self.node.hockey = True
@@ -2319,7 +2436,8 @@ class Spaz(bs.Actor):
         self.node.color = self._saved_color
         self.node.highlight = self._saved_highlight
         if self.prev_music2:
-            bs.setmusic(getattr(bs.MusicType, self.prev_music2))
+            if bs.app.config.get('squda_specialmusic'):
+                bs.setmusic(getattr(bs.MusicType, self.prev_music2))
         self.prev_music2 = None
             
     def _activate_metalcap(self) -> None:
@@ -2334,10 +2452,11 @@ class Spaz(bs.Actor):
         # add to the music list
         musicis = self.getactivity().globalsnode.music
         if musicis == 'Grand_Romp':
-            bs.setmusic(bs.MusicType.METALCAPTIME)
+            if bs.app.config.get('squda_specialmusic'):
+                bs.setmusic(bs.MusicType.METALCAPTIME)
         else:
             if isinstance(self.getactivity(), GameActivity):
-                if not ba.app.config.get("squda_disablemmusic"):
+                if bs.app.config.get('squda_specialmusic'):
                     self.getactivity().metal_players.append(self)
         # play a sound
         SoundFactory.get().equip_metalcap.play(
@@ -2380,61 +2499,26 @@ class Spaz(bs.Actor):
         ).autoretain()
         return      
     
-    def super_spark(self, chance = 0.6, amount1 = 2, amount2 = 5):
-        if not self.node:
-            return
-        if ba.app.config.get('squda_noparticles'):
-            return
-        pos = self.node.position
-        if random.random() < chance:
-            for _ in range(random.randint(amount1, amount2)):
-                offset_x = random.uniform(-0.5, 0.5)
-                offset_z = random.uniform(-0.5, 0.5)
-                offset_y = random.uniform(0.2, 0.7)
-                particle_pos = (pos[0] + offset_x, pos[1] + offset_y, pos[2] + offset_z)
-                particle = SparkParticle(position=particle_pos)
-                particle.autoretain()
-                dir_x = offset_x * 2
-                dir_z = offset_z * 2
-                dir_y = offset_y * 2
-                length = (dir_x**2 + dir_y**2 + dir_z**2)**0.5
-                if length > 0:
-                    dir_x /= length
-                    dir_y /= length
-                    dir_z /= length
-                force = 20
-                def impulsmf(who):
-                    who.node.handlemessage(
-                        'impulse',
-                        particle_pos[0],
-                        particle_pos[1],
-                        particle_pos[2],
-                        0,
-                        0,
-                        0,
-                        force,
-                        force,
-                        0,
-                        0,
-                        dir_x,
-                        dir_y,
-                        dir_z,
-                    )
-                impulsmf(particle)
-    
     def gosuper(self, shouldntsetmusic: bool = False) -> None:
         if not self.node:
             return
         self.impulse(y=350)
         SoundFactory.get().super_pre.play(position=self.node.position)
         bs.timer(0.4, lambda: self._super(shouldntsetmusic=shouldntsetmusic))
-        bs.timer(0.4, lambda: self.super_spark(1.0, 15, 25))
 
     def _super(self, shouldntsetmusic: bool = False) -> None:
         if self.node:
             activity = self.getactivity()
             gnode = activity.globalsnode
             SoundFactory.get().super_trans.play(position=self.node.position)
+            bs.emitfx(
+                position=self.node.position,
+                velocity=self.node.velocity,
+                count=43,
+                scale=1.0,
+                spread=1.5,
+                chunk_type='spark',
+            )
             self.issuper = True
             # flashing effect function
             if not self.node.exists():
@@ -2466,8 +2550,20 @@ class Spaz(bs.Actor):
                 )
             # Instead of using looped array animation,
             # use a timer which allows us to override any color changes
-            self.super_flash = bs.Timer(endtime, flash_func, repeat=True) 
-            self.super_sparkies = bs.Timer(endtime + 0.2, self.super_spark, repeat=True) 
+            self.super_flash = bs.Timer(endtime, flash_func, repeat=True)
+            def emit():
+                if not self.node:
+                    return
+                if random.random() < 0.5:
+                    bs.emitfx(
+                        position=self.node.position,
+                        velocity=self.node.velocity,
+                        count=21,
+                        scale=1.0,
+                        spread=1.2,
+                        chunk_type='spark',
+                    )
+            self.super_sparkies = bs.Timer(endtime + 0.2, emit, repeat=True) 
             bs.camerashake(intensity=5.0)
             hurtiness = 4.2
             flash_color = (1.0, 0.8, 0.4)
@@ -2515,26 +2611,27 @@ class Spaz(bs.Actor):
             )
             self.node.connectattr('position', node, 'position')
             self.voicelines.append(node)
-            if not shouldntsetmusic:
-                # music setters (character based)
-                gnode = self.activity.globalsnode
-                self.prev_music = gnode.music.upper()
-                # character specific music
-                # FUCKING DIHCGTS AGGGGGGG
-                # i love cleaning up!
-                music_dict = {
-                    'The Noise': bs.MusicType.NOISESUPER,
-                    'Kris': bs.MusicType.GRAND_ROMP,
-                    'Susie': bs.MusicType.FEEL_THE_FURY,
-                    'SM64 Mario': bs.MusicType.RAINBOW_ROAD,
-                }
-                # if the character is in the list, set it's music
-                char = self.character
-                if char in music_dict.keys():
-                    bs.setmusic(music_dict.get(char))
-                # otherwise, just use the regular one
-                else:
-                    bs.setmusic(bs.MusicType.SUPER)
+            if bs.app.config.get('squda_specialmusic'):
+                if not shouldntsetmusic:
+                    # music setters (character based)
+                    gnode = self.activity.globalsnode
+                    self.prev_music = gnode.music.upper()
+                    # character specific music
+                    # FUCKING DIHCGTS AGGGGGGG
+                    # i love cleaning up!
+                    music_dict = {
+                        'The Noise': bs.MusicType.NOISESUPER,
+                        'Kris': bs.MusicType.GRAND_ROMP,
+                        'Susie': bs.MusicType.FEEL_THE_FURY,
+                        'SM64 Mario': bs.MusicType.RAINBOW_ROAD,
+                    }
+                    # if the character is in the list, set it's music
+                    char = self.character
+                    if char in music_dict.keys():
+                        bs.setmusic(music_dict.get(char))
+                    # otherwise, just use the regular one
+                    else:
+                        bs.setmusic(bs.MusicType.SUPER)
     
     def activate_spongebob(self, time: int, speed: int):
         """Give this spaz the 'Hot Potato' effect."""
@@ -2889,7 +2986,7 @@ class Spaz(bs.Actor):
                     count=34,
                     scale=0.9,
                     spread=1.3,
-                    chunk_type='spark',
+                    chunk_type='sweat',
                 ),
             repeat=True
             )
@@ -3193,7 +3290,7 @@ class Spaz(bs.Actor):
             if not self.node:
                 self.mortal_dmg_timer = None
                 return
-            if self.node.knockout > 0.1:
+            if self.node.knockout > 0.01:
                 return
             self.hitpoints -= 5
             self.node.hurt = (
@@ -4314,9 +4411,10 @@ class Spaz(bs.Actor):
                 if self._has_metalcap == True:
                     musicis = self.getactivity().globalsnode.music
                     if musicis == 'MetalCapTime':
-                        bs.setmusic(bs.MusicType.GRAND_ROMP)
+                        if bs.app.config.get('squda_specialmusic'):
+                            bs.setmusic(bs.MusicType.GRAND_ROMP)
                     else:
-                        if not ba.app.config.get("squda_disablemmusic"):
+                        if bs.app.config.get('squda_specialmusic'):
                             self.remove_from_metal_list()
                 if self.prev_music: 
                     bs.setmusic(getattr(bs.MusicType, self.prev_music))
@@ -4536,6 +4634,11 @@ class Spaz(bs.Actor):
                     'radius': 1.5,
                     'big': False,
                 },
+            )
+            bs.emitfx(
+                position=pos,
+                emit_type='distortion',
+                spread=2.6,
             )
             bs.timer(1.0, explosion.delete)
             light = bs.newnode(

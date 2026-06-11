@@ -8,7 +8,7 @@ import fromgoverhaul.mell_resources as mell
 # List of our ranks (a letter corresponding to a string and color).
 SCORE_RANKS = {
     'D': (bs.Lstr(resource='ultrakillMeterRankD'), (1, 0.5, 0), 'player_unready'),
-    'C': (bs.Lstr(resource='ultrakillMeterRankC'), (0, 0.8, 0.2), 'win'),
+    'C': (bs.Lstr(resource='ultrakillMeterRankC'), (0, 0.8, 0.2), 'party_blower'),
     'B': (bs.Lstr(resource='ultrakillMeterRankB'), (0.8, 0.8, 0), 'explosion01'),
     'A': (bs.Lstr(resource='ultrakillMeterRankA'), (1, 0.5, 0), mell.screams[0]),
     'S': (bs.Lstr(resource='ultrakillMeterRankS'), (1, 0.3, 0.3), 'supertrans'),

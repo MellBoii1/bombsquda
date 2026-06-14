@@ -108,13 +108,6 @@ class AchievementSubsystem:
                 award=15,
             ),
             Achievement(
-                'When TNT Flies3',
-                'achievementFly',
-                (1, 1, 1),
-                '',
-                award=15,
-            ),
-            Achievement(
                 'Nice Try',
                 'achievementMultiCap',
                 (1, 1, 1),

@@ -168,7 +168,7 @@ class BombFactory:
 
         self.hiss_sound = bs.getsound('hiss')
         self.debris_fall_sound = bs.getsound('debrisFall')
-        self.wood_debris_fall_sound = bs.getsound('woodDebrisFall')
+        self.tnt_sound = bs.getsound('tntExplode')
         self.fuse_timer = None
 
         self.explode_sounds = (
@@ -342,6 +342,8 @@ class Blast(bs.Actor):
         hit_type: str = 'explosion',
         hit_subtype: str = 'normal',
         owner: bs.Node | None = None,
+        manual: bool = False,
+        manual_dmg: float = 0,
         nosound: bool = False,
     ):
         """Instantiate with given values."""
@@ -362,6 +364,8 @@ class Blast(bs.Actor):
         self.radius = blast_radius
         self.nosound = nosound
         self.owner = owner
+        self.manual = manual
+        self.manual_dmg = manual_dmg
 
         # Set our position a bit lower so we throw more things upward.
         rmats = (factory.blast_material, shared.attack_material)
@@ -686,7 +690,7 @@ class Blast(bs.Actor):
 
             def _extra_debris_sound() -> None:
                 factory.debris_fall_sound.play(position=lpos)
-                factory.wood_debris_fall_sound.play(position=lpos, volume=1.6)
+                factory.tnt_sound.play(position=lpos, volume=1.6)
 
             bs.timer(0.1, _extra_debris_sound)
 
@@ -702,7 +706,10 @@ class Blast(bs.Actor):
             node = bs.getcollision().opposingnode
             assert self.node
             nodepos = self.node.position
-            mag = 2000.0
+            if self.manual:
+                mag = 2000 * (self.manual_dmg / 100)
+            else:
+                mag = 2000.0
             if self.blast_type == 'ice':
                 mag *= 0.5
             elif self.blast_type == 'land_mine':
@@ -792,9 +799,13 @@ class Bomb(bs.Actor):
         self.skin = skin
 
         self.texture_sequence: bs.Node | None = None
-        self.lunatic_mode = False
-        self.scream_sfx = None
-        self.curse_sfx = None
+        self._lunatic_mode = False
+        self._lunatic_timer_text = None
+        self._lunatic_time = 6
+        self._lunatic_sfx = None
+        
+        self._manual_text = None
+        self._manual_dmg = 0
 
         if self.bomb_type == 'sticky':
             self._last_sticky_sound_time = 0.0
@@ -982,6 +993,11 @@ class Bomb(bs.Actor):
                 self.fuse_timer = bs.Timer(
                     fuse_time, bs.WeakCall(self.handlemessage, ExplodeMessage())
                 )
+            else:
+                self.fuse_timer = bs.Timer(
+                    0.01, self._update_manual, repeat=True
+                )
+                self._update_manual()
 
         bs.animate(
             self.node,
@@ -1016,12 +1032,9 @@ class Bomb(bs.Actor):
         self._explode_callbacks = []
 
     def _handle_die(self) -> None:
-        if self.curse_sfx:
-            self.curse_sfx.volume = 0
-            self.curse_sfx.delete()
-        if self.scream_sfx:
-            self.scream_sfx.volume = 0
-            self.scream_sfx.delete()
+        if self._lunatic_sfx:
+            self._lunatic_sfx.volume = 0
+            self._lunatic_sfx.delete()
         if self.node:
             self.node.delete()
 
@@ -1063,6 +1076,113 @@ class Bomb(bs.Actor):
                     node.stick_to_owner = True
 
             bs.timer(0.25, lambda: _setsticky(self.node))
+    
+    def _update_manual(self):
+        if not self.node:
+            return
+        if self._manual_dmg >= 100:
+            self.fuse_timer = None
+            bs.getsound('deek2').play(
+                position=self.node.position
+            )
+            # flash a bit brighter
+            bs.animate_array(
+                self._manual_text,
+                'color', 3,
+                {
+                    0.0: (1, 0.1, 0.1),
+                    0.1: (1.5, 0.22, 0.22),
+                    0.5: (1, 0.1, 0.1),
+                },
+            )
+            return
+        self._manual_dmg += 1
+        norm = self._manual_dmg / 100
+        if not self._manual_text:
+            mathnode = bs.newnode(
+                'math',
+                owner=self.node,
+                attrs={'input1': (0, 1.1, 0), 'operation': 'add'},
+            )
+            self.node.connectattr('position', mathnode, 'input2')
+            text = self._manual_text = bs.newnode('text',
+                delegate=self,
+                owner=self.node,
+                attrs={
+                    'text': str(self._manual_dmg) + '%',
+                    'in_world': True,
+                    'scale': 0.01,
+                    'color': (1, 0.1, 0.1),
+                    'h_align': 'center',
+                    'opacity': norm,
+                },
+            )
+            mathnode.connectattr('output', text, 'position')
+        else:
+            self._manual_text.text = str(self._manual_dmg) + '%'
+            self._manual_text.opacity = norm
+        bs.getsound('click01').play(
+            volume=norm, position=self.node.position
+        )
+            
+    
+    def _update_lunatic(self):
+        if not self.node:
+            return
+        self._lunatic_time -= 1
+        color1 = (1, 0.1, 0.1)
+        color2 = (1, 0.8, 0.1)
+        if self._lunatic_time <= 0:
+            self.handlemessage(ExplodeMessage())
+        if self._lunatic_time == 2:
+            bs.getsound('busterExplode').play(
+                position=self.node.position
+            )
+            if self._lunatic_sfx:
+                self._lunatic_sfx.volume = 0
+                self._lunatic_sfx.delete()
+            bs.animate_array(
+                self._lunatic_timer_text,
+                'color', 3,
+                {
+                    0.0: color1,
+                    0.05: color2,
+                    0.1: color1,
+                },
+                loop=True,
+            )
+            
+        if not self._lunatic_timer_text:
+            mathnode = bs.newnode(
+                'math',
+                owner=self.node,
+                attrs={'input1': (0, 0.5, 0), 'operation': 'add'},
+            )
+            self.node.connectattr('position', mathnode, 'input2')
+            text = self._lunatic_timer_text = bs.newnode('text',
+                delegate=self,
+                owner=self.node,
+                attrs={
+                    'text': str(self._lunatic_time),
+                    'in_world': True,
+                    'scale': 0.02,
+                    'h_align': 'center',
+                },
+            )
+            mathnode.connectattr('output', text, 'position')
+            # make er flash
+            bs.animate_array(
+                self._lunatic_timer_text,
+                'color', 3,
+                {
+                    0.0: color1,
+                    0.1: color2,
+                    0.2: color1,
+                },
+                loop=True,
+            )
+        else:
+            self._lunatic_timer_text.text = str(self._lunatic_time)
 
     def _handle_splat(self) -> None:
         node = bs.getcollision().opposingnode
@@ -1085,33 +1205,28 @@ class Bomb(bs.Actor):
                     2.0,
                     position=self.node.position,
                 )
-            if not self.owner.hold_node and not self.lunatic_mode:
-                self.lunatic_mode = True
+            if not self.owner.hold_node and not self._lunatic_mode:
+                self._lunatic_mode = True
                 fuse_time = 4.8
                 bs.animate(self.node, 'fuse_length', {0.0: 1.0, fuse_time: 0.0})
                 self.fuse_timer = bs.Timer(
-                    fuse_time, bs.WeakCall(self.handlemessage, ExplodeMessage())
+                    1.0, self._update_lunatic, repeat=True
                 )
-                self.scream_sfx = bs.newnode(
+                self._update_lunatic()
+                self.node.is_area_of_interest = True
+                bs.getsound('busterStart').play(
+                    position=self.node.position
+                )
+                self._lunatic_sfx = bs.newnode(
                     'sound',
                     owner=self.node,
                     attrs={
-                        'sound': bs.getsound('wario_scream'),
-                        'volume': 1.2,
-                        'position': self.node.position,
-                    }
-                )
-                self.curse_sfx = bs.newnode(
-                    'sound',
-                    owner=self.node,
-                    attrs={
-                        'sound': bs.getsound('tickingCrazy'),
+                        'sound': bs.getsound('busterTicking'),
                         'volume': 1.5,
                         'position': self.node.position,
                     }
                 )
-                self.node.connectattr('position', self.scream_sfx, 'position')
-                self.node.connectattr('position', self.curse_sfx, 'position')
+                self.node.connectattr('position', self._lunatic_sfx, 'position')
 
     def add_explode_callback(self, call: Callable[[Bomb, Blast], Any]) -> None:
         """Add a call to be run when the bomb has exploded.
@@ -1126,17 +1241,9 @@ class Bomb(bs.Actor):
             return
         self._exploded = True
         if self.node:
-            if self.lunatic_mode:
-                bs.getsound('crazyOver').play(1.5)
+            if self._lunatic_mode:
                 self.bomb_type = 'tnt'
                 self.blast_radius *= 6.5
-                if self.curse_sfx:
-                    self.curse_sfx.volume = 0
-                    self.curse_sfx.delete()
-                if self.scream_sfx:
-                    self.scream_sfx.volume = 0
-                    self.scream_sfx.delete()
-                    bs.getsound('wario_scream_die').play(volume=1.5, position=self.node.position)
             blast = Blast(
                 position=self.node.position,
                 velocity=self.node.velocity,
@@ -1146,7 +1253,9 @@ class Bomb(bs.Actor):
                 hit_type=self.hit_type,
                 hit_subtype=self.hit_subtype,
                 owner=self.owner,
-                nosound=self.nosound
+                nosound=self.nosound,
+                manual=self.manual,
+                manual_dmg=self._manual_dmg,
             ).autoretain()
             for callback in self._explode_callbacks:
                 callback(self, blast)
@@ -1244,15 +1353,7 @@ class Bomb(bs.Actor):
             is not self.owner
         ):
             if msg.magnitude >= 150:
-                if msg.hit_type == 'star':
-                    self.star_hits += 1
-                    if self.star_hits >= 6 and not getattr(self, 'no_ach', False):
-                        import babase as ba
-                        self.no_ach = True
-                        ba.app.classic.ach.award_local_achievement(
-                            'When TNT Flies3'
-                        )
-                bs.getsound('punchSFX/death').play(position=self.node.position)
+                bs.getsound('punchSFX/strong2').play(position=self.node.position)
                 activity = self._activity()
                 if activity:
                     activity.handlemessage(ReturnMessage())

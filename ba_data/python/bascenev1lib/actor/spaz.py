@@ -1437,7 +1437,7 @@ class Spaz(bs.Actor):
                 ).explode()
                 self.shatter(extreme=True, force_scream=force_scream)
                 SoundFactory.get().firework_explode_classic.play(
-                    position=self.node.position
+                    volume=2, position=self.node.position,
                 )
                 self.sparkiiestimer = None
                 if on_die_call:
@@ -2057,7 +2057,7 @@ class Spaz(bs.Actor):
                 self._next_wiggle_left = False
             
         # start doin it if we wiggled around so much
-        if self._wiggle_count > 14:
+        if self._wiggle_count > 7:
             self._start_wiggle_sequence()
             if random.random() < 0.2:
                 bs.emitfx(
@@ -2092,7 +2092,7 @@ class Spaz(bs.Actor):
         self.on_move(y=value, x=self.last_x)
         
     def _start_wiggle_sequence(self):
-        if bs.app.config.get('squda_nowiggledance', False) == True:
+        if bs.app.config.get('squda_nowiggledance', False):
             return
         if self.wiggling == True:
             self.resettimer = bs.Timer(0.5, self._stop_wiggle_sequence)
@@ -2344,101 +2344,6 @@ class Spaz(bs.Actor):
         self.char_style = self._saved_gen_style
         self.impact_scale = self.impact_scale + 0.5
         self.remove_from_metal_list()
-    
-    def _activate_star(self):
-        if not self.node:
-            return
-        if self.issuper:
-            if not self.node:
-                return
-            vol = 2
-            def swoon1():
-                scale = 3
-                self.bg = bs.newnode(
-                    'image',
-                    attrs={
-                        'texture': bs.gettexture('black'),
-                        'fill_screen': True,
-                    },
-                )
-                self.swoon = bs.newnode(
-                    'image',
-                    attrs={
-                        'texture': bs.gettexture('spaz_prowler'),
-                        'scale': (256 * scale, 256 * scale),
-                        'opacity': 1.0,
-                        'absolute_scale': True,
-                        'attach': 'center',
-                    },
-                )
-                bs.animate(self.swoon, 'opacity', {
-                    0.0: 0,
-                    0.5: 1,
-                })
-                SoundFactory.get().prowler.play(volume=vol)
-            def swoon2():
-                self.swoon.delete()
-                self.bg.delete()
-                self.hitpoints += 1400
-                Bomb(position=self.node.position, bomb_type='tnt').explode()
-                bs.getsound('explosion01').play(volume=2.0, position=self.node.position)
-                self.impulse(x=-1345, y=800)
-            bs.basetimer(2.1, swoon2)
-            swoon1()
-            return
-        if self._has_star:
-            return
-        gnode = self.activity.globalsnode
-        self.prev_music2 = gnode.music.upper()
-        if bs.app.config.get('squda_specialmusic'):
-            bs.setmusic(bs.MusicType.STARMAN)
-        def flash_func():
-            if (
-                not self.node
-                or not self.is_alive()
-                or not self._has_star
-            ):
-                return
-            flashC = bs.animate_array(self.node, 'color', 3, RAINBOW)
-            flashH = bs.animate_array(self.node, 'highlight', 3, RAINBOW)
-        # Instead of using looped array animation,
-        # use a timer which allows us to override any color changes
-        self.star_flash = bs.Timer(RAINBOW_SPEED, flash_func, repeat=True) 
-        def emit():
-            if not self.node:
-                return
-            bs.emitfx(
-                position=self.node.position,
-                velocity=self.node.velocity,
-                count=45,
-                scale=1.2,
-                spread=1.2,
-                chunk_type='spark',
-            )
-        self.star_sparkies = bs.Timer(RAINBOW_SPEED + 0.2, emit, repeat=True) 
-        self._has_star = True
-        self.node.invincible = True
-        self.node.hockey = True
-        char_name = getattr(self, 'character', None)
-        vol = 3
-        if char_name:
-            appearances = bs.app.classic.spaz_appearances
-            random.choice(self.media['gloat_sounds']).play(
-                position=self.node.position
-            )
-    
-    def _deactivate_star(self):
-        self._has_star = False
-        self.star_flash = None
-        self.star_sparkies = None
-        self.node.invincible = False
-        self.node.hockey = False
-        self.node.color = self._saved_color
-        self.node.highlight = self._saved_highlight
-        if self.prev_music2:
-            if bs.app.config.get('squda_specialmusic'):
-                bs.setmusic(getattr(bs.MusicType, self.prev_music2))
-        self.prev_music2 = None
             
     def _activate_metalcap(self) -> None:
         if not self.node:
@@ -3318,7 +3223,9 @@ class Spaz(bs.Actor):
         if self.mortal_dmg_timer:
             self.mortal_dmg_timer = None
         self.mortal_phase = False
-        SoundFactory.get().survived_mortal_damage.play(volume=1.5, position=self.node.position)
+        SoundFactory.get().survived_mortal_damage.play(
+            volume=2, position=self.node.position
+        )
         self.hitpoints = self.hitpoints_max
         self.updatemeter()
         self.handlemessage(bs.CelebrateMessage(duration=3))
@@ -3384,84 +3291,7 @@ class Spaz(bs.Actor):
         # pylint: disable=too-many-branches
         assert not self.expired
         
-        if isinstance(msg, TouchedMessage):
-            collision = bs.getcollision()
-            toucher = collision.opposingnode
-            actor = toucher.getdelegate(bs.Actor)
-            ishittable = toucher.getnodetype() in ['spaz', 'prop', 'bomb']
-            if (
-                not actor
-                or not actor.is_alive()
-                or not self._has_star
-                or actor is self
-                or not ishittable
-                or not toucher
-            ):
-                return None
-                
-            # Get pos and velocity
-            pos = self.node.position
-            vel = self.node.velocity
-            srcpl = getattr(self, 'source_player', None)
-            dmult = 76
-            damage = self.getspeed() * dmult
-            toucher.handlemessage(
-                bs.HitMessage(
-                    magnitude=damage,
-                    pos=pos,
-                    velocity=vel,
-                    radius=2,
-                    srcnode=self.node,
-                    source_player=srcpl,
-                    hit_type='star',
-                )
-            )
-            # Normalize forward direction
-            length = math.sqrt(vel[0]**2 + vel[1]**2 + vel[2]**2)
-            forward = (
-                vel[0] / length,
-                22,
-                vel[2] / length
-            )
-            # Combine forward + spread
-            dir_x = forward[0] 
-            dir_y = forward[1]
-            dir_z = forward[2] 
-            # This multiplier depends on the
-            # player's velocity. Don't change too much.
-            mult = 36.0
-            dir_x *= mult
-            dir_z *= mult
-            spawn_distance = 0.9
-            spawn_height = 0.6
-            # This is the default force. It's "multiplied" persay
-            # by the velocity, so if you also make it too strong it overshoots.
-            force = 450
-            toucher.handlemessage(
-                'impulse',
-                pos[0],
-                pos[1],
-                pos[2],
-                0, 0, 0,
-                force,
-                force,
-                0,
-                0,
-                dir_x,
-                dir_y,
-                dir_z,
-            )
-            bs.getsound('smb1_kick').play(position=self.node.position)
-            bs.emitfx(
-                position=pos,
-                chunk_type='spark',
-                velocity=vel,
-                count=35,
-                scale=1.2,
-                spread=0.26,
-            )
-        
-        elif isinstance(msg, FootingMessage):
+        if isinstance(msg, FootingMessage):
             self.standing = msg.footing == 1
                 
         elif isinstance(msg, EmeraldMessage):
@@ -3617,25 +3447,6 @@ class Spaz(bs.Actor):
                 self._hook_wear_off_timer = bs.Timer(
                     POWERUP_WEAR_OFF_TIME / 1000.0,
                     bs.WeakCall(self._hook_wear_off),
-                )
-            elif msg.poweruptype == 'star':
-                self._activate_star()
-                tex = PowerupBoxFactory.get().tex_star
-                self._flash_billboard(tex)
-                self.node.mini_billboard_1_texture = tex
-                t_ms = int(bs.time() * 1000.0)
-                assert isinstance(t_ms, int)
-                self.node.mini_billboard_1_start_time = t_ms
-                self.node.mini_billboard_1_end_time = (
-                    t_ms + POWERUP_WEAR_OFF_TIME_STAR
-                )
-                self._star_wear_off_flash_timer = bs.Timer(
-                    (POWERUP_WEAR_OFF_TIME_STAR - 2000) / 1000.0,
-                    bs.WeakCall(self._star_wear_off_flash),
-                )
-                self._star_wear_off_timer = bs.Timer(
-                    POWERUP_WEAR_OFF_TIME_STAR / 1000.0,
-                    bs.WeakCall(self._star_wear_off),
                 )
             elif msg.poweruptype == 'bloxy':
                 tex = PowerupBoxFactory.get().tex_bloxy
@@ -4172,20 +3983,10 @@ class Spaz(bs.Actor):
                     )
             self.node.handlemessage('hurt_sound')
 
-            def show_floating_text(text, pos, color):
-                PopupText(
-                    text,
-                    position=pos,
-                    color=color,
-                    scale=1.2,
-                ).autoretain()
-
             # Play punch impact sound based on damage if it was a punch.
             if msg.hit_type == 'punch':
                 node = getattr(msg, 'srcnode', None)
                 self.on_punched(damage)
-
-                chance = 0.2  # 20% chance for all, set to 90% if you wanna test
 
                 if random.random() < 0.18:  # 18% chance of SMAAAASH!!ing
                     damage *= 1.7
@@ -4212,25 +4013,51 @@ class Spaz(bs.Actor):
                         scale=1.8,
                     ).autoretain()
                     bs.timer(1.5, checkifdied)
-                # try to show text if player has a actor position
-                def try_show(text, sound_name, color):
-                    bs.getsound(sound_name).play(position=self.node.position)
-                    pos = self.node.position
-                    show_floating_text(text, pos, color)
                 
                 # Based on damage, show Mario & Luigi based rating text
-                if damage >= 700:
-                    if random.random() < chance:
-                        try_show("EXCELLENT!", "excellent", (1.0, 0.2, 0.2))
-                elif damage >= 350:
-                    if random.random() < chance:
-                        try_show("GREAT!", "great", (0.9, 0.5, 0.2))
-                elif damage >= 150:
-                    if random.random() < chance:
-                        try_show("GOOD!", "good", (1.0, 0.7, 0.0))
-                elif damage >= 50:
-                    if random.random() < chance:
-                        try_show("OK!", "good", (1.0, 1.0, 0.0))
+                def ls(name: str):
+                    return bs.Lstr(r=f'punchRating{name}')
+                rates = {
+                    700: {
+                        'name': ls('Excellent'), 
+                        'sound': 'prate_excellent',
+                        'color': (1, 0.2, 0.2),
+                    },
+                    400: {
+                        'name': ls('Great'), 
+                        'sound': 'prate_great',
+                        'color': (0.9, 0.5, 0.2),
+                    },
+                    250: {
+                        'name': ls('Good'), 
+                        'sound': 'prate_good',
+                        'color': (1, 0.7, 0),
+                    },
+                    50: {
+                        'name': ls('Ok'), 
+                        'sound': 'prate_good',
+                        'color': (1, 1, 0),
+                    },
+                }
+                chance = 0.2 # 20% chance
+                # check if damage matches rate
+                for rate in rates:
+                    if damage >= rate:
+                        if random.random() < chance:
+                            if not self.node:
+                                break
+                            data = rates[rate]
+                            bs.getsound(data.get('sound')).play(
+                                position=self.node.position
+                            )
+                            pos = self.node.position
+                            PopupText(
+                                data.get('name', ''),
+                                position=pos,
+                                color=data.get('color'),
+                                scale=1.2,
+                            ).autoretain()
+                            break
                 
                 # If damage was significant, lets show it.
                 if damage >= 150:
@@ -4462,8 +4289,6 @@ class Spaz(bs.Actor):
                                 
                         if self.eb_meter:
                             self.eb_meter.play_death_animation()
-                        if self._has_star:
-                            self._deactivate_star()
                         self.node.dead = True
                         bs.timer(4.0, self.node.delete)
                         bs.timer(0.1, self.drop_emeralds)
@@ -5528,21 +5353,6 @@ class Spaz(bs.Actor):
             )
             self.node.billboard_opacity = 0.0
             self._deactivate_metalcap()
-    
-    def _star_wear_off_flash(self) -> None:
-        if self.node:
-            bs.getsound('smb1r_timerlow').play()
-            self.node.billboard_texture = PowerupBoxFactory.get().tex_star
-            self.node.billboard_opacity = 1.0
-            self.node.billboard_cross_out = True
-            
-    def _star_wear_off(self) -> None:
-        if self.node:
-            PowerupBoxFactory.get().powerdown_sound.play(
-                position=self.node.position,
-            )
-            self.node.billboard_opacity = 0.0
-            self._deactivate_star()
     
     def do_funny_poof(self):
         # COULD be a chance the node 

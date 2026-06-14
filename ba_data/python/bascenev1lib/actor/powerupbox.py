@@ -15,6 +15,7 @@ from bascenev1lib.gameutils import SharedObjects
 if TYPE_CHECKING:
     from typing import Any, Sequence
 
+DEFAULT_POWERUP_INTERVAL = 8
 
 class _TouchedMessage:
     pass
@@ -58,7 +59,6 @@ class PowerupBoxFactory:
         self.tex_random = bs.gettexture('powerupRandom')
         self.tex_strong = bs.gettexture('powerupStrong')
         self.tex_spongebob = bs.gettexture('powerupSponge')
-        self.tex_star = bs.gettexture('powerupStar')
         self.tex_land_mines = bs.gettexture('powerupLandMines')
         self.tex_curse = bs.gettexture('powerupCurse')
         self.tex_kookoo = bs.gettexture('curseKookoo')
@@ -218,7 +218,7 @@ class PowerupBox(bs.Actor):
                 return
         shared = SharedObjects.get()
         factory = PowerupBoxFactory.get()
-        self.interval = 8
+        self.interval = DEFAULT_POWERUP_INTERVAL
         if self.getactivity().hardmode:
             self.interval = 5.5
         self.poweruptype = poweruptype
@@ -260,8 +260,6 @@ class PowerupBox(bs.Actor):
             tex = factory.tex_strong
         elif poweruptype == 'spongebob':
             tex = factory.tex_spongebob
-        elif poweruptype == 'star':
-            tex = factory.tex_star
         else:
             raise ValueError('invalid poweruptype: ' + str(poweruptype))
 

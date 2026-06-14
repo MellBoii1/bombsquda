@@ -596,7 +596,6 @@ class HelpWindow(bui.MainWindow):
             'powerupFireball',
             'powerupBloxy',
             'powerupHook',
-            'powerupStar',
             'curseGrace',
             'curseDozer',
             'curseKookoo',
@@ -872,8 +871,6 @@ class HelpWindow(bui.MainWindow):
             bui.getsound('hook_throw').play()
         elif text == 'powerupFireball':
             bui.getsound('smb1_fireball').play()
-        elif text == 'powerupStar':
-            bui.getsound('smb1_kick').play()
         elif text == 'curseGrace':
             bui.getsound('blank').play()
         elif text == 'curseDozer':

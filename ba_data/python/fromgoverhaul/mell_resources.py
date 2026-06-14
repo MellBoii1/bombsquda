@@ -548,7 +548,6 @@ def get_texture_for_powerup(factory, ptype: str):
         'strong': factory.tex_strong,
         'spongebob': factory.tex_spongebob,
         'shotgun': factory.tex_shotgun,
-        'star': factory.tex_star,
         'random': factory.tex_random,
         'kookoo': factory.tex_kookoo,
         'dozer': factory.tex_dozer,

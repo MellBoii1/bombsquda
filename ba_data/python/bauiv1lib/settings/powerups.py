@@ -33,7 +33,6 @@ class PowerupSetupWindow(bui.MainWindow):
         self.tex_random = bui.gettexture('powerupRandom')
         self.tex_strong = bui.gettexture('powerupStrong')
         self.tex_spongebob = bui.gettexture('powerupSponge')
-        self.tex_star = bui.gettexture('powerupStar')
         self.tex_land_mines = bui.gettexture('powerupLandMines')
         self.tex_curse = bui.gettexture('powerupCurse')
         self.tex_random = bui.gettexture('powerupRandom')

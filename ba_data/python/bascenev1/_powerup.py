@@ -65,7 +65,6 @@ def get_default_powerup_distribution() -> Sequence[tuple[str, int]]:
         'fireball': 2,
         'bloxy': 2,
         'hook': 1,
-        'star': 1,
     }
     cfg = ba.app.config.get("squda_powerup_dist", {})
     for key in base_distribution:
@@ -93,6 +92,5 @@ def get_powerup_dist2():
         'fireball': 2,
         'bloxy': 2,
         'hook': 1,
-        'star': 1,
     }
     return tuple(be_distribution.items())

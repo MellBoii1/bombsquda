@@ -174,9 +174,6 @@ class EarthboundMeter(bs.Actor):
     def refresh(self) -> None:
         spaz = self.spaz
 
-        if spaz.hardmode and spaz.hitpoints >= spaz.hitpoints_max:
-            spaz.hitpoints = spaz.hitpoints_max
-
         if not self.meter or not self.meter.exists():
             return
 

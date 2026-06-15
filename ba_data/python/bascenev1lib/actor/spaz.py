@@ -442,11 +442,13 @@ class Spaz(bs.Actor):
         self.parryshield = None
         self.hardmode = False
         self.pickup_pressed = False
-        self.flight_points = self.default_flight_points = 80
+        self.flight_points = self.default_flight_points = 90
         self.flight_timer = None
         self.already_refilling = False
         self.refill_flight_timer = None
         self.flying = False
+        self._super_light = None
+        self._yeehaw_mathnode = None
 
         if can_accept_powerups:
             pam = PowerupBoxFactory.get().powerup_accept_material
@@ -980,6 +982,26 @@ class Spaz(bs.Actor):
         self.show_fp_text()
         self.update_fp_text()
         self.impulse(y=31)
+        # apply some impulse on directions for
+        # more control
+        dir_x = self.node.move_left_right * 1.3
+        dir_z = -self.node.move_up_down * 1.3
+        pos = self.node.position
+        force = 20
+        self.node.handlemessage(
+            'impulse',
+            pos[0],
+            pos[1],
+            pos[2],
+            0, 0, 0,
+            force,
+            force,
+            0,
+            0,
+            dir_x,
+            0,
+            dir_z,
+        )
         self.flight_points -= 1
 
     def on_jump_press(self) -> None:
@@ -1359,28 +1381,92 @@ class Spaz(bs.Actor):
         if self.character == "Isaac":
             self.is_cry = True
             self._shoot_tear("left")
-        else:
-            t_ms = int(bs.time() * 1000.0)
-            assert isinstance(t_ms, int)
-            if self.canparry == True and self.parrybtn == 'punch':
-                self.attempt_parry()
-                return
-            if t_ms - self.last_punch_time_ms >= self._punch_cooldown:
-                if self.punch_callback is not None:
-                    self.punch_callback(self)
-                self._punched_nodes = set()  # Reset this.
-                self.last_punch_time_ms = t_ms
-                self.node.punch_pressed = True
-                if not self.node.hold_node:
-                    bs.timer(
-                        0.1,
-                        bs.WeakCall(
-                            self._safe_play_sound,
-                            SpazFactory.get().swish_sound,
-                            0.8,
-                        ),
-                    )
-            self._turbo_filter_add_press('punch')
+            return
+        t_ms = int(bs.time() * 1000.0)
+        assert isinstance(t_ms, int)
+        # if flying, then dash forward
+        if self.flying and self.flight_points > 0:
+            dir_x = self.node.move_left_right * 3
+            dir_z = self.node.move_up_down * 3
+            pos = self.node.position
+            force = 80
+            SoundFactory.get().super_dash.play(
+                position=self.node.position
+            )
+            for _ in range(5):
+                self.node.handlemessage(
+                    'impulse',
+                    pos[0],
+                    pos[1],
+                    pos[2],
+                    0, 0, 0,
+                    force,
+                    force,
+                    0,
+                    0,
+                    dir_x,
+                    0.6,
+                    -dir_z,
+                )
+            self.flight_points -= 15
+            vel = self.node.velocity
+            # Emit fake explosion for visual effect...
+            explosion = bs.newnode(
+                'explosion',
+                attrs={
+                    'position': pos,
+                    'velocity': vel,
+                    'radius': 1.0,
+                    'big': False,
+                    'color': self.node.color,
+                },
+            )
+            bs.timer(1.0, explosion.delete)
+            bs.emitfx(
+                position=pos,
+                emit_type='distortion',
+                spread=2.0,
+            )
+            light = bs.newnode(
+                'light',
+                attrs={
+                    'position': self.node.position,
+                    'radius': 0.5,
+                    'height_attenuated': False,
+                    'color': self.node.color,
+                },
+            )
+            bs.animate(
+                light, 'intensity', {0.0: 0, 0.04: 3, 0.08: 1, 0.2: 0}
+            )
+            bs.timer(0.2, light.delete)
+            vel = (-dir_x * 4, 0, dir_z * 4)
+            bs.emitfx(
+                position=pos,
+                velocity=vel,
+                count=int(4.0 + random.random() * 4),
+                chunk_type='spark',
+            )
+            return
+        if self.canparry == True and self.parrybtn == 'punch':
+            self.attempt_parry()
+            return
+        if t_ms - self.last_punch_time_ms >= self._punch_cooldown:
+            if self.punch_callback is not None:
+                self.punch_callback(self)
+            self._punched_nodes = set()  # Reset this.
+            self.last_punch_time_ms = t_ms
+            self.node.punch_pressed = True
+            if not self.node.hold_node:
+                bs.timer(
+                    0.1,
+                    bs.WeakCall(
+                        self._safe_play_sound,
+                        SpazFactory.get().swish_sound,
+                        0.8,
+                    ),
+                )
+        self._turbo_filter_add_press('punch')
         
     def firework_explode(self, 
         on_die_call: Callable = None,
@@ -2428,10 +2514,22 @@ class Spaz(bs.Actor):
             # flashing effect function
             if not self.node.exists():
                 return
-            yellow = (1.5, 1.5, 0)
-            white = (1, 1, 1)
+            color1 = self.media.get('super_color')
+            color2 = self.media.get('super_highlight')
             midtime = 0.1
             endtime = 0.2
+            self._super_light = bs.newnode(
+                'light',
+                owner=self.node,
+                attrs={
+                    'position': self.node.position,
+                    'radius': 0.5,
+                    'height_attenuated': False,
+                    'color': self.node.color,
+                    'intensity': 0.5,
+                },
+            )
+            self.node.connectattr('position', self._super_light, 'position')
             def flash_func():
                 if (
                     not self.node
@@ -2439,18 +2537,36 @@ class Spaz(bs.Actor):
                     or not self.issuper
                 ):
                     return
-                flashC = bs.animate_array(self.node, 'color', 3,
+                # color
+                bs.animate_array(self.node, 'color', 3,
                     {
-                        0.0: yellow,
-                        midtime: white,
-                        endtime: yellow
+                        0.0: color1[0],
+                        midtime: color1[1],
+                        endtime: color1[0],
                     },
                 )
-                flashH = bs.animate_array(self.node, 'highlight', 3,
+                # name color
+                bs.animate_array(self.node, 'name_color', 3,
                     {
-                        0.0: yellow,
-                        midtime: white,
-                        endtime: yellow
+                        0.0: color1[0],
+                        midtime: color1[1],
+                        endtime: color1[0],
+                    },
+                )
+                # light color
+                bs.animate_array(self._super_light, 'color', 3,
+                    {
+                        0.0: color2[0],
+                        midtime: color2[1],
+                        endtime: color2[0],
+                    },
+                )
+                # highlight
+                bs.animate_array(self.node, 'highlight', 3,
+                    {
+                        0.0: color2[0],
+                        midtime: color2[1],
+                        endtime: color2[0],
                     },
                 )
             # Instead of using looped array animation,
@@ -2459,13 +2575,19 @@ class Spaz(bs.Actor):
             def emit():
                 if not self.node:
                     return
-                if random.random() < 0.5:
+                if random.random() < 0.9:
+                    vel = self.node.velocity
+                    vel = (
+                        vel[0],
+                        vel[1] + 1,
+                        vel[2],
+                    )
                     bs.emitfx(
                         position=self.node.position,
-                        velocity=self.node.velocity,
-                        count=21,
+                        velocity=vel,
+                        count=15,
                         scale=1.0,
-                        spread=1.2,
+                        spread=0.3,
                         chunk_type='spark',
                     )
             self.super_sparkies = bs.Timer(endtime + 0.2, emit, repeat=True) 
@@ -2495,8 +2617,8 @@ class Spaz(bs.Actor):
             bs.timer(0.1, self.updatemeter)
             # buff our spaz
             if self.hardmode:
-                self.hitpoints_max = 500
-                self.hitpoints = 500
+                self.hitpoints_max = 850
+                self.hitpoints = 850
             else:
                 self.hitpoints_max = 2500
                 self.hitpoints = 2500
@@ -2524,19 +2646,9 @@ class Spaz(bs.Actor):
                     # character specific music
                     # FUCKING DIHCGTS AGGGGGGG
                     # i love cleaning up!
-                    music_dict = {
-                        'The Noise': bs.MusicType.NOISESUPER,
-                        'Kris': bs.MusicType.GRAND_ROMP,
-                        'Susie': bs.MusicType.FEEL_THE_FURY,
-                        'SM64 Mario': bs.MusicType.RAINBOW_ROAD,
-                    }
-                    # if the character is in the list, set it's music
-                    char = self.character
-                    if char in music_dict.keys():
-                        bs.setmusic(music_dict.get(char))
-                    # otherwise, just use the regular one
-                    else:
-                        bs.setmusic(bs.MusicType.SUPER)
+                    bs.setmusic(
+                        self.media.get('super_music')
+                    )
     
     def activate_spongebob(self, time: int, speed: int):
         """Give this spaz the 'Hot Potato' effect."""
@@ -2877,6 +2989,7 @@ class Spaz(bs.Actor):
         if not self.charge_flash:
             self.charge_flash = bs.newnode(
                 'flash',
+                owner=self.node,
                 attrs={
                     'position': self.node.position,
                     'size': 0.5,
@@ -2897,18 +3010,16 @@ class Spaz(bs.Actor):
             )
         # auugghhh text
         if not self.yeehaw_text:
-            yoff = 0.3
-            mathnode = bs.newnode(
+            mnode = self._yeehaw_mathnode = bs.newnode(
                 'math',
                 owner=self.node,
-                attrs={'input1': (0, 1.4 + yoff, 0), 'operation': 'add'},
+                attrs={'input1': (0, 1.7, 0), 'operation': 'add'},
             )
-            self.node.connectattr('torso_position', mathnode, 'input2')
+            self.node.connectattr('torso_position', mnode, 'input2')
             self.yeehaw_text = bs.newnode(
                 'text',
                 owner=self.node,
                 attrs={
-                    'text': f'*{str(self.yeehaws)}*',
                     'in_world': True,
                     'shadow': 1.0,
                     'flatness': 1.0,
@@ -2917,9 +3028,36 @@ class Spaz(bs.Actor):
                     'h_align': 'center',
                 },
             )
-            mathnode.connectattr('output', self.yeehaw_text, 'position')
-        else:
-            self.yeehaw_text.text = f'*{str(self.yeehaws)}*'
+            bs.animate(
+                self.yeehaw_text, 
+                'opacity',
+                {
+                    0: 0,
+                    0.03: 1,
+                }
+            )
+            mnode.connectattr('output', self.yeehaw_text, 'position')
+        self.yeehaw_text.text = f'*{str(self.yeehaws)}*'
+        mnode = self._yeehaw_mathnode
+        i = mnode.input1
+        # jump upwards and scale up
+        bs.animate(
+            self.yeehaw_text,
+            'scale',
+            {
+                0: 0.01,
+                0.05: 0.02,
+                0.15: 0.01,
+            }
+        )
+        bs.animate_array(mnode, 'input1', 3,
+            {
+                0: (0, 1.7, 0),
+                0.05: (0, 2, 0),
+                0.1: (0, 2.1, 0),
+                0.2: (0, 1.7, 0),
+            }
+        )
             
     def release_chain(self):
 
@@ -2942,8 +3080,28 @@ class Spaz(bs.Actor):
             self.charge_flash.delete()
             self.charge_flash = None
         if self.yeehaw_text:
-            self.yeehaw_text.delete()
-            self.yeehaw_text = None
+            sc = self.yeehaw_text.scale
+            cl = self.yeehaw_text.color
+            bs.animate(
+                self.yeehaw_text,
+                'scale',
+                {
+                    0: sc,
+                    0.07: sc * 4,
+                    0.3: 0,
+                }
+            )
+            bs.animate_array(
+                self.yeehaw_text,
+                'color',
+                3,
+                {
+                    0: cl,
+                    0.07: (1.1, 1.3, 1.4),
+                    0.3: cl,
+                }
+            )
+            bs.timer(0.3, self.yeehaw_text.delete)
         if self.sparkies:
             self.sparkies = None
 
@@ -4294,6 +4452,9 @@ class Spaz(bs.Actor):
                         bs.timer(0.1, self.drop_emeralds)
                         self.explode_deton_bombs()
                         self.stop_voicelines()
+                        if self._super_light:
+                            self._super_light.delete()
+                            self._super_light = None
             except Exception as e:
                 squdalog.error(f'Spaz failed to die because {e}. Setting its\' node to dead to prevent multiple errors.')
                 self.node.dead = True

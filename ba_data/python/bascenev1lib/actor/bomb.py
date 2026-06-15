@@ -1239,6 +1239,8 @@ class Bomb(bs.Actor):
         """Blows up the bomb if it has not yet done so."""
         if self._exploded:
             return
+        if self._lunatic_mode and self._lunatic_time > 0:
+            return
         self._exploded = True
         if self.node:
             if self._lunatic_mode:
@@ -1360,9 +1362,10 @@ class Bomb(bs.Actor):
 
         # Normal bombs are triggered by non-punch impacts;
         # impact-bombs by all impacts.
+        # Sticky bombs with the 'lunatic' mark don't explode to any explosions.
         if not self._exploded and (
             not ispunched or self.bomb_type in ['impact', 'land_mine']
-        ):
+        ) and not self._lunatic_mode:
             # Also lets change the owner of the bomb to whoever is setting
             # us off. (this way points for big chain reactions go to the
             # person causing them).

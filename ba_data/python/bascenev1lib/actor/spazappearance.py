@@ -85,6 +85,15 @@ class Appearance:
         self.general_style = 'normal'
         self.default_color: tuple[float, float, float] | None = None
         self.default_highlight: tuple[float, float, float] | None = None
+        self.super_color: list[
+            tuple[float, float, float], 
+            tuple[float, float, float]
+        ] = [(1, 1, 0), (1, 1, 1)]
+        self.super_highlight: list[
+            tuple[float, float, float], 
+            tuple[float, float, float]
+        ] = [(1, 1, 0), (1, 1, 1)]
+        self.super_music: bs.MusicType = bs.MusicType.SUPER
         self.is_gimmick_character: bool = False
 
 def validate_appearance(name, app):
@@ -508,6 +517,7 @@ def register_appearances() -> None:
     t.style = 'bones'
     t.default_color = (1, 0, 0)
     t.default_highlight = (0.1, 0.1, 1)
+    t.super_music = bs.MusicType.RAINBOW_ROAD
 
     # that one character from the asym they canceled because why not ######################################
     t = Appearance('Sonic')
@@ -669,7 +679,7 @@ def register_appearances() -> None:
     t.earthportrait = 'earthbound/knightbound'
     t.EBlose = 'earthbound/knightbound_lose'
     t.EBwin = 'earthbound/knightbound_win'
-    t.icon_mask_texture = 'knightIconColorMask'
+    t.icon_mask_texture = 'knightIconCM'
     t.head_mesh = 'knightHead'
     t.torso_mesh = 'knightTorso'
     t.pelvis_mesh = 'knightPelvis'
@@ -691,6 +701,12 @@ def register_appearances() -> None:
     t.style = 'agent'
     t.default_color = (0.0, 0.0, 0.0)
     t.default_highlight = (1, 1, 1)
+    t.super_color = [(1, 1, 1), (0, 0, 0)]
+    t.super_highlight = [
+        mell.hex_to_color('4a6ce8'), 
+        mell.hex_to_color('080afb')
+    ]
+    t.super_music = bs.MusicType.KAIZOKNIGHT
 
     # Noise Noise Noise Noise NOise ###################################
     t = Appearance('The Noise')
@@ -731,6 +747,7 @@ def register_appearances() -> None:
         0.5333333333333333,
         0.09411764705882353
     )
+    t.super_music = bs.MusicType.NOISESUPER
     
     # homero doh homero cerveza ###################################
     t = Appearance('Homer')

@@ -83,6 +83,7 @@ ASSET_SOUNDTRACK_ENTRIES: dict[MusicType, AssetSoundtrackEntry] = {
     MusicType.FINALDESTINATION: AssetSoundtrackEntry('music/finaldestination', volume=2.1),
     MusicType.THEFINALE: AssetSoundtrackEntry('music/bis_finale', volume=2.1),
     MusicType.NOISESUPER: AssetSoundtrackEntry('music/noisexpectancy', volume=1.0),
+    MusicType.KAIZOKNIGHT: AssetSoundtrackEntry('music/knight_super', volume=1.0),
     MusicType.FEEL_THE_FURY: AssetSoundtrackEntry('music/feel_the_fury', volume=1.0),
     MusicType.RAINBOW_ROAD: AssetSoundtrackEntry('music/RAINBOW_ROAD', volume=1.0),
     MusicType.SURVEY: AssetSoundtrackEntry('music/SURVEYPROGRAM', volume=1.0),

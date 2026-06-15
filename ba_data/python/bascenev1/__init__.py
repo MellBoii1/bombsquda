@@ -209,6 +209,7 @@ from bascenev1._messages import (
     StandMessage,
     ThawMessage,
     UNHANDLED,
+    CodeUsedMessage
 )
 from bascenev1._multiteamsession import (
     MultiTeamSession,

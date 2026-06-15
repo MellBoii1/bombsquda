@@ -182,6 +182,21 @@ class GameButton:
             opacity=0.0,
             texture=bui.gettexture('lock'),
         )
+        
+        # if this game was beaten in spaz hardmode,
+        # give it a nice red star
+        hard_dict = bui.app.config.get('squda_coop_levels_beaten_hardmode')
+        if hard_dict.get(game):
+            self._hard_mode_star = bui.imagewidget(
+                parent=parent,
+                draw_controller=btn,
+                position=(x + sclx * 0.9, scly * 0.01 + 10),
+                size=(40, 40),
+                color=(1, 0.3, 0.3),
+                texture=window.star_tex,
+            )
+        else:
+            self._hard_mode_star = None
 
         # give a quasi-random update increment to spread the load..
         self._update_timer = bui.AppTimer(
@@ -257,6 +272,11 @@ class GameButton:
         bui.imagewidget(
             edit=self._lock_widget, opacity=0.0 if unlocked else 1.0
         )
+        if self._hard_mode_star:
+            bui.imagewidget(
+                edit=self._hard_mode_star, 
+                opacity=1 if unlocked else 0
+            )
         bui.imagewidget(
             edit=self._preview_widget, opacity=1.0 if unlocked else 0.3
         )

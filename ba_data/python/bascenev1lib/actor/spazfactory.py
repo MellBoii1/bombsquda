@@ -332,6 +332,9 @@ class SpazFactory:
                 'style': char.style,
                 'general_style': char.general_style,
                 'expression_changes': char.expression_changes,
+                'super_color': char.super_color,
+                'super_highlight': char.super_highlight,
+                'super_music': char.super_music,
             }
         else:
             media = self.spaz_media[character]

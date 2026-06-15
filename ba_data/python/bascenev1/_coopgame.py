@@ -62,6 +62,7 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
         self._life_warning_beep_timer: bascenev1.Timer | None = None
         self._warn_beeps_sound = _bascenev1.getsound('warnBeeps')
         self.ultrameter = None
+        self._codes_used = []
 
     @override
     def on_begin(self) -> None:
@@ -83,7 +84,7 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
         self.doultrameter = meter_type != 'disabled'
         if self.doultrameter:
             from bascenev1lib.actor.ultrakillmeter import UltrakillMeter
-            self.ultrameter = UltrakillMeter(compact = meter_type == 'basic')
+            self.ultrameter = UltrakillMeter(compact=meter_type == 'basic')
 
         # Preload achievement images in case we get some.
         _bascenev1.timer(2.0, babase.WeakCall(self._preload_achievements))
@@ -312,6 +313,13 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
             tdict[level] = True
             bs.app.config.commit()
         if not results.get('fail_message'):
+            if len(self._codes_used) > 0:
+                results['score'] = None
+                full = ', '.join(str(obj) for obj in self._codes_used)
+                results['fail_message'] = bs.Lstr(
+                    r='failCodeUsed',
+                    s=[('${CODES}', full)],
+                )
             for player in self.players:
                 char = bs.app.classic.spaz_appearances[
                     player.character

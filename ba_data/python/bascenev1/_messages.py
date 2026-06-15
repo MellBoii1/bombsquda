@@ -119,6 +119,12 @@ class PlayerDiedMessage:
         assert player.exists()
         return player
 
+@dataclass
+class CodeUsedMessage:
+    """A message telling a activity a potentially
+    gameplay-changing code was entered by the host."""
+    code: str
+    """What code was used."""
 
 @dataclass
 class StandMessage:

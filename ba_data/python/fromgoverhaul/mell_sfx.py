@@ -53,6 +53,7 @@ class SoundFactory:
             bs.getsound('tear_fire1'), 
             bs.getsound('tear_fire2'),
         )
+        self.super_dash = bs.getsound('swordlunge')
     
     @classmethod
     def get(cls):

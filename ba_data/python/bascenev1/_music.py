@@ -78,6 +78,7 @@ class MusicType(Enum):
     METALCAPTIME = 'MetalCapTime'
     RAGE = 'Rage'
     NOISESUPER = 'NoiseSuper'
+    KAIZOKNIGHT = 'KaizoKnight'
     BUSINESS = 'Business'
     TO_THE_DEATH = 'To_The_Death'
     TO_THE_DEATHFAST = 'To_The_DeathFast'

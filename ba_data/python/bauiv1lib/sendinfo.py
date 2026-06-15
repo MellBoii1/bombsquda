@@ -312,9 +312,11 @@ class SendInfoWindow(bui.MainWindow):
         code = code.upper()
 
         if code in codes:
+            act = bs.get_foreground_host_activity()
             bui.getsound('survey_ok2').play()
-            with bs.get_foreground_host_activity().context:
+            with act.context:
                 codes[code]()
+                act.handlemessage(bs.CodeUsedMessage(code))
         else:
             bui.getsound('error').play()
         

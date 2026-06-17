@@ -63,6 +63,7 @@ class SharedObjects:
         self._sorrowful_material: bs.Material | None = None
         self._touch_material: bs.Material | None = None
         self._fireball_material: bs.Material | None = None
+        self._emerald_material: bs.Material | None = None
 
     @classmethod
     def get(cls) -> SharedObjects:
@@ -276,6 +277,25 @@ class SharedObjects:
                 actions=('modify_node_collision', 'collide', False),
             )
         return self._fireball_material
+    
+    @property
+    def emerald_material(self) -> bs.Material:
+        if self._emerald_material is None:
+            mat = self._emerald_material = bs.Material()
+            # disallow collisions if we JUST spawned recently
+            mat.add_actions(
+                conditions=(
+                    (
+                        ('we_are_younger_than', 70),
+                        'and',
+                        ('they_are_different_node_than_us',),
+                    ),
+                    'and',
+                    ('they_dont_have_material', self.region_material),
+                ),
+                actions=('modify_node_collision', 'collide', False),
+            )
+        return self._emerald_material
 
     @property
     def region_material(self) -> bs.Material:

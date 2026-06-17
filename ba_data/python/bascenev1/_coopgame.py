@@ -312,6 +312,7 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
                 bs.getsound('gooditem').play(volume=0.8)
             tdict[level] = True
             bs.app.config.commit()
+            mell.award_hardmode_ach()
         if not results.get('fail_message'):
             if len(self._codes_used) > 0:
                 results['score'] = None

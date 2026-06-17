@@ -184,6 +184,15 @@ class AchievementsWindow(bui.MainWindow):
                 texture=ach.get_icon_ui_texture(complete),
             )
             if complete:
+                texture = (
+                    bui.gettexture('achBorderRetro') if ach.retro
+                    else bui.gettexture('achBorderBig') if ach.big
+                    else bui.gettexture('achievementOutline')
+                )
+                color = (
+                    (1.3, 0.3, 0.4)
+                    if ach.big else (2, 1.4, 0)
+                )
                 bui.imagewidget(
                     parent=self._subcontainer,
                     position=(
@@ -191,8 +200,8 @@ class AchievementsWindow(bui.MainWindow):
                         sub_height - 25 - incr * i - 9,
                     ),
                     size=(28, 28),
-                    color=(2, 1.4, 0),
-                    texture=bui.gettexture('achievementOutline'),
+                    color=color,
+                    texture=texture
                 )
             bui.textwidget(
                 parent=self._subcontainer,

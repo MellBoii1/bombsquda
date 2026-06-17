@@ -284,6 +284,7 @@ class MainMenuActivity(bs.GameActivity[bs.Player, bs.Team]):
                 },
             )
         )
+        bs.apptimer(6, mell.award_hardmode_ach)
 
         if not self._did_initial_transition and self.my_name is not None:
             assert self.my_name.node
@@ -1184,7 +1185,7 @@ def _preload4() -> None:
         bs.gettexture(tname)
     for mname in ['frameInset', 'meterTransparent', 'achievementOutline']:
         bs.getmesh(mname)
-    for sname in ['metalHit', 'metalSkid', 'deek2', 'achievement']:
+    for sname in ['metalHit', 'metalSkid', 'deek2', 'achievement', 'achRetro', 'achBig']:
         bs.getsound(sname)
     from bascenev1lib.actor.flag import FlagFactory
 

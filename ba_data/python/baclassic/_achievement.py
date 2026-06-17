@@ -156,6 +156,22 @@ class AchievementSubsystem:
                 'Default:The Finale',
                 award=60,
             ),
+            Achievement(
+                'HardmodeHardCampaign',
+                'achievementHardMode',
+                (1, 1, 1),
+                '',
+                award=80,
+                big=True,
+            ),
+            Achievement(
+                'HardmodeEasyCampaign',
+                'white',
+                (1, 1, 1),
+                '',
+                award=30,
+                big=True,
+            ),
         ]
 
     def award_local_achievement(self, achname: str) -> None:
@@ -278,9 +294,11 @@ class Achievement:
         award: int,
         hard_mode_only: bool = False,
         retro: bool = False,
+        big: bool = False,
     ):
         self._name = name
         self.retro = retro
+        self.big = big
         self._icon_name = icon_name
         assert len(icon_color) == 3
         self._icon_color = icon_color + (1.0,)
@@ -933,6 +951,8 @@ class Achievement:
         if sound:
             if self.retro:
                 bascenev1.getsound('achRetro').play()
+            elif self.big:
+                bascenev1.getsound('achBig').play()
             else:
                 bascenev1.getsound('achievement').play()
         else:
@@ -965,6 +985,9 @@ class Achievement:
         assert self._completion_banner_slot is not None
         y_offs = 110 * self._completion_banner_slot
         objs: list[bascenev1.Actor] = []
+        color = (0, 0, 0.1, 1)
+        if self.big:
+            color = (0.1, 0, 0, 1)
         obj = Image(
             bascenev1.gettexture('shadow'),
             position=(-30, 30 + y_offs),
@@ -974,12 +997,15 @@ class Achievement:
             vr_depth=base_vr_depth - 100,
             transition_delay=in_time,
             transition_out_delay=out_time,
-            color=(0.0, 0.1, 0, 1),
+            color=color,
             scale=(1000, 300),
         ).autoretain()
         objs.append(obj)
         assert obj.node
         obj.node.host_only = host_only
+        color = (1.8, 1.8, 1, 0)
+        if self.big:
+            color = (1.3, 0.4, 0.1, 0)
         obj = Image(
             bascenev1.gettexture('light'),
             position=(-180, 60 + y_offs),
@@ -989,7 +1015,7 @@ class Achievement:
             transition=Image.Transition.IN_BOTTOM,
             transition_delay=in_time,
             transition_out_delay=out_time,
-            color=(1.8, 1.8, 1.0, 0.0),
+            color=color,
             scale=(40, 300),
         ).autoretain()
         objs.append(obj)
@@ -1068,8 +1094,12 @@ class Achievement:
         }
         bascenev1.animate(combine, 'input2', keys)
         combine.connectattr('output', obj.node, 'color')
+        color = (2, 1.4, 0.4, 1)
         if self.retro:
             texture = bascenev1.gettexture('achBorderRetro')
+        elif self.big:
+            texture = bascenev1.gettexture('achBorderBig')
+            color = (1.3, 0.3, 0.4, 1)
         else:
             texture = bascenev1.gettexture('achievementOutline')
         obj = Image(
@@ -1087,7 +1117,7 @@ class Achievement:
         obj.node.host_only = host_only
 
         # Flash.
-        color = (2, 1.4, 0.4, 1)
+
         combine = bascenev1.newnode(
             'combine', owner=obj.node, attrs={'size': 3}
         )
@@ -1138,6 +1168,9 @@ class Achievement:
         assert objt.node
         objt.node.host_only = host_only
 
+        color = (1, 0.8, 0, 1)
+        if self.big:
+            color = (1, 0.3, 0.3, 1)
         objt = Text(
             self.display_name,
             position=(-120, 50 + y_offs),
@@ -1149,13 +1182,16 @@ class Achievement:
             transition_delay=in_time,
             transition_out_delay=out_time,
             flash=True,
-            color=(1, 0.8, 0, 1.0),
+            color=color,
             scale=1.5,
         ).autoretain()
         objs.append(objt)
         assert objt.node
         objt.node.host_only = host_only
 
+        color = (1, 0.7, 0.5, 1)
+        if self.big:
+            color = (0.9, 0.6, 0.6, 1)
         objt = Text(
             self.description_complete,
             position=(-120, 30 + y_offs),
@@ -1166,7 +1202,7 @@ class Achievement:
             flatness=0.5,
             transition_delay=in_time,
             transition_out_delay=out_time,
-            color=(1.0, 0.7, 0.5, 1.0),
+            color=color,
             scale=0.8,
         ).autoretain()
         objs.append(objt)

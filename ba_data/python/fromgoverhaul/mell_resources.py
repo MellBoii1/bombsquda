@@ -304,6 +304,23 @@ def hex_to_color(hex_color: str) -> tuple:
     )
     return (nr, ng, nb, na) if aa is not None else (nr, ng, nb)
 
+def award_hardmode_ach():
+    import bascenev1 as bs
+    hardcamp = bs.app.classic.getcampaign('Default')
+    easycamp = bs.app.classic.getcampaign('Easy')
+    beaten = bs.app.config.get('squda_coop_levels_beaten_hardmode', {})
+    # if all levels in the hard campaign were beaten
+    # in hardmode, grant it's achievement
+    if all(('Default:' + level.name) in beaten for level in hardcamp.levels):
+        bs.app.classic.ach.award_local_achievement(
+            'HardmodeHardCampaign'
+        )
+    # do the same for easy campaign
+    if all(('Easy:' + level.name) in beaten for level in easycamp.levels):
+        bs.app.classic.ach.award_local_achievement(
+            'HardmodeEasyCampaign'
+        )
+
 def get_unique_bs_id():
     """Gets the player's unique BombSquda ID.
     If it exists in the config, just returns that.
@@ -448,6 +465,11 @@ def show_unlockable(tex: str | dict):
     node2 = bs.newnode('image', 
         attrs={
             'texture': texture,
+            'mask_texture': (
+                bs.gettexture(
+                    'characterIconMask'
+                ) if mask else None
+            ),
             'tint_texture': mask,
             'position': (x, initial_y), 
             'scale': scale2,
@@ -457,25 +479,8 @@ def show_unlockable(tex: str | dict):
             'front': front,
         }
     )
-    # we can assume it's a character icon
-    # if we have a mask...
-    node3 = None
-    if mask:
-        node3 = bs.newnode('image', 
-            attrs={
-                'texture': bs.gettexture('iconBorder'),
-                'tint_texture': bs.gettexture('characterIconMask'),
-                'position': (x, initial_y), 
-                'scale': (scale2[0] + 20, scale2[1] + 20),
-                'opacity': 1.0,
-                'absolute_scale': True,
-                'attach': 'bottomCenter',
-                'front': front,
-            }
-        )
     if tint1:
         node2.tint_color = tint1
-        node3.tint2_color = tint1
     if tint2:
         node2.tint2_color = tint2
     # create text

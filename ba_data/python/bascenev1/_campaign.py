@@ -112,7 +112,6 @@ def init_campaigns() -> None:
     from bascenev1lib.game.meteorshower import MeteorShowerGame
     from bascenev1lib.game.easteregghunt import EasterEggHuntGame
     from bascenev1lib.game.ninjafight import NinjaFightGame
-    from bascenev1lib.creditsroll import CreditsActivity
 
     # TODO: Campaigns should be load-on-demand; not all imported at launch
     #  like this.
@@ -250,12 +249,6 @@ def init_campaigns() -> None:
                     'The Finale',
                     gametype=TheFinaleGame,
                     settings={'easy_mode': False},
-                    preview_texture_name='footballStadiumPreview',
-                ),
-                Level(
-                    'Credits',
-                    gametype=CreditsActivity,
-                    settings={},
                     preview_texture_name='footballStadiumPreview',
                 ),
             ],

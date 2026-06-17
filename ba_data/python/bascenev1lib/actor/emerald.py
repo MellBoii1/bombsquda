@@ -41,7 +41,11 @@ class EmeraldActor(bs.Actor):
                 'color_texture': self.tex,
                 'reflection': 'powerup',
                 'reflection_scale': [1.0],
-                'materials': (shared.touch_material, shared.object_material),
+                'materials': (
+                    shared.touch_material, 
+                    shared.object_material, 
+                    shared.emerald_material
+                ),
             },
         )
         bs.animate(self.node, 'mesh_scale', {0: 0, 0.3: self.mscale})
@@ -80,8 +84,7 @@ class EmeraldActor(bs.Actor):
         chosen = random.choice(candidates)
 
         return chosen
-    # msg must be any so we don't get circular import issues
-    # altho maybe this WILL allow msg to be anything...
+
     def _handle_hit(self, msg: Any) -> None:
         if msg.hit_type == 'explosion': # exploded? just die
             self.scheduled_die_message()
@@ -128,12 +131,6 @@ class EmeraldActor(bs.Actor):
                 or not actor.is_alive()
                 or not isspaz
             ):
-                squdalog.debug(
-                    (
-                        '[EmeraldActor]: actor didn\'t meet requirements'
-                        ' (toucher, actor, alive, or is a spaz)'
-                    )
-                )
                 return
             from bascenev1lib.actor.spaz import EmeraldMessage
             toucher.handlemessage(EmeraldMessage(self.texname, self.node))

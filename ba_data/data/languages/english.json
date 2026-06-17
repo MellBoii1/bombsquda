@@ -48,18 +48,19 @@
   "achievementText": "Achievement",
   "achievements": {
 	"Parrier": {
-      "description": "Parry 50 times while being alive",
-      "descriptionComplete": "Parried 50 times while being alive",
-      "descriptionFull": "Parry 50 times while still being alive",
-      "descriptionFullComplete": "Parried 50 times while still being alive",
+      "descriptionFull": "Parry 50 times while being alive",
+      "descriptionFullComplete": "Parried 50 times while being alive",
       "name": "'What's Sugarcoating?'"
     },
-	"When TNT Flies3": {
-      "description": "Fly by holding a TNT with a Star",
-      "descriptionComplete": "Flied by holding a TNT with a Star",
-      "descriptionFull": "Fly by holding a TNT with a Star",
-      "descriptionFullComplete": "Flied by holding a TNT with a Star",
-      "name": "When TNT Flies"
+	"HardmodeHardCampaign": {
+      "descriptionFull": "Beat the Co-op (on Hard) campaign with Hard Mode",
+      "descriptionFullComplete": "Beat the Co-op (on Hard) campaign with Hard Mode. I know. It's hard.",
+      "name": "THE ONE THEY FEAR"
+    },
+	"HardmodeEasyCampaign": {
+      "descriptionFull": "Beat the Co-op (on Easy) campaign with Hard Mode",
+      "descriptionFullComplete": "Beat the Co-op (on Easy) campaign with Hard Mode. Wowza!!",
+      "name": "No Biggie..."
     },
 	"Hard Head": {
       "descriptionFull": "Get hit by a bomb in the head with a Metal Cap",
@@ -1623,8 +1624,8 @@
     "nameSetup": "rename characters",
     "entityChance": "chance for entities appearing",
     "menuMusic": "menu music preference",
-    "disableOnlineMusic": "disable music in the gather window",
     "ultraMeter": "ultrakill meter appearance",
+	"openOnlineWindow": "open online settings",
 	"favChar": "i really, REALLY like;",
 	"pickChar": "pick...",
 	"resetText": "reset",
@@ -1651,6 +1652,13 @@
 	"meterdisabledText": "Disabled",
 	"meterbasicText": "Basic",
 	"meternormalText": "Normal"
+  },
+  "onlineWindow": {
+	"disablePinging": "disable 'pinging'",
+	"disableOnlineMusic": "disable music",
+	"disableOnlineFeatures": "disable most online stuff",
+	"pingingInfo": "Disables the constant pinging the game does in the background\nto tell the server it's active. This does mean that stuff like\nnotifications, and such won't pop up. Useful if you're lagging often tho.",
+	"titleText": "online settings"
   },
   "renameWindow": {
 	"titleText": "rename characters",

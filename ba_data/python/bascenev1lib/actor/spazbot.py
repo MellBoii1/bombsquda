@@ -1496,15 +1496,14 @@ class SpazBotSet:
         if player_pts == []:
             for bot in bot_list:
                 pts = []
-                for other in bot_list:
-                    if other is not bot:
+                for otherbot in self.get_living_bots():
+                    if otherbot is not bot:
                         pts.append(
                             (
-                                bs.Vec3(other.node.position),
-                                bs.Vec3(other.node.velocity),
+                                bs.Vec3(otherbot.node.position),
+                                bs.Vec3(otherbot.node.velocity),
                             )
                         )
-
                 bot.set_player_points(pts)
                 bot.update_ai()
         else:

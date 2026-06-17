@@ -14,6 +14,7 @@ import babase
 import random
 from bauiv1lib.popup import PopupMenu
 from bauiv1lib.characterpicker import CharacterPickerDelegate, CharacterPicker
+from bauiv1lib.settings.online import OnlineSettings
 from bascenev1lib.mainmenu import MENU_MUSIC_AMOUNT
 from babase._logging import squdalog
 
@@ -24,9 +25,11 @@ def _format_chance(c: float) -> str:
     text = f"{c:.1f}".rstrip('0').rstrip('.')
     newtext = text.replace('.', '')
     return newtext
+        
 
 class MelWindow(bui.MainWindow, CharacterPickerDelegate):
     """Window for selecting BombSquda settings."""
+    
     @staticmethod
     def _create(t, o, ft):
         return MelWindow(
@@ -73,232 +76,7 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
         self._scroll_height = target_height - 45
         self._sub_width = min(500, self._scroll_width * 0.95)
         self._sub_height = 50
-        meter_choices = [
-            'disabled',
-            'basic',
-            'normal',
-        ]
-        def ls(text: str): return bui.Lstr(r=f'{self._r}.{text}')
-        meter_cdisp = [
-            ls(f'meter{text}Text')
-            for text in meter_choices
-        ]
-        music_choices = [str(None)]
-        music_choices.extend('MENU' + str(i + 1) for i in range(MENU_MUSIC_AMOUNT))
-        music_cdisp = [bs.Lstr(v=str(None))]
-        music_cdisp.extend(
-            bs.Lstr(
-                value=bs._music.get_music_value(music)
-            )
-            for music in music_choices if music != 'None'
-        )
-        settings = [
-            {
-                'type': 'checkbox',
-                'key': "squda_noisepolution", 
-                'label': "noisePollutionText", 
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_skipintro", 
-                'label': "skipIntroText"
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_foxyjumpscare", 
-                'label': "foxyJumpscareText",
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_spazhardmode", 
-                'label': "spazHardModeText", 
-                'sound': ['hardmode', 'okitem'],
-                'info': 'infoHardMode',
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_randomtext", 
-                'label': "randomizeAllText",
-                'info': 'infoRandomizeText',
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_chaosemeralds", 
-                'label': "enableEmeraldsText",
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_disablemortal", 
-                'label': "disableMortalDamageText",
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_parryalways", 
-                'label': "parryAlwaysText", 
-                'sound': [
-                    'attempt_parry', 
-                    'voicelines/kris/pickup'
-                ],
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_dontshutdown", 
-                'label': "dontShutdownText", 
-                'sound': ['gooditem', 'baditem'],
-                'info': 'infoNoShutdown',
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_nowiggledance", 
-                'label': "noWiggleText",
-                'info': 'infoNoWiggle',
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_dontdomarioman", 
-                'label': "noMarioDelayText", 
-                'sound': ['blip', 'quit'],
-                'info': 'infoMarioDelay',
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_richpresence", 
-                'label': "discordRpcText",
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_enablemeter", 
-                'label': "enableMeterText", 
-                'sound': ['shield2', 'shieldReflect'],
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_nosugarcoats", 
-                'label': "noSugarcoatingText", 
-                'sound': ['bellLow', 'bellMed'],
-                'info': 'infoNoSugarcoating',
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_specialmusic", 
-                'label': "specialMusicText",
-                'info': 'infoSpecialMusic',
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_customfont", 
-                'label': "customFontText",
-                'info': 'infoCustomFont',
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_blood", 
-                'label': "enableBloodText", 
-                'sound': ['gibbed', 'party_blower'],
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_noparticles", 
-                'label': "noParticlesText"
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_coopnames", 
-                'label': "coopNamesText",
-                'info': 'infoCoopNames',
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_pausemusic", 
-                'label': "pauseMusicText",
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_showerrors", 
-                'label': "showErrorsText", 
-                'sound': ['dev_epicfail', 'spawn'],
-                'info': 'infoShowErrors',
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_botnames", 
-                'label': "botNamesText",
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_randomgrace",
-                'label': "randomEntitiesText", 
-                'sound': ['mikiwhatthefuck', 'mikiwhatthefuck2'],
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_disable_online_music", 
-                'label': "disableOnlineMusic"
-            },
-            {
-                "type": "popup",
-                "label": "entityChance",
-                "choices": [0.1, 0.3, 0.5, 0.8, 1.0],
-                "display": [
-                    bui.Lstr(resource=f"{self._r}.chance{_format_chance(c)}")
-                    for c in [0.1, 0.3, 0.5, 0.8, 1.0]
-                ],
-                "current": bui.app.config.get("squda_entitychance"),
-                "callback": self._chance_choice,
-            },
-            {
-                "type": "popup",
-                "label": "menuMusic",
-                "choices": music_choices,
-                "display": music_cdisp,
-                "current": bui.app.config.get("squda_menumusic"),
-                "callback": self._music_choice,
-            },
-            {
-                "type": "popup",
-                "label": "ultraMeter",
-                "choices": meter_choices,
-                "display": meter_cdisp,
-                "current": bui.app.config.get("squda_ultrameter"),
-                "callback": self._meter_choice,
-            },
-            {
-                "type": "multi_button",
-                "label": "favChar",
-                "buttons": [
-                    {
-                        "label": (
-                            bui.app.config.get('squda_favchar')
-                            or bui.Lstr(resource=f"{self._r}.pickChar")
-                        ),
-                        'key': 'favChar',
-                        "callback": self.open_characters,
-                    },
-                    {
-                        "label": bui.Lstr(resource=f"{self._r}.resetText"),
-                        'key': 'favCharReset',
-                        "callback": self.reset_character,
-                    },
-                ],
-            },
-            {
-                'type': 'button',
-                'label': 'powerupSetup',
-                'callback': self._open_powerup_setup,
-            },
-        ]
-        # add rename and reset button if not in survey
-        if not first_time:
-            settings.append({
-                'type': 'button',
-                'label': 'nameSetup',
-                'callback': self._open_name_setup,
-            })
-            settings.append({
-                'type': 'button',
-                'label': 'resetAchievements',
-                'callback': self._reset_achievements,
-            })
+        settings = self.get_settings(first_time=first_time)
         # for every setting here, we add 50 to the
         # height of the sub widget
         for setting in settings:
@@ -524,7 +302,7 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
             current_choice=cur,
         )
     
-    def changefont(self) -> None:
+    def _changefont(self) -> None:
         # THE FOLLOWING CODE BELOW
         # SHOULD **NEVER** BE REPLICATED IN
         # AN ACTUAL WELL DEVELOPED MODPACK!!
@@ -635,7 +413,7 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
         cfg.apply_and_commit()
         squdalog.debug(f'{key} changed into {val}')
         if key == 'squda_customfont':
-            self.changefont()
+            self._changefont()
         if sound:
             if val:
                 bui.getsound(sound[0]).play()
@@ -703,3 +481,232 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
             create_call=lambda t, o, ft=self._first_time:
                 MelWindow._create(t, o, ft)
         )
+    
+    def get_settings(self, first_time: bool = False):
+        meter_choices = [
+            'disabled',
+            'basic',
+            'normal',
+        ]
+        def ls(text: str): return bui.Lstr(r=f'{self._r}.{text}')
+        meter_cdisp = [
+            ls(f'meter{text}Text')
+            for text in meter_choices
+        ]
+        music_choices = [str(None)]
+        music_choices.extend('MENU' + str(i + 1) for i in range(MENU_MUSIC_AMOUNT))
+        music_cdisp = [bs.Lstr(v=str(None))]
+        music_cdisp.extend(
+            bs.Lstr(
+                value=bs._music.get_music_value(music)
+            )
+            for music in music_choices if music != 'None'
+        )
+        settings = [
+            {
+                'type': 'checkbox',
+                'key': "squda_noisepolution", 
+                'label': "noisePollutionText", 
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_skipintro", 
+                'label': "skipIntroText"
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_foxyjumpscare", 
+                'label': "foxyJumpscareText",
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_spazhardmode", 
+                'label': "spazHardModeText", 
+                'sound': ['hardmode', 'okitem'],
+                'info': 'infoHardMode',
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_randomtext", 
+                'label': "randomizeAllText",
+                'info': 'infoRandomizeText',
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_chaosemeralds", 
+                'label': "enableEmeraldsText",
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_disablemortal", 
+                'label': "disableMortalDamageText",
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_parryalways", 
+                'label': "parryAlwaysText", 
+                'sound': [
+                    'attempt_parry', 
+                    'voicelines/kris/pickup'
+                ],
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_dontshutdown", 
+                'label': "dontShutdownText", 
+                'sound': ['gooditem', 'baditem'],
+                'info': 'infoNoShutdown',
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_nowiggledance", 
+                'label': "noWiggleText",
+                'info': 'infoNoWiggle',
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_dontdomarioman", 
+                'label': "noMarioDelayText", 
+                'sound': ['blip', 'quit'],
+                'info': 'infoMarioDelay',
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_richpresence", 
+                'label': "discordRpcText",
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_enablemeter", 
+                'label': "enableMeterText", 
+                'sound': ['shield2', 'shieldReflect'],
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_nosugarcoats", 
+                'label': "noSugarcoatingText", 
+                'sound': ['bellLow', 'bellMed'],
+                'info': 'infoNoSugarcoating',
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_specialmusic", 
+                'label': "specialMusicText",
+                'info': 'infoSpecialMusic',
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_customfont", 
+                'label': "customFontText",
+                'info': 'infoCustomFont',
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_blood", 
+                'label': "enableBloodText", 
+                'sound': ['gibbed', 'party_blower'],
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_noparticles", 
+                'label': "noParticlesText"
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_coopnames", 
+                'label': "coopNamesText",
+                'info': 'infoCoopNames',
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_pausemusic", 
+                'label': "pauseMusicText",
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_showerrors", 
+                'label': "showErrorsText", 
+                'sound': ['dev_epicfail', 'spawn'],
+                'info': 'infoShowErrors',
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_botnames", 
+                'label': "botNamesText",
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_randomgrace",
+                'label': "randomEntitiesText", 
+                'sound': ['mikiwhatthefuck', 'mikiwhatthefuck2'],
+            },
+            {
+                "type": "popup",
+                "label": "entityChance",
+                "choices": [0.1, 0.3, 0.5, 0.8, 1.0],
+                "display": [
+                    bui.Lstr(resource=f"{self._r}.chance{_format_chance(c)}")
+                    for c in [0.1, 0.3, 0.5, 0.8, 1.0]
+                ],
+                "current": bui.app.config.get("squda_entitychance"),
+                "callback": self._chance_choice,
+            },
+            {
+                "type": "popup",
+                "label": "menuMusic",
+                "choices": music_choices,
+                "display": music_cdisp,
+                "current": bui.app.config.get("squda_menumusic"),
+                "callback": self._music_choice,
+            },
+            {
+                "type": "popup",
+                "label": "ultraMeter",
+                "choices": meter_choices,
+                "display": meter_cdisp,
+                "current": bui.app.config.get("squda_ultrameter"),
+                "callback": self._meter_choice,
+            },
+            {
+                "type": "multi_button",
+                "label": "favChar",
+                "buttons": [
+                    {
+                        "label": (
+                            bui.app.config.get('squda_favchar')
+                            or bui.Lstr(resource=f"{self._r}.pickChar")
+                        ),
+                        'key': 'favChar',
+                        "callback": self.open_characters,
+                    },
+                    {
+                        "label": bui.Lstr(resource=f"{self._r}.resetText"),
+                        'key': 'favCharReset',
+                        "callback": self.reset_character,
+                    },
+                ],
+            },
+            {
+                'type': 'button',
+                'label': 'powerupSetup',
+                'callback': self._open_powerup_setup,
+            },
+        ]
+        # add rename and reset button if not in survey
+        if not first_time:
+            settings.append({
+                'type': 'button',
+                'label': 'nameSetup',
+                'callback': self._open_name_setup,
+            })
+            settings.append({
+                'type': 'button',
+                'label': 'resetAchievements',
+                'callback': self._reset_achievements,
+            })
+        settings.append({
+            'type': 'button',
+            'label': 'openOnlineWindow',
+            'callback': OnlineSettings,
+        })
+        return settings

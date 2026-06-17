@@ -106,6 +106,7 @@ class Startup():
         "squda_foxyjumpscare": False,
         "squda_pausemusic": True,
         "squda_noonline": False,
+        "squda_disableping": False,
         "squda_randomgrace": False,
         "squda_nowiggledance": disable_wiggledance,
         "squda_entitychance": 0.1,
@@ -372,7 +373,7 @@ class Startup():
                     loopt._connection_failed_logged = True
                     
     # ONLY run the thread if online is enabled
-    if not ba.app.config.get('squda_noonline'):
+    if not ba.app.config.get('squda_disableping'):
         threading.Thread(target=loop, daemon=True).start()
     squdalog.debug('everything should be good to go :3')
     

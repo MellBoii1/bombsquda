@@ -479,10 +479,8 @@ def show_unlockable(tex: str | dict):
             'front': front,
         }
     )
-    if tint1:
-        node2.tint_color = tint1
-    if tint2:
-        node2.tint2_color = tint2
+    node2.tint_color = tint1
+    node2.tint2_color = tint2
     # create text
     textnode = bs.newnode("text", 
         attrs={
@@ -506,8 +504,6 @@ def show_unlockable(tex: str | dict):
     )
     node.connectattr('position', mathnode, 'input2')
     node.connectattr('position', node2, 'position')
-    if node3:
-        node.connectattr('position', node3, 'position')
     mathnode.connectattr('output', textnode, 'position')
     # aaanimate!
     def rotate():
@@ -522,8 +518,6 @@ def show_unlockable(tex: str | dict):
     bs.timer(0.01, rotate, repeat=True)
     bs.timer(6.1, node.delete)
     bs.timer(6.1, node2.delete)
-    if node3:
-        bs.timer(6.1, node3.delete)
     bs.timer(6.1, textnode.delete)
     bs.getsound('unlockable').play()
     
@@ -637,7 +631,7 @@ def show_notification(
     bottom_text: str = 'Bottom Text',
     icon: str | dict | None = None,
     mini_icon: str | None = None,
-    important: bool = True,
+    sound: str = 'notification',
 ):
     """Shows a notification.
     important determines whether the notification
@@ -692,10 +686,7 @@ def show_notification(
         front = True
 
         # play a sound based on importance
-        if important:
-            bs.getsound('notification').play(volume=1.5)
-        else:
-            bs.getsound('notification2').play()
+        bs.getsound(sound).play(volume=1.5)
 
         # background
         bg = bs.newnode(

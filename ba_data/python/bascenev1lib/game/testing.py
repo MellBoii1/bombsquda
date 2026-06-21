@@ -146,12 +146,13 @@ class TestingActivity(bs.TeamGameActivity[Player, Team]):
         super().on_begin()
         self.setup_standard_powerup_drops()
         y = 2.3
-        xoffs = -0.4
+        xoffs = -0.5
         z = -0.5
-        HangingBar((0 + xoffs, y, z)).autoretain()
-        HangingBar((0 + xoffs, y, z - 3)).autoretain()
-        HangingBar((3 + xoffs, y + y, z - 3)).autoretain()
-        HangingBar((-3 + xoffs, y + y, z - 3)).autoretain()
+        HangingBar((2 + xoffs, y, z)).autoretain()
+        HangingBar((-2 + xoffs, y, z)).autoretain()
+        HangingBar((0 + xoffs, y, z - 2)).autoretain()
+        HangingBar((5 + xoffs, y + y, z - 2)).autoretain()
+        HangingBar((-5 + xoffs, y + y, z - 2)).autoretain()
         HangingBar((-7 + xoffs, y, z)).autoretain()
         HangingBar((7 + xoffs, y, z)).autoretain()
     

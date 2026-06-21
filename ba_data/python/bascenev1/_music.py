@@ -159,147 +159,21 @@ def get_music_value(music_name: str):
     )
     with open(path, encoding='utf-8') as infile:
         music_names = json.loads(infile.read())
-    # Get the music name from the list.
-    # If we don't get any, tell the player it's either unknown
-    # or will be added later down the line. Laziness kills the 'Squda. 
-    for type in bs.MusicType:
-        if type.value.lower() == music_name.lower():
-            music_name = str(type)
+    if isinstance(music_name, str):
+        for type in bs.MusicType:
+            if type.value.lower() == music_name.lower():
+                music_name = str(type)
+    else:
+        music_name = str(music_name)
     name = music_names.get(
-        music_name, 
-        ba.Lstr(
-            resource='npUnknownMusic',
-            subs=[('${MUSIC}', music_name)],
-        ).evaluate()
+        music_name,
+        {
+            'title': 'UNKNOWN',
+            'artist': music_name, 
+            'artist_keyword': 'from'
+        }
     )
     return name
-  
-def show_music_now_playing(music_type: bs.MusicType | str) -> None:
-    """Display current music on screen."""
-    from bascenev1lib.actor.text import Text
-    from bascenev1lib.actor.image import Image
-    excluded_types = [
-        None,
-        bs.MusicType.CUTSCENE1,
-        bs.MusicType.CUTSCENE2,
-        bs.MusicType.HURRYUP,
-    ]
-    
-    if music_type in excluded_types:
-        return
-    path = os.path.join(
-        babase.app.env.data_directory,
-        'ba_data',
-        'data',
-        'musicvals.json',
-    )
-    with open(path, encoding='utf-8') as infile:
-        music_names = json.loads(infile.read())
-    # Get the music name from the list.
-    # If we don't get any, tell the player it's either unknown
-    # or will be added later down the line. Laziness kills the 'Squda. 
-    name = music_names.get(
-        str(music_type), 
-        ba.Lstr(
-            resource='npUnknownMusic',
-            subs=[('${MUSIC}', str(music_type))],
-        )
-    )
-    if str(music_type) not in music_names:
-        squdalog.error(f'{str(music_type)} is missing from the music popup list.')
-        bs.getsound('dev_epicfail').play()
-    activity = bs.get_foreground_host_activity()
-    with activity.context:
-        # get important variables
-        uiscale = bui.app.ui_v1.uiscale
-        base_y = 0
-        step_y = 30
-        front = True
-        time = 5
-
-        slot = _get_free_slot(activity.music_texts)
-        ypos = base_y + slot * step_y
-        xpos = 635
-        offscrX = 1500
-        tscale = (
-            1.3 if uiscale is bui.UIScale.SMALL
-            else 0.8
-        )
-        i_scale = (
-            1.5 if uiscale is bui.UIScale.SMALL
-            else 0.8
-        )
-        # make our disc image..
-        img = Image(
-            bs.gettexture('coverDisc'),
-            position=(offscrX, ypos),
-            scale=(300 * i_scale, 300 * i_scale),
-            attach=Image.Attach.BOTTOM_CENTER,
-            color=(1, 1, 1, 0.5),
-        ).autoretain()
-        # and our now playing text
-        txt = Text(
-            ba.Lstr(
-                resource='npPlaying',
-                subs=[
-                    ('${MUSIC}', name)
-                ],
-            ),
-            position=(offscrX, ypos),
-            h_attach=Text.HAttach.CENTER,
-            h_align=Text.HAlign.RIGHT,
-            v_attach=Text.VAttach.BOTTOM,
-            color=(1, 1, 1, 1),
-            scale=tscale,
-            shadow=0.5,
-            flatness=0.5,
-        ).autoretain()
-        txt.node.front = front
-        img.node.front = front
-        activity.music_texts[slot] = txt
-        # animations
-        def posi(node):
-            bs.animate_array(
-                node,
-                "position",
-                2,
-                {
-                    0.0: (offscrX, ypos),
-                    1.0: (xpos, ypos),
-                    time - 1: (xpos, ypos),
-                    time: (offscrX, ypos),
-                }
-            )
-        def opac(node):
-            bs.animate(
-                node,
-                "opacity",
-                {
-                    0.0: 0.0,
-                    0.5: 1.0,
-                    time - 1: 1.0,
-                    time: 0.0
-                }
-            )
-        opac(txt.node)
-        opac(img.node)
-        posi(txt.node)
-        posi(img.node)
-        # define stuff
-        def add_one():
-            # add 5 to rotation
-            img.node.rotate += 5
-        def do_delete():
-            # stop everything that's needed
-            # and delete stuff
-            txt.node.delete()
-            img.node.delete()
-            activity.music_texts.pop(slot, None)
-            img.rotatetimer = None
-        # timers
-        img.rotatetimer = bs.BaseTimer(0.01, add_one, repeat=True)
-        bs.timer(7, do_delete)
-
 def setmusic(musictype: MusicType | None, continuous: bool = False, show_playing: bool = True) -> None:
     """Set the app to play (or stop playing) a certain type of music.
 
@@ -323,23 +197,34 @@ def setmusic(musictype: MusicType | None, continuous: bool = False, show_playing
     # Check if we have a activity.
     try:
         activity = bs.getactivity()
-        gnode = activity.globalsnode
     # Use foreground host activity instead.
     except babase._error.ActivityNotFoundError:
         activity = bs.get_foreground_host_activity()
-        gnode = activity.globalsnode
+    gnode = activity.globalsnode
     gnode.music_continuous = continuous
     gnode.music = '' if musictype is None else musictype.value
     gnode.music_count += 1
 
-    with activity.context:
+    with bs.get_foreground_host_session().context:
         # Don't show game-set music if the player
-        # is using the boombox
-        if ba.app.config.get("squda_isplayingmusic"):
+        # is using the boombox, if the game doesn't
+        # want to, or it's using a excluded music (or nothing)
+        excluded = [
+            None,
+            bs.MusicType.CUTSCENE1,
+            bs.MusicType.CUTSCENE2,
+            bs.MusicType.HURRYUP,
+        ]
+        if (
+            ba.app.config.get("squda_isplayingmusic")
+            or not show_playing
+            or musictype in excluded
+        ):
             return
-        if not show_playing:
-            return
-        ba.apptimer(0.1, lambda: show_music_now_playing(music_type=musictype))
+        def make():
+            from bascenev1lib.actor.musicnotif import MusicNotifier
+            MusicNotifier(music_type=musictype).autoretain()
+    ba.apptimer(0, make)
     
 def localsetmusic(musictype: MusicType | None, continuous: bool = False) -> None:
     """
@@ -360,6 +245,7 @@ def localsetmusic(musictype: MusicType | None, continuous: bool = False) -> None
             musictype,
             mode=bui.app.classic.MusicPlayMode.TEST,
         )
+        
 def getmusic():
     """
     gets the current playing music

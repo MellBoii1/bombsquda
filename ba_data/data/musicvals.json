@@ -1,21 +1,33 @@
 {
-	"MusicType.TO_THE_DEATH": "Daniel Bautista - Intro",
+	"MusicType.TO_THE_DEATH": "Intro - Daniel Bautista",
 	"MusicType.SHOP": "Wii Shop Channel - Nintendo Sound Team",
-	"MusicType.TO_THE_DEATH2": "Chrono Symphonic - Darkness Dueling (Plastic Men and Iron Blades)",
-	"MusicType.TO_THE_DEATH2FAST": "Daniel Bautista - Flight of the Bumblebee",
+	"MusicType.TO_THE_DEATH2": "Darkness Dueling (Plastic Men and Iron Blades) - Chrono Symphonic",
+	"MusicType.TO_THE_DEATH2FAST": "Flight of the Bumblebee - Daniel Bautista",
 	"MusicType.TO_THE_DEATH3FAST": "Bãtutã la trompeta - Rabbids Go Home",
 	"MusicType.TO_THE_DEATH3": "Bãtutã din Moldova - Rabbids Go Home",
-	"MusicType.TO_THE_DEATHFAST": "Daniel Bautista - Flight of the Bumblebee",
+	"MusicType.TO_THE_DEATHFAST": "Flight of the Bumblebee - Daniel Bautista",
 	"MusicType.EPIC": "Nocturne no. 2 in E-Flat major, op. 9 no. 2",
 	"MusicType.EPICFAST": "Starvation V2 - T_heonlywhitesofa",
 	"MusicType.COOP_SELECT": "Map Medley (Super Mario Bros. 3) - Mario Kart World",
 	"MusicType.FINALE_SELECT": "Map Medley (Super Mario Bros. 3) - Mario Kart World",
 	"MusicType.FFA_SELECT1": "Your Name, Please - EarthBound Dimensions",
 	"MusicType.TEAMS_SELECT1": "Map Medley (Super Mario World) - Mario Kart World",
-	"MusicType.TEAMS_SELECT2": "Slot Machine - Super Mario 3D World",
-	"MusicType.TUTORIAL": "Go Go Go Summer, Nobuhamu - Tetr.io",
+	"MusicType.TEAMS_SELECT2": {
+		"title": "Slot Machine",
+		"artist": "Super Mario 3D World",
+		"artist_keyword": "from"
+	},
+	"MusicType.TUTORIAL": {
+		"title": "Go Go Go Summer",
+		"artist": "Tetr.io",
+		"artist_keyword": "from"
+	},
 	"MusicType.ONLINE": "Online Menu - Mario Kart Wii",
-	"MusicType.D_RUNNIN": "Runnin from Evil - Doom II", 
+	"MusicType.D_RUNNIN": {
+		"title": "Runnin' from Evil",
+		"artist": "Doom II",
+		"artist_keyword": "from"
+	}, 
 	"MusicType.BUSINESS": "Porky Means Business! - EarthBound",
 	"MusicType.PAUSE": "Upgrade Station - Team Fortress 2",
 	"MusicType.ELIM_DANGER": "Danger - Dr. Robotnik's Mean Bean Machine",
@@ -26,18 +38,34 @@
 	"MusicType.RACE": "VS Metal Sonic - Sonic Mania",
 	"MusicType.EPIC_RACE": "Final Boss - Sonic Mania",
 	"MusicType.MENU1": "Artistic Mindset - Spamton123",
-	"MusicType.MENU2": "Super Mario Kart Title Remastered",
+	"MusicType.MENU2": "Super Mario Kart Title Remastered - Turret 3471",
 	"MusicType.MENU3": "Mario vs Luigi 2.0 Title Theme Remix - Goldyber",
 	"MusicType.MENU4": "Cascade Zone Act 1 - Bomb Boy",
-	"MusicType.MENU5": "Mario vs Luigi 2.0 Title Theme",
-	"MusicType.MENU6": "Mario Kart: Double Dash!! Title Theme",
-	"MusicType.MENU7": "Start your Engines - CTGP-7",
+	"MusicType.MENU5": "Mario vs Luigi 2.0 Title Theme - ipodtouch0218",
+	"MusicType.MENU6": "Mario Kart: Double Dash!! Title Theme - Nintendo Sound Team",
+	"MusicType.MENU7": {
+		"title": "Start your Engines",
+		"artist": "CTGP-7",
+		"artist_keyword": "from"
+	},
 	"MusicType.MENU8": "Dog...? - Item Asylum",
 	"MusicType.MENU9": "Title Theme -  Mario Kart 7",
-	"MusicType.MENU10": "Friends no More x Papá Cerdito vs Bebé George",
-	"MusicType.MENU11": "Title Theme - Mario Kart 8",
-	"MusicType.MENU12": "Title Theme - Mario Kart 64",
-	"MusicType.MENU13": "Title Theme - Dr. Robotnik's Mean Bean Machine",
+	"MusicType.MENU10": "Friends no More x Papá Cerdito vs Bebé George - ???",
+	"MusicType.MENU11": {
+		"title": "Title Theme",
+		"artist": "Mario Kart 8",
+		"artist_keyword": "from"
+	},
+	"MusicType.MENU12": {
+		"title": "Title Theme",
+		"artist": "Mario Kart 64",
+		"artist_keyword": "from"
+	},
+	"MusicType.MENU13": {
+		"title": "Title Theme",
+		"artist": "Dr. Robotnik's Mean Bean Machine",
+		"artist_keyword": "from"
+	},
 	"MusicType.MENU14": "Pizza Deluxe - POST ELVIS",
 	"MusicType.MENU15": "Pollyanna Rock My World - Furries in a blender",
 	"MusicType.MENU16": "Wii Theme but it's September - Mr Rock",
@@ -47,12 +75,20 @@
 	"MusicType.MENU20": "Main Theme (Ssvsab Remix) - Angry Birds",
 	"MusicType.MENU21": "Title Theme - Super Mario 64",
 	"MusicType.MENU22": "Main Menu - Hotel Mario",
-	"MusicType.RMENU": "Clock Strikes 12 - Reddit Bullshit",
+	"MusicType.RMENU": {
+		"title": "Clock Strikes 12",
+		"artist": "Reddit Bullshit",
+		"artist_keyword": "from"
+	},
 	"MusicType.MENU67": "Super Compressed Version of the JRMP Menu Music That Isn't Really From JRMP But I Also Sing It With Myself Whilst Screaming - Mell",
 	"MusicType.CREDITS": "Staff Roll - Super Mario 3D Land",
 	"MusicType.SNESCOURSE": "SNES Battle Course - Mario Kart World",
 	"MusicType.SNESCOURSE2": "SNES Battle Course 4 - Mario Kart Wii",
-	"MusicType.DEFEAT": "Faint Courage - Deltarune Chapter 2 OST",
+	"MusicType.DEFEAT": {
+		"title": "Faint Courage",
+		"artist": "Deltarune Chapter 2 OST",
+		"artist_keyword": "from"
+	},
 	"MusicType.FINALDESTINATION": "Final Destination - Super Smash Bros Melee",
 	"MusicType.THEFINALE": "In The Finale - Bowser's Inside Story",
 	"MusicType.WAR": "Thousand March - Mr. Sauceman",

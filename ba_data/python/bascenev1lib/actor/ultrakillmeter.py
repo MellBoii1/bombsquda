@@ -20,9 +20,6 @@ SCORE_RANKS = {
 RANK_ORDER = [None, 'D', 'C', 'B', 'A', 'S', 'SS', 'SSS', 'U']
 FRESHNESS_ORDER = [0.0, 0.5, 1.0, 1.5]
 
-def clamp(num, min_val, max_val):
-    return max(min(num, max_val), min_val)
-
 
 class UltrakillMeter(bs.Actor):
     """
@@ -336,7 +333,7 @@ class UltrakillMeter(bs.Actor):
             self.freshness_num = 50
             self.freshness_index -= 1
             self.freshness = FRESHNESS_ORDER[self.freshness_index]
-        self.freshness_num = clamp(self.freshness_num, 0, 50)
+        self.freshness_num = mell.clamp(self.freshness_num, 0, 50)
         subs = [('${COUNT}', str(self.freshness))]
         freshness_dict = {
             1.5: 'ultrakillMeterFresh',
@@ -355,7 +352,7 @@ class UltrakillMeter(bs.Actor):
         mini = 0
         maxi = 50
         norm = (val - mini) / (maxi - mini)
-        norm = clamp(norm, 0, 1)
+        norm = mell.clamp(norm, 0, 1)
         self.set_fbar_length(self._freshbar_dwidth * norm, sub)
 
     def set_rank(

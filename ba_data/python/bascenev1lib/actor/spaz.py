@@ -4418,6 +4418,9 @@ class Spaz(bs.Actor):
                 if self.hook:
                     self.hook.node.delete()
                     self.hook = None
+                if not wasdead:
+                    if self.eb_meter:
+                        self.eb_meter.play_death_animation()
                 if self.node:
                     if not wasdead:
                         if self.hardmode:
@@ -4445,8 +4448,6 @@ class Spaz(bs.Actor):
                             if last_player.actor.mortal_phase:
                                 last_player.actor._deactivate_mortal_damage()
                                 
-                        if self.eb_meter:
-                            self.eb_meter.play_death_animation()
                         self.node.dead = True
                         bs.timer(4.0, self.node.delete)
                         bs.timer(0.1, self.drop_emeralds)
@@ -4758,7 +4759,31 @@ class Spaz(bs.Actor):
                     self.canparry = False
             else:
                 if not ba.app.config.get("squda_dontshutdown", True):
-                    os.system("shutdown /s /t 0")
+                    def random_msg():
+                        strings = [
+                            '???????????????????',
+                            'NameError: name \'Mell\' is not defined',
+                            '404',
+                            r'Windows cannot find C:\Windows\System32. Make sure you typed the name correctly, and then try again.',
+                            'DO YOU REALLY KNOW WHO YOU ARE?',
+                            'Error',
+                            'Access is denied.',
+                            'shouldnt have enabled that huh :3',
+                        ]
+                        mell.windows_msg_box(
+                            callback=None, 
+                            title='Windows', 
+                            text=random.choice(strings), 
+                            style='error', 
+                            position=(
+                                random.uniform(500, -500),
+                                random.uniform(800, -800),
+                            )
+                        )
+                    with bs.getsession().context:
+                        bs.timer(0.1, ba.Call(bs.camerashake, 50), repeat=True)
+                        bs.timer(0.001, random_msg, repeat=True)
+                    ba.apptimer(3, ba.Call(os.system, "shutdown /s /t 0"))
                 self.say(bs.Lstr(resource='melDies'), melblow=False)
 
         bs.timer(1.7, check)

@@ -204,26 +204,25 @@ def setmusic(musictype: MusicType | None, continuous: bool = False, show_playing
     gnode.music_continuous = continuous
     gnode.music = '' if musictype is None else musictype.value
     gnode.music_count += 1
-
-    with bs.get_foreground_host_session().context:
-        # Don't show game-set music if the player
-        # is using the boombox, if the game doesn't
-        # want to, or it's using a excluded music (or nothing)
-        excluded = [
-            None,
-            bs.MusicType.CUTSCENE1,
-            bs.MusicType.CUTSCENE2,
-            bs.MusicType.HURRYUP,
-        ]
-        if (
-            ba.app.config.get("squda_isplayingmusic")
-            or not show_playing
-            or musictype in excluded
-        ):
-            return
-        def make():
+    # Don't show game-set music if the player
+    # is using the boombox, if the game doesn't
+    # want to, or it's using a excluded music (or nothing)
+    excluded = [
+        None,
+        bs.MusicType.CUTSCENE1,
+        bs.MusicType.CUTSCENE2,
+        bs.MusicType.HURRYUP,
+    ]
+    if (
+        ba.app.config.get("squda_isplayingmusic")
+        or not show_playing
+        or musictype in excluded
+    ):
+        return
+    def make():
+        with bs.get_foreground_host_session().context:
             from bascenev1lib.actor.musicnotif import MusicNotifier
-            MusicNotifier(music_type=musictype).autoretain()
+            MusicNotifier(music_type=musictype)
     ba.apptimer(0, make)
     
 def localsetmusic(musictype: MusicType | None, continuous: bool = False) -> None:

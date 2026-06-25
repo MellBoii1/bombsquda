@@ -158,6 +158,13 @@ class PlayerSpaz(Spaz):
         """
         player = self.getplayer(bs.Player)
         assert player
+        # If they have a cursor and it's connected, don't connect yet...
+        # This prevents overriding cursor controls if we died.
+        if player.cursor:
+            # (doin check here so no errors)
+            if player.cursor._connected_to_player:
+                self._connected_to_player = player
+                return
 
         # Reset any currently connected player and/or the player we're
         # wiring up.

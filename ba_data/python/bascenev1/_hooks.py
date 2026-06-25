@@ -204,10 +204,51 @@ def cmd_end(ctx: CommandContext):
             if hasattr(ctx.activity, 'end_game'):
                 ctx.activity.end_game()
 
+@register('/cursor', usage='/cursor', desc='Toggles your cursor (DOES NOT MAKE YOU SAFE)')
+def cmd_cur(ctx: CommandContext):
+    with ctx.activity.context:
+        if not ctx.player.cursor:
+            # Make the cursor.
+            from bascenev1lib.actor.cursor import Cursor
+            cursor = Cursor(ctx.player)
+            # Connect the player.
+            ctx.player.cursor = cursor
+            cursor.connect_controls()
+            # Keep em knocked out (just for the funsies)
+            def do_knockout(player: bs.Player):
+                if not player.actor.node:
+                    return
+                player.actor.node.handlemessage(
+                    'knockout', 100
+                )
+            ctx.player.knockout_timer = bs.Timer(
+                0.1, 
+                bs.Call(do_knockout, player=ctx.player),
+                repeat=True
+            )
+        else:
+            # Kill the cursor.
+            ctx.player.cursor.handlemessage(
+                bs.DieMessage()
+            )
+            ctx.player.cursor = None
+            # Give back our player their controls.
+            if ctx.player.actor._connected_to_player:
+                ctx.player.actor.connect_controls_to_player()
+            # Wake em up.
+            if getattr(ctx.player, 'knockout_timer', None):
+                ctx.player.knockout_timer = None
+
+@register('/modvote', usage='/modvote', desc='Start a modifier vote')
+def cmd_modvote(ctx: CommandContext):
+    with ctx.activity.context:
+        from bascenev1lib.modifiers.vote_ui import ModifierVoteDelegate
+        ModifierVoteDelegate().autoretain()
+
 def launch_main_menu_session() -> None:
     if getattr(ba.app, 'intro_done', None) is None:
         disable_intro = ba.app.config.get('squda_skipintro', False)
-        ba.app.intro_done = True if disable_intro is True else False
+        ba.app.intro_done = disable_intro
     if not ba.app.intro_done:
         from bascenev1lib.intros.session import IntroSession
         _bascenev1.new_host_session(IntroSession)
@@ -234,7 +275,7 @@ def handle_command(msg: str, roster_entry: dict, player_index: int):
     if not command:
         return msg
 
-    if not ctx.player and not ctx.is_sp:
+    if not ctx.player:
         servermessage(f'{ctx.display}, you must be in-game!')
         return msg
 

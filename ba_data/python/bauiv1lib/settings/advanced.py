@@ -531,17 +531,6 @@ class AdvancedSettingsWindow(bui.MainWindow):
             maxwidth=430,
         )
 
-        v -= 42
-        self._disable_camera_shake_check_box = ConfigCheckBox(
-            parent=self._subcontainer,
-            position=(50, v),
-            size=(self._sub_width - 100, 30),
-            configkey='Disable Camera Shake',
-            displayname=bui.Lstr(resource=f'{self._r}.disableCameraShakeText'),
-            scale=1.0,
-            maxwidth=430,
-        )
-
         self._disable_gyro_check_box: ConfigCheckBox | None = None
         if self._show_disable_gyro:
             v -= 42

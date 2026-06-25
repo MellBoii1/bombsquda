@@ -19,6 +19,7 @@ import bascenev1 as bs
 import fromgoverhaul.mell_resources as mell
 import threading, time
 import uuid
+import ctypes
 from pathlib import Path
 SERVER = mell.server
 BS_ID = None
@@ -38,6 +39,13 @@ def setstresstestin(
         attract_mode
     )
 _bsc.set_stress_testing = setstresstestin
+csh = bs.camerashake
+def camerashake(intensity: float = 1.0):
+    # shake window too!!!!
+    mell.shake_window(intensity=intensity * 10)
+    return csh(intensity)
+bs.camerashake = camerashake
+    
 
 class stupid_attribute_holder:
     # basically we're gonna tell this 
@@ -125,6 +133,7 @@ class Startup():
         'squda_border_toggle': True,
         'squda_ultrameter': 'normal',
         'squda_coop_levels_beaten_hardmode': {},
+        'squda_disablewindowshake': True,
     } 
     # "setdefault" to create config settings
     # won't affect already existing ones.
@@ -143,6 +152,21 @@ class Startup():
                 '\nError: {e}' 
             )
         )
+    # try getting user32, but if
+    # it fails assume we're on multi-platform
+    # and just default
+    try:
+        user32 = ctypes.windll.user32
+    except:
+        user32 = None
+    title = 'BombSquad'    
+    if user32:
+        hwnd = user32.FindWindowW(None, title)
+    else:
+        hwnd = None
+    ba.app.window_hwnd = hwnd
+    # by default, we rename the window too :3
+    mell.rename_window('BombSquda')
 
     if babase.app.config.get("squda_richpresence", True):
         try:

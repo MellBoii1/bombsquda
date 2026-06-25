@@ -118,6 +118,9 @@ def translate_char_name(name: str):
         translate=('characterNames', name)
     ).evaluate()
 
+def clamp(num, min_val, max_val):
+    return max(min(num, max_val), min_val)
+
 def add_spaz(
     amount: int | float = 50,
     currency: str = 'tix',
@@ -821,6 +824,274 @@ def show_notification(
 
         # auto-remove
         bs.timer(4.0, trans_out)
+
+def rename_window(text: str):
+    import ctypes
+    import babase as ba
+    try:
+        user32 = ctypes.windll.user32
+    except:
+        user32 = None
+    hwnd = ba.app.window_hwnd
+    if not hwnd:
+        return False
+    user32.SetWindowTextW(hwnd, text)
+    return True
+
+def windows_msg_box(
+    callback,
+    title: str,
+    text: str,
+    style: str = "ok",
+    position: tuple[int, int] = (0, 0),
+) -> None:
+    import ctypes
+    import threading
+    import babase as ba
+    from ctypes import wintypes
+
+    try:
+        user32 = ctypes.windll.user32
+        kernel32 = ctypes.windll.kernel32
+    except Exception:
+        return
+
+    # Proper signatures
+    user32.CallNextHookEx.argtypes = (
+        wintypes.HHOOK,
+        ctypes.c_int,
+        wintypes.WPARAM,
+        wintypes.LPARAM,
+    )
+    user32.CallNextHookEx.restype = ctypes.c_ssize_t
+
+    user32.SetWindowPos.argtypes = (
+        wintypes.HWND,
+        wintypes.HWND,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_uint,
+    )
+
+    HOOKPROC = ctypes.WINFUNCTYPE(
+        ctypes.c_ssize_t,
+        ctypes.c_int,
+        wintypes.WPARAM,
+        wintypes.LPARAM,
+    )
+
+    styles = {
+        "ok": 0x0,
+        "ok_cancel": 0x1,
+        "yes_no": 0x4,
+        "yes_no_cancel": 0x3,
+        "retry_cancel": 0x5,
+        "cancel_try_continue": 0x6,
+        "error": 0x10,
+    }
+
+    if style not in styles:
+        raise TypeError(
+            f"{style!r} is not a valid style. "
+            f"Available styles: {list(styles)}"
+        )
+
+    raw_style = styles[style]
+
+    def thread():
+        hook = None
+
+        @HOOKPROC
+        def cbt_hook_proc(code, wparam, lparam):
+            if code == 5:  # HCBT_ACTIVATE
+                hwnd = int(wparam)
+
+                user32.SetWindowPos(
+                    hwnd,
+                    None,
+                    int(position[0]),
+                    int(position[1]),
+                    0,
+                    0,
+                    0x0001 | 0x0004,  # SWP_NOSIZE | SWP_NOZORDER
+                )
+
+            return 0
+
+        hook = user32.SetWindowsHookExW(
+            5,  # WH_CBT
+            cbt_hook_proc,
+            None,
+            kernel32.GetCurrentThreadId(),
+        )
+
+        try:
+            result = user32.MessageBoxW(
+                None,
+                text,
+                title,
+                raw_style,
+            )
+        finally:
+            if hook:
+                user32.UnhookWindowsHookEx(hook)
+
+        result = {
+            1: "ok",
+            2: "cancel",
+            3: "abort",
+            4: "retry",
+            5: "ignore",
+            6: "yes",
+            7: "no",
+            10: "retry",
+            11: "continue",
+        }.get(result, "unknown")
+
+        if callback:
+            callback(result)
+
+    threading.Thread(
+        target=thread,
+        daemon=False,
+    ).start()
+
+def shake_window(
+    hwnd: int | None = None,
+    intensity: float = 10,
+    duration: float = 0.5,
+    frequency: int = 120,
+):
+    import ctypes
+    import random
+    import time
+    import threading
+    import babase as ba
+    # we use bombsquad's window per default,
+    # but allow replacing it
+    hwnd = hwnd or ba.app.window_hwnd
+    if not hwnd:
+        return
+    # window shake gets *FUNKY* on fullscreen,
+    # and it also should be toggleable,
+    # so disable it in such cases
+    if (
+        ba.app.config.get('Fullscreen')
+        or ba.app.config.get('squda_nowindowshake')
+    ):
+        return
+
+    # user32
+    user32 = ctypes.windll.user32
+
+    # idk what a rect is
+    class RECT(ctypes.Structure):
+        _fields_ = [
+            ("left", ctypes.c_long),
+            ("top", ctypes.c_long),
+            ("right", ctypes.c_long),
+            ("bottom", ctypes.c_long),
+        ]
+
+    # shake (on thread)
+    def _shake():
+        # get rect
+        rect = RECT()
+        user32.GetWindowRect(hwnd, ctypes.byref(rect))
+
+        # base x...
+        base_x = rect.left
+        base_y = rect.top
+        w = rect.right - rect.left
+        h = rect.bottom - rect.top
+
+        # get start and end
+        start = time.perf_counter()
+        end = start + duration
+        frame_time = 1 / frequency
+        
+        # last direction x and y
+        last_dx = 0
+        last_dy = 0
+
+        while True:
+            now = time.perf_counter()
+            if now >= end:
+                break
+
+            # progress 1 to 0
+            t = (end - now) / duration
+
+            current_intensity = intensity * t
+
+            # direction is random
+            dx = random.uniform(-current_intensity, current_intensity)
+            dy = random.uniform(-current_intensity, current_intensity)
+
+            # apply relative to base position
+            user32.MoveWindow(
+                hwnd,
+                int(base_x + dx),
+                int(base_y + dy),
+                w,
+                h,
+                True,
+            )
+            # save last direction
+            last_dx, last_dy = dx, dy
+            time.sleep(frame_time)
+
+        # return goes to center
+        steps = 10
+        for i in range(steps):
+            t = 1 - (i / steps)
+
+            user32.MoveWindow(
+                hwnd,
+                int(base_x + last_dx * t),
+                int(base_y + last_dy * t),
+                w,
+                h,
+                True,
+            )
+            time.sleep(frame_time)
+
+        # finally, snap to the center
+        user32.MoveWindow(hwnd, base_x, base_y, w, h, True)
+    threading.Thread(target=_shake, daemon=True).start()
+
+def set_trans_key(
+    hwnd: int | None = None, 
+    color: int = 0x00FF00
+):
+    # look. i already know what you're gonna say.
+    # yes i didn't make this. does it LOOK like
+    # i have the mental capability to do so???
+    import babase as ba
+    import ctypes
+    import threading 
+    # use default hwnd or other one
+    hwnd = hwnd or ba.app.window_hwnd
+    if not hwnd:
+        return
+    
+    user32 = ctypes.windll.user32
+    
+    LWA_COLORKEY = 0x1
+    GWL_EXSTYLE = -20
+    WS_EX_LAYERED = 0x80000
+    LWA_ALPHA = 0x2
+    def _trans_thread():
+        # green = 0x00FF00 in BGR format
+        ex_style = user32.GetWindowLongW(hwnd, GWL_EXSTYLE)
+        user32.SetWindowLongW(hwnd, GWL_EXSTYLE, ex_style | WS_EX_LAYERED)
+        user32.SetLayeredWindowAttributes(hwnd, color, 0, LWA_COLORKEY)
+    # this shouldn't lag the main thread,
+    # but probably safer to do it in another
+    # just incase (and so the effect isn't noticeable)
+    threading.Thread(target=_trans_thread, daemon=False).start()
 
 # ---------------------------------- NETWORKING -------------------------------------------
 

@@ -296,6 +296,7 @@ def verify_object_death(obj: object) -> None:
 
 
 def _verify_object_death(wref: weakref.ref) -> None:
+    import efro.debug
     obj = wref()
     if obj is None:
         return
@@ -305,12 +306,13 @@ def _verify_object_death(wref: weakref.ref) -> None:
     except Exception:
         print(f'Note: unable to get type name for {obj}')
         name = 'object'
-
+    
     print(
-        f'{Clr.RED}Error: {name} not dying when expected to:'
-        f' {Clr.BLD}{obj}{Clr.RST}\n'
-        'See efro.debug for ways to debug this.'
+        f'{Clr.RED}Error: {name} not dying when expected to.\n'
+        'See efro.debug for ways to debug this.\n'
+        'Object\'s references:'
     )
+    efro.debug.printrefs(obj)
 
 
 def storagename(suffix: str | None = None) -> str:

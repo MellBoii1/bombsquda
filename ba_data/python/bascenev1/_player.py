@@ -106,6 +106,7 @@ class Player[TeamT: bascenev1.Team]:
         self._nodeactor = NodeActor(node)
         sessionplayer.setnode(node)
         self.settings = {}
+        self.cursor: bs.Actor | None = None
 
     def leave(self) -> None:
         """Called when the Player leaves a running game.

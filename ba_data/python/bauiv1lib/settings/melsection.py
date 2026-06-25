@@ -204,7 +204,17 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
         lkey = setting.get('label')
         sound = setting.get('sound')
         info = setting.get('info')
+        sub_option = setting.get('sub_option')
         x = self._col_x
+        if sub_option:
+            bui.imagewidget(
+                parent=self._subcontainer,
+                position=(x - 5, y - 3),
+                size=(40, 45),
+                texture=bui.gettexture('subOption'),
+                color=(0.49, 0.45, 0.61),
+            )
+            x += 50
         self._checkboxes[lkey] = bui.checkboxwidget(
             parent=self._subcontainer,
             position=(x, y),
@@ -276,23 +286,38 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
     
     def _build_popup(self, setting: dict, y: float):
         xoffset = 70
+        x = self._col_x
         callback = setting.get('callback')
         cdisp = setting.get('display')
         c = setting.get('choices')
         cur = setting.get('current')
         label = setting.get('label')
+        sub_option = setting.get('sub_option')
+        x_extra = 280
+        if sub_option:
+            bui.imagewidget(
+                parent=self._subcontainer,
+                position=(x - 5, y - 3),
+                size=(40, 45),
+                texture=bui.gettexture('subOption'),
+                color=(0.49, 0.45, 0.61),
+            )
+            x += 120
+            x_extra = 140
+            y -= 5
         self._popup_labels[label] = bui.textwidget(
             parent=self._subcontainer,
-            position=(self._col_x - xoffset, y + 25),
+            position=(x - xoffset, y + 25),
             text=bui.Lstr(resource=f"{self._r}.{label}"),
             size=(0, 0),
-            scale=0.8,
+            scale=0.9,
             h_align='left',
             v_align='center',
+            maxwidth=x_extra - 30,
         )
         self._popup_menus[label] = PopupMenu(
             parent=self._subcontainer,
-            position=(self._col_x + 280 - xoffset, y),
+            position=(x + x_extra - xoffset, y),
             width=250,
             autoselect=False,
             on_value_change_call=bui.WeakCall(callback),
@@ -496,13 +521,31 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
         music_choices = [str(None)]
         music_choices.extend('MENU' + str(i + 1) for i in range(MENU_MUSIC_AMOUNT))
         music_cdisp = [bs.Lstr(v=str(None))]
+        def format_music_val(music_val: str | dict):
+            if isinstance(music_val, dict):
+                return f'{music_val.get('title')} - {music_val.get('artist')}'
+            else:
+                return music_val
         music_cdisp.extend(
             bs.Lstr(
-                value=bs._music.get_music_value(music)
+                value=format_music_val(
+                    bs._music.get_music_value(music)
+                )
             )
             for music in music_choices if music != 'None'
         )
         settings = [
+            {
+                'type': 'checkbox',
+                'key': "Disable Camera Shake", 
+                'label': "camShakeText", 
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_disablewindowshake", 
+                'label': "windowShakeText", 
+                'sub_option': True,
+            },
             {
                 'type': 'checkbox',
                 'key': "squda_noisepolution", 
@@ -650,6 +693,7 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
                 ],
                 "current": bui.app.config.get("squda_entitychance"),
                 "callback": self._chance_choice,
+                "sub_option": True,
             },
             {
                 "type": "popup",

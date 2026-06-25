@@ -1597,6 +1597,8 @@
   },
   "melWindow": {
     "titleText": "bombsquda config",
+	"camShakeText": "disable camera shake",
+	"windowShakeText": "disable window shake",
     "noisePollutionText": "make my game inaudible",
     "skipIntroText": "always skip intro",
     "spazHardModeText": "evil fucking hard mode!!!",
@@ -1622,7 +1624,7 @@
     "botNamesText": "bots have names",
     "powerupSetup": "powerup settings",
     "nameSetup": "rename characters",
-    "entityChance": "chance for entities appearing",
+    "entityChance": "chance",
     "menuMusic": "menu music preference",
     "ultraMeter": "ultrakill meter appearance",
 	"openOnlineWindow": "open online settings",

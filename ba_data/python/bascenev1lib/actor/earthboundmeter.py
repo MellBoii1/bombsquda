@@ -28,11 +28,21 @@ class EarthboundMeter(bs.Actor):
         self.scale = scale
         self.portrait_texture = portrait_texture
         self.lose_texture = lose_texture
+        # set default attrs
+        self.char = None
+        self.meter = None
+        self.name_text = None
+        self.sp_text = None
+        self.hp_text = None
         
         self.x = -9999
         self.y = -9999
         self.did_death_anim = False
-
+        
+        if not spaz.node:
+            self.handlemessage(bs.DieMessage())
+            return
+            
         self._create_nodes()
         self.refresh()
 

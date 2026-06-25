@@ -186,6 +186,7 @@ class Activity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         self._teams_that_left: list[weakref.ref[TeamT]] = []
         self._transitioning_out = False
         self.hardmode = bs.app.config.get("squda_spazhardmode")
+        self.cur_buttons = []
 
         # A handy place to put most actors; this list is pruned of dead
         # actors regularly and these actors are insta-killed as the activity
@@ -455,7 +456,18 @@ class Activity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
 
     def handlemessage(self, msg: Any) -> Any:
         """General message handling; can be passed any message object."""
-        del msg  # Unused arg.
+        from bascenev1lib.actor.cursor import (
+            CursorClickedMessage, 
+            CursorMovedMessage
+        )
+        if (
+            isinstance(msg, CursorClickedMessage) 
+            or isinstance(msg, CursorMovedMessage)
+        ):
+            for btn in self.cur_buttons:
+                if btn and btn.exists():
+                    btn.handlemessage(msg)
+            return True
         return UNHANDLED
 
     def has_transitioned_in(self) -> bool:

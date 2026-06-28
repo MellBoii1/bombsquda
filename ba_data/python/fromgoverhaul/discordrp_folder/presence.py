@@ -32,7 +32,9 @@ INVALID_PAYLOAD = 4000
 
 class PresenceError(Exception):
     """
-    An error emitted from Discord. See the [docs](https://discord.com/developers/docs/topics/opcodes-and-status-codes#rpc) for more details.
+    An error emitted from Discord. See the 
+    [docs](https://discord.com/developers/docs/topics/opcodes-and-status-codes#rpc) 
+    for more details.
     """
 
     def __init__(self, message: object, code: int) -> None:
@@ -51,7 +53,9 @@ class ClientIDError(PresenceError):
 
 class ActivityError(PresenceError):
     """
-    Discord rejected the payload because the activity was not in the [correct format](https://discord.com/developers/docs/topics/gateway-events#activity-object).
+    Discord rejected the payload 
+    because the activity was not 
+    in the [correct format](https://discord.com/developers/docs/topics/gateway-events#activity-object).
     """
 
     def __init__(self, message: object) -> None:
@@ -60,7 +64,8 @@ class ActivityError(PresenceError):
 
 class Presence:
     """
-    The main class used to connect to Discord for its rich presence API.
+    The main class used to connect to 
+    Discord for its rich presence API.
     """
 
     def __init__(self, client_id: str):
@@ -72,15 +77,16 @@ class Presence:
         )
         # Send a handshake request
         self._handshake()
-        squdalog.debug('Discord RPC is functioning.')
+        squdalog.debug('RPC initiated without error')
 
     def set(self, activity: Optional[dict[str, Any]]) -> None:
         """
-        Sets the current activity using a dictionary representing a [Discord activity object](https://discord.com/developers/docs/topics/gateway-events#activity-object).
+        Sets the current activity using a dictionary representing a 
+        [Discord activity object](https://discord.com/developers/docs/topics/gateway-events#activity-object).
 
         Raises a `PresenceError` if Discord rejected the payload.
         """
-
+        squdalog.debug(f'Got set request for RPC with data {activity}')
         payload = {
             "cmd": "SET_ACTIVITY",
             "args": {
@@ -121,7 +127,8 @@ class Presence:
     def close(self) -> None:
         """
         Closes the current connection.
-        This method is automatically called when the program exits using the 'with' statement.
+        This method is automatically called when the 
+        program exits using the 'with' statement.
         """
         try:
             self._send({}, _OpCode.CLOSE)
@@ -144,6 +151,7 @@ class Presence:
             if payload["code"] == INVALID_PAYLOAD:
                 raise ClientIDError()
             raise PresenceError(payload["message"], payload["code"])
+        squdalog.debug('RPC sent handshake')
 
     def _read(self) -> dict[str, Any]:
         op, length = self._read_header()
@@ -215,7 +223,7 @@ class _UnixSocket(_Socket):
             except FileNotFoundError:
                 pass
         else:
-            squdalog.debug("unable to start rich presence: Cannot find a Unix socket to connect to Discord")
+            squdalog.debug("Cannot find a Unix socket to connect to Discord")
             raise FileNotFoundError
 
     def _get_pipe_path(self) -> str:     
@@ -248,7 +256,7 @@ class _WindowsSocket(_Socket):
             except FileNotFoundError:
                 pass
         else:        
-            print('Cannot find a Windows socket to connect to Discord.\nPerhaps Discord isn\'t open?')
+            squdalog.error('Couldn\'t find a Windows Socket to connect to discord')
 
     def _read(self, size: int) -> bytes:
         return self._buffer.read(size)

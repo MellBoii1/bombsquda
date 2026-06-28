@@ -121,6 +121,10 @@ class FriendsTab(GatherTab):
                     subs=[('${ERROR}', full_error)],
                 ),
             )
+            bui.spinnerwidget(
+                edit=self._spinner,
+                visible=False,
+            )
 
             return self._container
 

@@ -65,9 +65,16 @@ class RadioWindow(bui.Window):
         
         musics = [music_type for music_type in dir(bs.MusicType) if not music_type.startswith('__')]
         choices_display = []
+        def format_music_val(music_val: str | dict):
+            if isinstance(music_val, dict):
+                return f'{music_val.get('title')} - {music_val.get('artist')}'
+            else:
+                return music_val
         choices_display.extend(
             bs.Lstr(
-                value=bs._music.get_music_value(music)
+                value=format_music_val(
+                    bs._music.get_music_value(music)
+                )
             )
             for music in musics
         )

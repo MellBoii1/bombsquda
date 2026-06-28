@@ -34,15 +34,12 @@ from fromgoverhaul.mell_sfx import SoundFactory
 import fromgoverhaul.mell_resources as mell
 import babase as ba
 
-
 from bascenev1lib.actor.entities.kookoo import Kookoo
 from bascenev1lib.actor.entities.dozer import Dozer
 from bascenev1lib.actor.entities.ire import Ire
 from bascenev1lib.actor.entities.sorrow import Sorrow
 from bascenev1lib.actor.entities.mime import Mime
-from bascenev1lib.actor.entities.rue import Rue
 from bascenev1lib.actor.entities.litany import Litany
-
 
 if TYPE_CHECKING:
     from typing import Any, Sequence, Callable
@@ -188,13 +185,6 @@ ENTITY_CONFIG = {
         'appearsLstr': bs.Lstr(resource='mimeAppears'),
         'class': Mime,
         'texture': lambda: PowerupBoxFactory.get().tex_mime,
-    },
-    'rue': {
-        'attr_flag': 'rued',
-        'attr_obj': 'rue',
-        'appearsLstr': bs.Lstr(resource='rueAppears'),
-        'class': Rue,
-        'texture': lambda: PowerupBoxFactory.get().tex_rue,
     },
     'litany': {
         'attr_flag': 'litanyd',
@@ -370,7 +360,6 @@ class Spaz(bs.Actor):
         self.ired = False
         self.sorrowful = False
         self.mimed = False
-        self.rued = False
         self.litanyd = False
         
         self.last_x = 0
@@ -383,7 +372,6 @@ class Spaz(bs.Actor):
         self.sorrow = None
         self.dozer = None
         self.mime = None
-        self.rue = None
         self.litany = None
 
         self.source_player = source_player
@@ -701,8 +689,7 @@ class Spaz(bs.Actor):
             self.kookoo,
             self.sorrow,
             self.mime,
-            self.rue,
-            self.litany
+            self.litany,
         ]
         for entity in entities_tofuckingnuke:
             if entity is not None:

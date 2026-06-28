@@ -4,7 +4,7 @@ like lists, dicts, server address, game version, and some useful functions.
 """
 
 screams = ['screams/scream' + str(i + 1) + '' for i in range(15)]
-server = "http://104.196.199.18:5000"
+server = "https://bombsquda.tailc76b25.ts.net/"
 version = '2.5'
 update_date = '6/1/2026'
 from babase._logging import squdalog
@@ -37,6 +37,7 @@ store_prices = {
     'characters.ogspaz': 700,
     'characters.kookoo': 1300,
     'characters.fancypants': 1100,
+    'characters.isaac': 800,
 }
 # A dict for store character names (basically coded 
 # names like characters.charname) that correspond to a spazappearance name.
@@ -68,8 +69,10 @@ appearance_dict = {
     # Shouldn't be on store or etc but still use same system
     'characters.ire': 'Ire',
     'characters.dozer': 'Dozer',
+    # ---
     'characters.kookoo': 'Kookoo',
     'characters.fancypants': 'Fancy Pants',
+    'characters.isaac': 'Isaac',
 }
 # A dict we use in character select, profile edit, 
 # etc... to swapout vanilla or Gummy's Overhaul characters for ours.

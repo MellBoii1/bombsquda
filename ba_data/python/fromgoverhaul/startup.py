@@ -17,6 +17,7 @@ import traceback
 import datetime
 import bascenev1 as bs
 import fromgoverhaul.mell_resources as mell
+from .server_ping import ServerPing
 import threading, time
 import uuid
 import ctypes
@@ -45,29 +46,22 @@ def camerashake(intensity: float = 1.0):
     mell.shake_window(intensity=intensity * 10)
     return csh(intensity)
 bs.camerashake = camerashake
-    
-
-class stupid_attribute_holder:
-    # basically we're gonna tell this 
-    # fucker "here hold these attributes"
-    def __init__(self):
-        self._connection_failed_logged = False
-        self._connection_success_logged = False
-    def __dict__(self):
-        return {}
 
 class Startup():
     platform = ba.app.classic.platform
+    # suffix is dds if we're not on android
     suffix = '.dds' if platform not in ['android'] else '.ktx'
-    file = os.path.join(
+    # check if the 'kamikaze' file exists,
+    # and if it doesn't exit with a error code
+    kamikaze = os.path.join(
         _babase.app.env.data_directory,
         'ba_data',
         'textures',
         'cowtato' + suffix,
     )
-    file = Path(file)
-    if not file.is_file():
-        os._exit(1)
+    kamikaze = Path(kamikaze)
+    if not kamikaze.is_file():
+        os._exit(2)
     # alright we're ready to do startup stuff
     squdalog.info(f'bombsquda v{mell.version}, updated as of {mell.update_date}')
     # very important stuff that needs to be set on startup
@@ -78,11 +72,6 @@ class Startup():
     cfg = bui.app.config
     # made by temp in the 'bombarmy' discussion in the discord server.
     config = bs.app.config
-    # disable some default options on android
-    if platform in ['android']:
-        disable_wiggledance = True
-    else:
-        disable_wiggledance = False
     conflist = {
         "squda_parryalways": False,
         "squda_skipintro": False,
@@ -116,7 +105,7 @@ class Startup():
         "squda_noonline": False,
         "squda_disableping": False,
         "squda_randomgrace": False,
-        "squda_nowiggledance": disable_wiggledance,
+        "squda_nowiggledance": False,
         "squda_entitychance": 0.1,
         "squda_botnames": True,
         "squda_favchar": None,
@@ -178,30 +167,41 @@ class Startup():
     squdalog.debug('config stuff is done')
     
     owned = ba.app.config.get('squda_storeowned')
-    if owned.get('characters.baller', False):
-        def do_it():
-            name = 'Baller'
-            key = 'characters.baller'
-            price = mell.store_prices[key]
-            owned = ba.app.config.get('squda_storeowned')
-            owned[key] = False
-            ba.app.config.commit()
-            bottom_lstr = bs.Lstr(
-                resource='notifications.removalRefundText',
-                subs=[
-                    ('${COUNT}', str(price)),
-                    ('${NAME}', name),
-                ]
-            ).evaluate()
-            top_lstr = bs.Lstr(resource='notifications.characterRemovalRefundTitle').evaluate()
-            mell.show_notification(
-                top_text=top_lstr,
-                bottom_text=bottom_lstr,
-                icon='spaztickets',
-            )
-            with bs.get_foreground_host_activity().context:
-                mell.add_spaz(amount=price)
-        ba.apptimer(4, do_it)
+    removed_chars = {
+        'characters.baller': 'Baller',
+    }
+    time = 4
+    # for every character that got removed,
+    # refund their price
+    for char in removed_chars.keys():
+        if owned.get(char, False):
+            def do_it():
+                # config stuff
+                name = removed_chars[char]
+                key = char
+                price = mell.store_prices[key]
+                owned = ba.app.config.get('squda_storeowned')
+                owned[key] = False
+                ba.app.config.commit()
+                # get text
+                bottom_lstr = bs.Lstr(
+                    resource='notifications.removalRefundText',
+                    subs=[
+                        ('${COUNT}', str(price)),
+                        ('${NAME}', name),
+                    ]
+                ).evaluate()
+                top_lstr = bs.Lstr(resource='notifications.characterRemovalRefundTitle').evaluate()
+                # show notification
+                mell.show_notification(
+                    top_text=top_lstr,
+                    bottom_text=bottom_lstr,
+                    icon='spaztickets',
+                )
+                # refund them the amount they paid
+                mell.add_spaz(amount=price, notif_type='screen')
+            ba.apptimer(time, do_it)
+            time += 1
         
     def auto_module_import():
         """
@@ -268,137 +268,8 @@ class Startup():
     # Install the hook
     sys.excepthook = my_global_exception_hook
     squdalog.debug('global exception hook is ready!')
-    # define our thread loop
-    def loop():
-        global status
-        loopt = stupid_attribute_holder()
-        status = {}
-        def set_bs_id():
-            import fromgoverhaul.mell_resources as mell
-            global BS_ID
-            BS_ID = mell.get_unique_bs_id()
-        
-        while not getattr(ba.app.mode, '_active', False):
-            time.sleep(2)
-
-        while BS_ID is None:
-            set_bs_id()
-            time.sleep(0.2)  # wait until ID is ready
-        
-        # while we exist, keep pinging the server
-        while True:
-            def update_status():
-                global status
-                activity = bs.get_foreground_host_activity()
-                session = bs.get_foreground_host_session()
-                player = None
-
-                aname = (
-                    f"{activity.__class__.__module__}."
-                    f"{activity.__class__.__name__}"
-                    if activity else None
-                )
-                players = getattr(activity, 'players', [])
-                for plr in players:
-                    inputdevice = plr._sessionplayer.inputdevice
-                    if not inputdevice.is_remote_client:
-                        player = plr
-                        break
-                pchar = getattr(player, 'character', None)
-                pname = getattr(player, 'getname()', None)
-                profile = f'{pname} ({pchar})'
-
-                sname = (
-                    f"{session.__class__.__module__}."
-                    f"{session.__class__.__name__}"
-                    if session else None
-                )
-                coop = isinstance(session, CoopSession)
-                score = getattr(activity, '_score', 0)
-                rank = getattr(activity, 'ultrameter._rank', str(None))
-                share_status = True
-                if share_status:
-                    status = {
-                        'activity_module': str(activity.__class__.__module__),
-                        'activity_class': str(activity.__class__.__name__),
-                        'activity_full': aname,
-                        'session_module': str(session.__class__.__module__),
-                        'session_class': str(session.__class__.__name__),
-                        'session_full': sname,
-                        'coop': coop,
-                        'score': score,
-                        'rank': rank,
-                        'hidden': False,
-                        'profile': profile,
-                        'online': True if bs.get_connection_to_host_info_2() else False,
-                    }
-                else:
-                    status = {
-                        'hidden': True,
-                    }
-            # update the status
-            bs.pushcall(update_status, from_other_thread=True)
-            data = {
-                "bs_id": BS_ID,
-                "account": bui.app.plus.get_v1_account_display_string(),
-                "device_id": BS_ID.split(":")[-1],
-                "bs_version": ba.app.env.engine_version,
-                "squda_version": mell.version,
-                "squda_updatedate": mell.update_date,
-                "squda_status": status,
-            }
-            # make a request to the server with the data (as dumped json)
-            request = urllib.request.Request(
-                f"{SERVER}/ping",
-                data=json.dumps(data).encode('utf-8'),
-                headers={
-                    "Content-Type": "application/json"
-                },
-            )
-            squdalog.debug('PINGING SERVER')
-            # now try opening the response
-            try:
-                open = urllib.request.urlopen(request, timeout=2)
-                response = json.loads(open.read().decode('utf-8'))
-                new_msgs = response.get('new_messages')
-                squdalog.debug(f'GOT RESPONSE: {response}')
-                if new_msgs:
-                    delay_inc = 0.5
-                    delay = 0.5
-                    for msg in new_msgs.keys():
-                        info = mell.get_info_from_id(msg)
-                        name = info.get('username', info.get('account_name', 'Unknown'))
-                        ba.pushcall(
-                            ba.Call(ba.apptimer,
-                                delay, 
-                                ba.Call(
-                                    mell.show_notification,
-                                    top_text=name,
-                                    bottom_text=new_msgs[msg],
-                                    icon=info.get('avatar', 'null'),
-                                ),
-                            ),
-                            from_other_thread=True
-                        )
-                        delay += delay_inc
-                    
-                if not loopt._connection_success_logged:
-                    squdalog.info('Connection to the BombSquda server established successfully.')
-                    loopt._connection_success_logged = True
-                    loopt._connection_failed_logged = False
-                time.sleep(7)
-            # exception likely means no connection could be made
-            except Exception as e:
-                squdalog.debug(f"Server connection failed: {e}")
-                time.sleep(5)
-                if not loopt._connection_failed_logged:
-                    squdalog.info('Connecting to the BombSquda server failed.')
-                    loopt._connection_success_logged = False
-                    loopt._connection_failed_logged = True
-                    
-    # ONLY run the thread if online is enabled
-    if not ba.app.config.get('squda_disableping'):
-        threading.Thread(target=loop, daemon=True).start()
+    
+    ServerPing()
     squdalog.debug('everything should be good to go :3')
     
 

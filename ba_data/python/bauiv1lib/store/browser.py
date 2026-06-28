@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from typing import Any, Callable, Sequence
 
 MERCH_LINK_KEY = 'Merch Link'
-INVALID_PRICE = 1
+INVALID_PRICE = 0
 
 
 class StoreBrowserWindow(bui.MainWindow):

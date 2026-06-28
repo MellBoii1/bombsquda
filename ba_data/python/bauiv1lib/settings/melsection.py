@@ -180,6 +180,7 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
         self._popup_labels = {}
         self._popup_menus = {}
         self._checkboxes = {}
+        self._labels = {}
 
         for row, setting in enumerate(settings):
             y = start_y - row * row_height
@@ -196,6 +197,9 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
             elif setting["type"] == "multi_button":
                 self._build_multi_button(setting, y)
             
+            elif setting["type"] == "label":
+                self._build_label(setting, y)
+                
             else:
                 squdalog.error(f"UNKNOWN SETTINGS SETTING TYPE: {setting['type']}")
 
@@ -254,6 +258,19 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
             text_scale=1.0,
             label=bui.Lstr(resource=f'{self._r}.{label}'),
             on_activate_call=callback,
+        )
+    
+    def _build_label(self, setting: dict, y: float):
+        text = setting.get('text')
+        self._labels[text] = bui.textwidget(
+            parent=self._subcontainer,
+            position=(self._col_x, y + 25),
+            text=bui.Lstr(resource=f"{self._r}.{text}"),
+            size=(0, 0),
+            scale=0.85,
+            h_align='left',
+            v_align='center',
+            maxwidth=500,
         )
     
     def _build_multi_button(self, setting: dict, y: float):
@@ -336,8 +353,8 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
         # EVERY UPDATE), BUT THEY COULD JUST SCREW UP
         # SOMETHING AND I DON'T EVEN KNOW THAT!!
         def rename(name: str, output: str):
-            platform = app.classic.platform
             app = babase.app
+            platform = app.classic.platform
             suffix = '.dds' if platform not in ['android'] else '.ktx'
             path = os.path.join(
                 app.env.data_directory,
@@ -542,7 +559,7 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
             },
             {
                 'type': 'checkbox',
-                'key': "squda_disablewindowshake", 
+                'key': "squda_nowindowshake", 
                 'label': "windowShakeText", 
                 'sub_option': True,
             },
@@ -633,12 +650,6 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
             },
             {
                 'type': 'checkbox',
-                'key': "squda_specialmusic", 
-                'label': "specialMusicText",
-                'info': 'infoSpecialMusic',
-            },
-            {
-                'type': 'checkbox',
                 'key': "squda_customfont", 
                 'label': "customFontText",
                 'info': 'infoCustomFont',
@@ -659,11 +670,6 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
                 'key': "squda_coopnames", 
                 'label': "coopNamesText",
                 'info': 'infoCoopNames',
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_pausemusic", 
-                'label': "pauseMusicText",
             },
             {
                 'type': 'checkbox',
@@ -696,12 +702,30 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
                 "sub_option": True,
             },
             {
+                "type": "label",
+                "text": "musicPrefsText",
+            },
+            {
                 "type": "popup",
                 "label": "menuMusic",
                 "choices": music_choices,
                 "display": music_cdisp,
                 "current": bui.app.config.get("squda_menumusic"),
                 "callback": self._music_choice,
+                "sub_option": True,
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_pausemusic", 
+                'label': "pauseMusicText",
+                'sub_option': True,
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_specialmusic", 
+                'label': "specialMusicText",
+                'info': 'infoSpecialMusic',
+                'sub_option': True,
             },
             {
                 "type": "popup",

@@ -59,7 +59,7 @@ GummyBoiYT - Former collaborator, created Snake Shadow's character, Ninjageon an
 Buddie - Suggested the idea for the Hot Spongetato Gamemode, made and voiced Orangecap's (The OC), and... wait, why is he IN THE GAME?? Holy self inserttttt <br>
 Lemon - Voice-acted Mell and also gave some great ideas like the spongebob powerup<br>
 Various sources - Sounds, music, and everything. There's WAY too many sources to list, so you're better off just searching for em.<br>
-Cowtato - Voice acted and created Rem
+Cowtato - Voice acted and created Rem<br>
 Kaden - Absolutely nothing related to the game
 
 ## Why does this modpack suck?

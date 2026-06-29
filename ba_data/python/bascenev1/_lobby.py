@@ -1101,44 +1101,106 @@ class Chooser:
             righta = babase.charstr(babase.SpecialChar.RIGHT_ARROW)
             upa = babase.charstr(babase.SpecialChar.UP_ARROW)
             downa = babase.charstr(babase.SpecialChar.DOWN_ARROW)
-            # most hardcoded bullshit i've made
             if self._menu_active:
-                # selecting a character
                 if self._submenu_mode == 'character':
                     name = self._character_names[self._character_index]
-                    sub = f'{lefta} {name} {righta}'
-                # seleccting settings
+
+                    sub = bs.Lstr(
+                        value='${LEFT} ${NAME} ${RIGHT}',
+                        subs=[
+                            ('${LEFT}', lefta),
+                            ('${NAME}', mell.lstr_char_name(name)),
+                            ('${RIGHT}', righta),
+                        ],
+                    )
+
                 elif self._submenu_mode == 'settings':
                     settings = self._ensure_player_settings()
                     option = self.settings[self._settings_index]
-                    current = settings.get(option, self.settings_options[option][0])
+                    current = settings.get(
+                        option,
+                        self.settings_options[option][0],
+                    )
 
-                    sub = f'{downa} {option} {upa}: {lefta} {str(current).upper()} {righta}'
-                # selecting sounds
+                    sub = bs.Lstr(
+                        value='${DOWN} ${OPTION} ${UP}: ${LEFT} ${VALUE} ${RIGHT}',
+                        subs=[
+                            ('${DOWN}', downa),
+                            ('${OPTION}', bs.Lstr(
+                                translate=('lobbySettings', option),
+                            )),
+                            ('${UP}', upa),
+                            ('${LEFT}', lefta),
+                            ('${VALUE}', str(current).upper()),
+                            ('${RIGHT}', righta),
+                        ],
+                    )
+
                 elif self._submenu_mode == 'sound':
-                    current = list( self._sound_dict.keys() )[self._sound_index]
-                    sub = f'{lefta} {current} {righta}'
-                # selecting a skin
+                    current = list(self._sound_dict.keys())[self._sound_index]
+
+                    sub = bs.Lstr(
+                        value='${LEFT} ${SOUND} ${RIGHT}',
+                        subs=[
+                            ('${LEFT}', lefta),
+                            ('${SOUND}', bs.Lstr(
+                                translate=('lobbySounds', current),
+                            )),
+                            ('${RIGHT}', righta),
+                        ],
+                    )
+
                 elif self._submenu_mode == 'skin':
                     name = self._character_names[self._character_index]
                     current = self.skins[name][self._skin_index]
+
                     classic = bs.app.classic
                     apps = classic.spaz_appearances
+
                     try:
                         skin_name = (
-                            apps[current].skin_name 
+                            bs.Lstr(
+                                translate=('skinNames', apps[current].skin_name)
+                            )
                             if apps[current].is_skin
-                            else mell.translate_char_name(name)
+                            else mell.lstr_char_name(name)
                         )
-                    except:
+                    except Exception:
                         skin_name = ''
-                    sub = f'{lefta} {skin_name} {righta}'
-                # main menu
+
+                    sub = bs.Lstr(
+                        value='${LEFT} ${SKIN} ${RIGHT}',
+                        subs=[
+                            ('${LEFT}', lefta),
+                            ('${SKIN}', skin_name),
+                            ('${RIGHT}', righta),
+                        ],
+                    )
+
                 else:
                     options = self.menu_options
-                    sub = f'{upa}{options[self._menu_index]}{downa}'
+
+                    sub = bs.Lstr(
+                        value='${UP}${OPTION}${DOWN}',
+                        subs=[
+                            ('${UP}', upa),
+                            ('${OPTION}', bs.Lstr(
+                                translate=('lobbyMenu', options[self._menu_index]),
+                            )),
+                            ('${DOWN}', downa),
+                        ],
+                    )
             else:
-                sub = f'{downa}choose profile{upa}'
+                sub = bs.Lstr(
+                    value='${UP}${TEXT}${DOWN}',
+                    subs=[
+                        ('${UP}', upa),
+                        ('${TEXT}', bs.Lstr(
+                            translate=('lobbyMenu', 'choose profile'),
+                        )),
+                        ('${DOWN}', downa),
+                    ],
+                )
 
             self._subtext_node.text = sub
 

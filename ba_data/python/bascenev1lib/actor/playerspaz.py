@@ -19,11 +19,6 @@ from bascenev1lib.actor.popuptext import PopupText
 if TYPE_CHECKING:
     from typing import Any, Sequence, Literal
 
-class GETREALLYFUCKINHARD:
-    """A message from a PlayerSpaz telling something to get REALLY hard. Hardmode."""
-    def __init__(self, spaz: PlayerSpaz):
-        self.spaz = spaz
-
 class PlayerSpazHurtMessage:
     """A message saying a PlayerSpaz was hurt."""
 

@@ -121,6 +121,12 @@ def translate_char_name(name: str):
         translate=('characterNames', name)
     ).evaluate()
 
+def lstr_char_name(name: str):
+    import babase
+    return babase.Lstr(
+        translate=('characterNames', name)
+    )
+
 def clamp(num, min_val, max_val):
     return max(min(num, max_val), min_val)
 

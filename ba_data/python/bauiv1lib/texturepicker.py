@@ -58,6 +58,14 @@ class TexturePicker(PopupWindow):
             offset=offset,
         )
 
+        # Scroll area.
+        self._scrollwidget = bui.scrollwidget(
+            parent=self.root_widget,
+            position=(15, 15),
+            size=(width - 25, height - 70),
+            simple_culling_v=20.0,
+        )
+        
         # Search bar.
         self._search_bar = bui.textwidget(
             parent=self.root_widget,
@@ -69,16 +77,9 @@ class TexturePicker(PopupWindow):
             description='Search Textures',
             v_align='center',
             corner_scale=0.7,
-            autoselect=True,
+            autoselect=False,
+            selectable=False,
             on_return_press_call=bui.Call(self._update_filter),
-        )
-
-        # Scroll area.
-        self._scrollwidget = bui.scrollwidget(
-            parent=self.root_widget,
-            position=(15, 15),
-            size=(width - 25, height - 70),
-            simple_culling_v=20.0,
         )
 
         self._buttons: list[bui.Widget] = []
@@ -189,5 +190,4 @@ class TexturePicker(PopupWindow):
     def on_popup_cancel(self) -> None:
         if not self._transitioning_out:
             bui.getsound('swish').play()
-
         self._transition_out()

@@ -473,7 +473,7 @@
   "boostText": "Boost",
   "thanksForPlaying": "Thanks for playing",
   "creditsWindow": {
-	"text": "BombSquda: Mell's stupid Modpack\n\n---- Credits ----\n\nGREiy45 on SketchFab for Kris and Ralsei's models\nVibapop on SketchFab for Susie's model (will be changed),\nand for Kris and Ralsei's old models\nnote.swiper for the Roblox R6 Rig Model\nNotCleanAgain for the Roaring Knight's Model\n@smiteis on SketchFab for the Chaos Emeralds' Models\nSounds from various pieces of media and game sources\n\n---- Music Creators ----\n Daniel Bautista, Nintendo Sound Team, \nChrono Symphonic, \nT_heonlywhitesofa, antourenein, \nNobuhamu, VALVe, Sega Sound Team, \nSonic Team Jr Spamton123, \nTurret 3471, Goldyber, Bomb Boy, \nItem Asylum creators, POST ELVIS, \nFurries in a blender (yes, thats \ntheir name), Mr Rock, Mell\nTee Lopes, Toby Fox,\nMr. Sauceman, Heaven Pierce Her, \nVozaxhi, Oofator, spooklass, parpal\nLyteRayz, skibsthegoober2500, Sherry, \n@secret_fan48 on tt, Frakture, \nSiivagunner, SlappyHappy2000\nGaMetal, ClascyJitto, \nMaliceX, Nagz, Chromadeline, \nThatGuyRamon, B1itz Lunar, \nJayhabStudios, The Saltshakers\n\n\n\n---- Special Thanks ----\nOriginal game by Eric Froemling\n\n-- Friends --\n\nLemon\nBuddie\nt33nage_d1sast3r\nGummyBoiYT\nabdo2534\nNightmist\nGabetheGoober\nalhasanplayz\ne328\nCowtato\n\n-- Contributors --\n\nGummyBoiYT\nBuddie\nAchston\nLemon\nCowtato\n\n-- Members of Lemon World (where i post devlogs) --\n\n ggMustaGD01, temp, SoK, Achston, Lemon,\nYunoHo_Chan, Karanveer, e328, Boomcatto, \nYuribloxsquad16, GabetheGoofer, big mario, blue_battler,\ndinorpg, Cowtato, and t33nage_d1sast3r\n\n\nAnd of course, to each and \neveryone who played, including you,\nmassive thanks from the guy\nthat can't stop developing\nfor this modpack that has kept me quite\nengaged over the months of development!!!",
+	"text": "BombSquda: Mell's stupid Modpack\n\n---- Credits ----\n\nGREiy45 on SketchFab for Kris and Ralsei's models\nDAR 88 on Sketchfab for\nHatless Ralsei, and Susie's model\nnote.swiper for the Roblox R6 Rig Model\nNotCleanAgain for the Roaring Knight's Model\n@smiteis on SketchFab for the Chaos Emeralds' Models\nSounds from various pieces of media and game sources\n\n---- Music Creators ----\n Daniel Bautista, Nintendo Sound Team, \nChrono Symphonic, \nT_heonlywhitesofa, antourenein, \nNobuhamu, VALVe, Sega Sound Team, \nSonic Team Jr Spamton123, \nTurret 3471, Goldyber, Bomb Boy, \nItem Asylum creators, POST ELVIS, \nFurries in a blender (yes, thats \ntheir name), Mr Rock, Mell\nTee Lopes, Toby Fox,\nMr. Sauceman, Heaven Pierce Her, \nVozaxhi, Oofator, spooklass, parpal\nLyteRayz, skibsthegoober2500, Sherry, \n@secret_fan48 on tt, Frakture, \nSiivagunner, SlappyHappy2000\nGaMetal, ClascyJitto, \nMaliceX, Nagz, Chromadeline, \nThatGuyRamon, B1itz Lunar, \nJayhabStudios, The Saltshakers\n\n\n\n---- Special Thanks ----\nOriginal game by Eric Froemling\n\n-- Friends --\n\nLemon\nBuddie\nt33nage_d1sast3r\nGummyBoiYT\nabdo2534\nNightmist\nGabetheGoober\nalhasanplayz\ne328\nCowtato\n\n-- Contributors --\n\nGummyBoiYT\nBuddie\nAchston\nLemon\nCowtato\n\n-- Members of Lemon World (where i post devlogs) --\n\n ggMustaGD01, temp, SoK, Achston, Lemon,\nYunoHo_Chan, Karanveer, e328, Boomcatto, \nYuribloxsquad16, GabetheGoofer, big mario, blue_battler,\ndinorpg, Cowtato, and t33nage_d1sast3r\n\n\nAnd of course, to each and \neveryone who played, including you,\nmassive thanks from the guy\nthat can't stop developing\nfor this modpack that has kept me quite\nengaged over the months of development!!!",
 	"titleText": "BombSquda's Credits",
 	"rpcText": "looking at credits"
   },
@@ -1439,6 +1439,7 @@
   "playerDelayedJoinText": "${PLAYER} got here late and will join laterer",
   "playerInfoText": "Player Info",
   "playerLeftText": "${PLAYER} ragequit the game",
+  "playerLeftCoopSpotText": "${NAME} left the game, anyone can replace their spot",
   "playerLimitReachedText": "nope you dont get to join",
   "playerProfilesWindow": {
     "cantDeleteAccountProfileText": "hey silly you cant delete your account profile",
@@ -1835,10 +1836,6 @@
 	"tapStart": "TAP THE SCREEN",
 	"rpcText": "at the Titlescreen"
   },
-  "artistKeywords": {
-	"from": "From",
-	"by": "By"
-  },
   "menuOverhead1": "According to all known laws of aviation, there is no way a bee should be able to fly.",
   "menuOverhead2": "Well would you look at that, more useless eye candy! Neat, don'tcha think?",
   "menuOverhead3": "Look, I don't have much to say here, I'm just making up reasons to use this feature.",
@@ -2047,6 +2044,23 @@
   "tournamentsDisabledWorkspaceText": "Tournaments are disabled when workspaces are active.\nTo re-enable tournaments, disable your workspace and restart.",
   "tournamentsText": "Tournaments",
   "translations": {
+    "lobbyMenu": {
+		"choose profile": null,
+		"ready": null,
+		"settings": null,
+		"character": null,
+		"sound": null,
+		"skin": null
+	},
+	"lobbySettings": {
+		"parry button": null,
+		"bomb skin": null,
+		"scream sound": null
+	},
+	"artistKeywords": {
+		"from": "from",
+		"by": "by"
+	},
     "characterNames": {
 		"GummyBoiYT": "Snakeling",
 		"Spaz": "Spazling",

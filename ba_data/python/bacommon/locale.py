@@ -181,6 +181,8 @@ class LocaleResolved(Enum):
             val = 'en'
         elif self is cls.PORTUGUESE_BRAZIL:
             val = 'pt-BR'
+        elif self is cls.SPANISH:
+            val = 'sp'
         else:
             # Make sure we cover all cases.
             assert_never(self)

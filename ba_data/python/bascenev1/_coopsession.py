@@ -180,7 +180,12 @@ class CoopSession(Session):
                 # alive, allow mid activity rejoining.
                 if player.actor.hitpoints >= 410:
                     self.amaj_players += 1
-                    bs.broadcastmessage(f'{player.actor.node.name} left the game, anyone can replace their spot')
+                    bs.broadcastmessage(
+                        bs.Lstr(
+                            r='playerLeftCoopSpotText',
+                            s=[('${NAME}', player.get_name())]
+                        )
+                    )
         super().on_player_leave(sessionplayer)
         self._handle_empty_activity()
         

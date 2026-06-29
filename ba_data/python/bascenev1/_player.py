@@ -261,7 +261,10 @@ class Player[TeamT: bascenev1.Team]:
         assert not self._expired
         from bascenev1lib.actor.spazfactory import SpazFactory
         fac = SpazFactory.get()
-        media = fac.get_media(self.character)
+        character = self.settings.get('skin')
+        if not character:
+            character = self.character
+        media = fac.get_media(character)
         # instead of using the session player's
         # icon, use ours so we have a icon that changes
         # everytime our character changes

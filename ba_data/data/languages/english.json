@@ -1385,7 +1385,7 @@
   "storeInvalidText": "Whoops, either this item wasn't added to the\nstore or it has an missing price count. Sorry!",
   "storePurchased": "You got ${ITEM}!",
   "gotUnlockable": "YOU GOT:",
-  "noCharacterSkin": "${NAME}, your character doesn't have a skin!",
+  "noCharacterSkin": "${NAME}, ${CHAR} doesn't have a skin!",
   "notNowText": "eeehhh i think not",
   "notSignedInErrorText": "You must sign in to do this.",
   "notSignedInGooglePlayErrorText": "You must sign in with Google Play to do this.",

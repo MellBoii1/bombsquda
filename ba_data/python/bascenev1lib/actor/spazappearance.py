@@ -52,7 +52,8 @@ class Appearance:
                 f'spaz appearance name "{self.name}" already exists.'
             )
         bs.app.classic.spaz_appearances[self.name] = self
-        self.skin_name = ''
+        self.skin_name = 'Unknown Skin'
+        self.is_skin = False
         self.hidden = False
         self.color_texture = 'white'
         self.color_mask_texture = 'white'
@@ -1004,6 +1005,8 @@ def register_appearances() -> None:
     # the skin's name, so in this case 'Metal OG Spaz' (metal skin for og spaz)
     # would just be called Metal, or something of the sorts.
     t.skin_name = 'Metal'
+    # we are a skin, so true
+    t.is_skin = True
     # ALWAYS set a skin as hidden.
     t.hidden = True
     t.color_texture = 'metalSpazColor'
@@ -1041,8 +1044,9 @@ def register_appearances() -> None:
     
     # spazling #######################################
     t = Appearance('SMB1Spaz')
-    t.skin_name = 'SMB1'
+    t.skin_name = 'Retro'
     t.hidden = True
+    t.is_skin = True
     t.color_texture = 'retroSpazColor'
     t.color_mask_texture = 'retroSpazColorMask'
     t.icon_texture = 'spazlingIcon'
@@ -1068,3 +1072,38 @@ def register_appearances() -> None:
     t.gloat_sounds = ['voicelines/spaz/gloat']
     t.fall_sounds = ['voicelines/spaz/fall0' + str(i + 1) + '' for i in range(4)]
     t.style = 'agent'
+    
+    # Prince of the Dark ###################################
+    t = Appearance('NoHatRalsei')
+    t.skin_name = 'No Hat'
+    t.hidden = True
+    t.is_skin = True
+    t.color_texture = 'noHatseiColor'
+    t.color_mask_texture = 'noHatseiColorMask'
+    t.icon_texture = 'noHatseiIcon'
+    t.earthportrait = 'earthbound/ralseibound'
+    t.EBlose = 'earthbound/ralseibound_lose'
+    t.EBwin = 'earthbound/ralseibound_win'
+    t.icon_mask_texture = 'noHatseiIconCM'
+    t.head_mesh = 'noHatseiHead'
+    t.torso_mesh = 'noHatseiTorso'
+    t.pelvis_mesh = 'none'
+    t.upper_arm_mesh = 'noHatseiUpperArm'
+    t.forearm_mesh = 'noHatseiForeArm'
+    t.hand_mesh = 'noHatseiHand'
+    t.upper_leg_mesh = 'noHatseiUpperLeg'
+    t.lower_leg_mesh = 'noHatseiLowerLeg'
+    t.toes_mesh = 'none'
+    ralsei_sounds = ['voicelines/ralsei/sound' + str(i + 1) + '' for i in range(4)]
+    ralsei_hit_sounds = ['voicelines/ralsei/hit']
+    t.jump_sounds = ralsei_sounds
+    t.attack_sounds = ralsei_sounds
+    t.impact_sounds = ralsei_hit_sounds
+    t.death_sounds = ['voicelines/ralsei/death']
+    t.pickup_sounds = ralsei_sounds
+    t.fall_sounds = ['voicelines/ralsei/fall']
+    t.victory_sounds = ['voicelines/ralsei/win']
+    t.gloat_sounds = ['voicelines/ralsei/gloat']
+    t.style = 'bones'
+    t.default_color = (0.0, 0.7699999999999998, 0.11999999999999998)
+    t.default_highlight = (1, 0.08, 0.5)

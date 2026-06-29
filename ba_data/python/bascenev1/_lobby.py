@@ -229,10 +229,11 @@ class Chooser:
         self.skins = {
             'OG Spaz': ['OGSpazMetal'],
             'Spaz': ['SMB1Spaz'],
+            'Ralsei': ['NoHatRalsei'],
         }
         # For every character, add a 'no skin' option
         for key in self.skins.keys():
-            self.skins[key].append(None)
+            self.skins[key].append(key)
         self._ensure_player_settings()
         # Sounds defined here
         self._sound_dict = {
@@ -899,6 +900,7 @@ class Chooser:
                         resource='noCharacterSkin',
                         subs=[
                             ( '${NAME}', self._getname() ),
+                            ( '${CHAR}', mell.translate_char_name(name) ),
                         ],
                     ),
                     color=(1, 0, 0),
@@ -949,6 +951,7 @@ class Chooser:
         settings['skin'] = self.skins[name][self._skin_index]
         self.movesound.play()
         self._update_text()
+        self._update_icon()
     
     def _handle_sound_play(self) -> None:
         try:
@@ -1122,9 +1125,13 @@ class Chooser:
                     classic = bs.app.classic
                     apps = classic.spaz_appearances
                     try:
-                        skin_name = apps[current].skin_name
+                        skin_name = (
+                            apps[current].skin_name 
+                            if apps[current].is_skin
+                            else mell.translate_char_name(name)
+                        )
                     except:
-                        skin_name = None
+                        skin_name = ''
                     sub = f'{lefta} {skin_name} {righta}'
                 # main menu
                 else:
@@ -1218,14 +1225,15 @@ class Chooser:
             return
 
         try:
-            tex_name = babase.app.classic.spaz_appearances[
-                self._character_names[self._character_index]
-            ].icon_texture
-            tint_tex_name = babase.app.classic.spaz_appearances[
-                self._character_names[self._character_index]
-            ].icon_mask_texture
-        except Exception:
-            logging.exception('Error updating char icon list')
+            settings = self._ensure_player_settings()
+            apps = babase.app.classic.spaz_appearances
+            char = settings.get('skin')
+            if not char:
+                char = self._character_names[self._character_index]
+            tex_name = apps[char].icon_texture
+            tint_tex_name = apps[char].icon_mask_texture
+        except Exception as e:
+            logging.exception('Error updating char icon list.')
             tex_name = 'spazIcon'
             tint_tex_name = 'spazIconCM'
 

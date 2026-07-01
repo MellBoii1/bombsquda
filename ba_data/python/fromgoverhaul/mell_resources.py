@@ -24,7 +24,7 @@ store_prices = {
     'characters.bowser': 1150,
     'characters.orangecap': 850,
     'characters.noise': 1200,
-    'characters.taobaomascot': 800,
+    'characters.taobao': 800,
     'characters.mario': 800,
     'characters.sonic': 950,
     'characters.kirby': 860,
@@ -56,7 +56,7 @@ appearance_dict = {
     'characters.bowser': 'Bowser',
     'characters.orangecap': 'Orangecap',
     'characters.noise': 'The Noise',
-    'characters.taobaomascot': 'Taobao Mascot',
+    'characters.taobao': 'SqudaTaobaoMascot',
     'characters.mario': 'SM64 Mario',
     'characters.sonic': 'Sonic',
     'characters.kirby': 'Kirby',
@@ -264,7 +264,7 @@ def announcer_say(voiceline: str):
         'Bowser': gs('bowser'),
         'Orangecap': gs('ocap'),
         'The Noise': gs('noise'),
-        'Taobao Mascot': gs('taobao'),
+        'SqudaTaobaoMascot': gs('taobao'),
         'SM64 Mario': gs('mario'),
         'Sonic': gs('sonic'),
         'Kirby': gs('kirby'),
@@ -287,6 +287,10 @@ def announcer_say(voiceline: str):
         else:
             choice.play(volume=volume)
     else:
+        # don't say anything if it's 
+        # us preloading sounds
+        if voiceline == 'PRELOADPROCESS':
+            return
         gs('unknown').play(volume=volume)
         squdalog.info(f'ANNOUNCER VOICELINE {voiceline} IS UNKNOWN')
 
@@ -833,6 +837,197 @@ def show_notification(
 
         # auto-remove
         bs.timer(4.0, trans_out)
+
+def steam_message(
+    name: str,
+    text: str,
+    avatar: dict | str = 'null',
+    bar_color: tuple[float, float, float] = (0.5, 0.7, 1.0)
+):
+    import bascenev1 as bs
+    import textwrap
+    scale = 0.9
+    text_limit = 69
+    name_limit = 25
+    sound = 'steamMessage'
+
+    session = bs.get_foreground_host_session()
+    if not session:
+        return
+
+    with session.context:
+        # keep track of notifications
+        if not hasattr(bs.app, 'steam_msgs'):
+            bs.app.steam_msgs = {}
+
+        def _get_free_slot(entries: dict) -> int:
+            slot = 0
+            while slot in entries:
+                slot += 1
+            return slot
+
+        # simple text wrapping
+        wrap_width = 34
+        wrapped_text = textwrap.fill(text, width=wrap_width)
+        wrapped_text = (
+            wrapped_text[:text_limit] 
+            + '...' if len(wrapped_text) > text_limit
+            else wrapped_text
+        )
+        truncated_name = (
+            name[:name_limit]
+            + '...' if len(name) > name_limit
+            else name
+        )
+            
+        slot = _get_free_slot(bs.app.steam_msgs)
+        bs.app.steam_msgs[slot] = True
+
+        base_x = 481
+        base_y = -321
+
+        # account for resized notifications
+        for i in range(slot):
+            base_y += 76
+
+        front = True
+
+        # play a sound based on importance
+        bs.getsound(sound).play(volume=1.2)
+        texnum = min(slot + 1, 4)
+        tex = bs.gettexture(
+            'steamNotif' + str(texnum)
+        )
+
+        # background
+        bg = bs.newnode(
+            'image',
+            attrs={
+                'texture': tex,
+                'position': (base_x, -600),
+                'scale': (512 * scale, 128 * scale),
+                'front': front,
+            },
+        )
+        namenode = bs.newnode(
+            'text',
+            owner=bg,
+            attrs={
+                'text': truncated_name,
+                'scale': scale - 0.23,
+                'maxwidth': 340,
+                'h_align': 'left',
+                'v_align': 'top',
+                'flatness': 0.7,
+                'shadow': 0.6,
+                'front': front,
+            },
+        )
+        textnode = bs.newnode(
+            'text',
+            owner=bg,
+            attrs={
+                'text': wrapped_text,
+                'scale': scale - 0.27,
+                'maxwidth': 350,
+                'h_align': 'left',
+                'v_align': 'top',
+                'flatness': 0.7,
+                'shadow': 0.6,
+                'color': (0.8, 0.8, 0.8),
+                'front': front,
+            },
+        )
+        if isinstance(avatar, dict):
+            avatar_tex = bs.gettexture(
+                avatar.get('texture')
+            )
+            avatar_tinttex = bs.gettexture(
+                avatar.get('tint_texture')
+            )
+            avatar_tint1 = avatar.get('tint_color')
+            avatar_tint2 = avatar.get('tint2_color')
+            if not avatar_tint1:
+                avatar_tint1 = (1, 1, 1)
+            if not avatar_tint2:
+                avatar_tint2 = (1, 1, 1)
+        else:
+            avatar_tex = bs.gettexture(avatar)
+            avatar_tinttex = None
+            avatar_tint1 = (1, 1, 1)
+            avatar_tint2 = (1, 1, 1)
+            
+        avatarnode = bs.newnode(
+            'image',
+            owner=bg,
+            attrs={
+                'texture': avatar_tex,
+                'tint_texture': avatar_tinttex,
+                'scale': (65 * scale, 65 * scale),
+                'tint_color': avatar_tint1,
+                'tint2_color': avatar_tint2,
+                'front': front,
+            },
+        )
+        barnode = bs.newnode(
+            'image',
+            owner=bg,
+            attrs={
+                'texture': bs.gettexture('white'),
+                'color': bar_color,
+                'scale': (4 * scale, 65 * scale),
+                'front': front,
+            },
+        )
+        # bar mathnode
+        mathnode = bs.newnode(
+            'math',
+            owner=bg,
+            attrs={'input1': (-90, 0, 0), 'operation': 'add'},
+        )
+        bg.connectattr('position', mathnode, 'input2')
+        mathnode.connectattr('output', barnode, 'position')
+        # avatar mathnode
+        mathnode = bs.newnode(
+            'math',
+            owner=bg,
+            attrs={'input1': (-120, 0, 0), 'operation': 'add'},
+        )
+        bg.connectattr('position', mathnode, 'input2')
+        mathnode.connectattr('output', avatarnode, 'position')
+        # text mathnode
+        mathnode = bs.newnode(
+            'math',
+            owner=bg,
+            attrs={'input1': (-79.5, 10, 0), 'operation': 'add'},
+        )
+        bg.connectattr('position', mathnode, 'input2')
+        mathnode.connectattr('output', textnode, 'position')
+        # name mathnode
+        mathnode = bs.newnode(
+            'math',
+            owner=bg,
+            attrs={'input1': (-80, 30, 0), 'operation': 'add'},
+        )
+        bg.connectattr('position', mathnode, 'input2')
+        mathnode.connectattr('output', namenode, 'position')
+        # animate
+        bs.animate_array(
+            bg, 
+            'position', 
+            2,
+            {
+                0: (base_x, -600),
+                0.6: (base_x, base_y),
+                4: (base_x, base_y),
+                4.6: (base_x, -600),
+            }
+        )
+        def delete():
+            bg.delete()
+            bs.app.steam_msgs.pop(slot, None)
+        bs.timer(4.6, delete)
+    
 
 def rename_window(text: str):
     import ctypes

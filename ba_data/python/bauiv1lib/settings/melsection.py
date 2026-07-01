@@ -553,6 +553,36 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
         )
         settings = [
             {
+                'type': 'label',
+                'text': 'annoyingStuffText',
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_foxyjumpscare", 
+                'label': "foxyJumpscareText",
+                'sub_option': True,
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_noisepolution", 
+                'label': "noisePollutionText", 
+                'sub_option': True,
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_nosugarcoats", 
+                'label': "noSugarcoatingText", 
+                'sound': ['bellLow', 'bellMed'],
+                'info': 'infoNoSugarcoating',
+                'sub_option': True,
+            },
+            {
+                'type': 'checkbox',
+                'key': "squda_steam_msgs", 
+                'label': "randomSteamMessagesText", 
+                'sub_option': True,
+            },
+            {
                 'type': 'checkbox',
                 'key': "Disable Camera Shake", 
                 'label': "camShakeText", 
@@ -565,19 +595,10 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
             },
             {
                 'type': 'checkbox',
-                'key': "squda_noisepolution", 
-                'label': "noisePollutionText", 
-            },
-            {
-                'type': 'checkbox',
                 'key': "squda_skipintro", 
                 'label': "skipIntroText"
             },
-            {
-                'type': 'checkbox',
-                'key': "squda_foxyjumpscare", 
-                'label': "foxyJumpscareText",
-            },
+
             {
                 'type': 'checkbox',
                 'key': "squda_spazhardmode", 
@@ -640,13 +661,6 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
                 'key': "squda_enablemeter", 
                 'label': "enableMeterText", 
                 'sound': ['shield2', 'shieldReflect'],
-            },
-            {
-                'type': 'checkbox',
-                'key': "squda_nosugarcoats", 
-                'label': "noSugarcoatingText", 
-                'sound': ['bellLow', 'bellMed'],
-                'info': 'infoNoSugarcoating',
             },
             {
                 'type': 'checkbox',

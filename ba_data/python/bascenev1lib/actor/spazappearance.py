@@ -645,8 +645,8 @@ def register_appearances() -> None:
         0.22745098039215686
     )
 
-    # Ali ###################################
-    t = Appearance('Taobao Mascot')
+    # femboy ###################################
+    t = Appearance('SqudaTaobaoMascot')
     t.color_texture = 'aliColor'
     t.color_mask_texture = 'aliColorMask'
     t.icon_texture = 'aliIcon'
@@ -660,14 +660,15 @@ def register_appearances() -> None:
     t.upper_leg_mesh = 'aliUpperLeg'
     t.lower_leg_mesh = 'aliLowerLeg'
     t.toes_mesh = 'aliToes'
-    ali_sounds = ['ali1', 'ali2', 'ali3', 'ali4']
-    ali_hit_sounds = ['aliHit1', 'aliHit2']
+    ali_sounds = ['voicelines/taobao/sound' + str(i + 1) + '' for i in range(4)]
     t.jump_sounds = ali_sounds
     t.attack_sounds = ali_sounds
-    t.impact_sounds = ali_hit_sounds
-    t.death_sounds = ['aliDeath']
+    t.impact_sounds = ali_sounds
+    t.death_sounds = ['voicelines/taobao/death']
     t.pickup_sounds = ali_sounds
-    t.fall_sounds = ['aliFall']
+    t.fall_sounds = ['voicelines/taobao/fall' + str(i + 1) + '' for i in range(2)]
+    t.victory_sounds = ['voicelines/taobao/win']
+    t.gloat_sounds = t.victory_sounds
     t.style = 'ali'
     t.default_color = (1, 0.5, 0)
     t.default_highlight = (1, 1, 1)

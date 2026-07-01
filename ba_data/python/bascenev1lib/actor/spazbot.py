@@ -993,7 +993,7 @@ class BrawlerBotLite(BrawlerBot):
 
     color = LITE_BOT_COLOR
     highlight = LITE_BOT_HIGHLIGHT
-    character = 'Taobao Mascot'
+    character = 'SqudaTaobaoMascot'
     punchiness = 0.3
     charge_speed_min = 0.6
     charge_speed_max = 0.6

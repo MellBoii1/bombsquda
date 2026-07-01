@@ -123,6 +123,7 @@ class Startup():
         'squda_ultrameter': 'normal',
         'squda_coop_levels_beaten_hardmode': {},
         'squda_disablewindowshake': True,
+        'squda_steam_msgs': False,
     } 
     # "setdefault" to create config settings
     # won't affect already existing ones.

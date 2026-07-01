@@ -16,6 +16,7 @@ from bascenev1._dependency import DependencyComponent
 from bascenev1._messages import UNHANDLED
 import fromgoverhaul.mell_resources as mell
 
+
 ERROR_APRILFOOLS_LIST = [
     'Fuck you',
     'mell was here',
@@ -38,6 +39,107 @@ if TYPE_CHECKING:
     from typing import Any
     import bascenev1
 
+def get_steam_msgs():
+    def get_char_tex_dict(name: str):
+        app = bs.app.classic.spaz_appearances[name]
+        return {
+            'texture': app.icon_texture,
+            'tint_texture': app.icon_mask_texture,
+            'tint_color': app.default_color,
+            'tint2_color': app.default_highlight,
+        }
+    return [
+        {
+            'name': 'Snakeling',
+            'text': 'dude what the fuck are you doing we gotta kill meliso',
+            'avatar': get_char_tex_dict('GummyBoiYT'),
+        },
+        {
+            'name': 'Meliso',
+            'text': 'You suck btw',
+            'avatar': get_char_tex_dict('Mell'),
+        },
+        {
+            'name': 'Roaring Knight',
+            'text': 'yo bro when are you making that dark fountain',
+            'avatar': get_char_tex_dict('Roaring Knight'),
+        },
+        {
+            'name': 'Roaring Knight',
+            'text': 'fuck dude this is the wrong person',
+            'avatar': get_char_tex_dict('Roaring Knight'),
+        },
+        {
+            'name': 'Kris',
+            'text': '',
+            'avatar': get_char_tex_dict('Kris'),
+        },
+        {
+            'name': 'Noob',
+            'text': 'HI NEWBIE!!!!!!!',
+            'avatar': get_char_tex_dict('Noob'),
+        },
+        {
+            'name': 'Sparkii',
+            'text': 'I am totally important to the story',
+            'avatar': get_char_tex_dict('Sparkii'),
+        },
+        {
+            'name': 'Spaz',
+            'text': 'your genuinely so fucking fake dawg',
+            'avatar': get_char_tex_dict('OG Spaz'),
+        },
+        {
+            'name': 'Spaz',
+            'text': 'i will KILL you dude',
+            'avatar': get_char_tex_dict('OG Spaz'),
+        },
+        {
+            'name': 'Roaring Knight',
+            'text': 'oh ya your a bitch btw',
+            'avatar': get_char_tex_dict('Roaring Knight'),
+        },
+        {
+            'name': 'White Spazling',
+            'text': 'am white',
+            'avatar': get_char_tex_dict('Spaz'),
+        },
+        {
+            'name': 'Homer Simpson',
+            'text': 'homero dou homero cerveza homero hola homero aaaauuuuu doh doh doh cerveza',
+            'avatar': get_char_tex_dict('Homer'),
+        },
+        {
+            'name': 'John BombSquda',
+            'text': 'collect my onesqudas',
+            'avatar': 'logo',
+        },
+        {
+            'name': 'Foxy',
+            'text': 'AAAAAAAAAAHHHHHHHHHHHHHHH',
+            'avatar': 'foxy',
+        },
+        {
+            'name': 'Taobao Mascot',
+            'text': 'meow',
+            'avatar': get_char_tex_dict('SqudaTaobaoMascot'),
+        },
+        {
+            'name': 'Ralsei',
+            'text': '...hey, do you know where Kris is??',
+            'avatar': get_char_tex_dict('Ralsei'),
+        },
+        {
+            'name': 'Susie',
+            'text': 'Who the fuck are you.',
+            'avatar': get_char_tex_dict('Susie'),
+        },
+        {
+            'name': 'Mime',
+            'text': 'duuuudeee... you should totally let me hit....',
+            'avatar': 'curseMime',
+        },
+    ]
 
 class Activity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
     DependencyComponent
@@ -203,6 +305,7 @@ class Activity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         self.lobby = None
         self.noisePolTimer = None
         self.foxyTimer = None
+        self.steamMSGTimer = None
         self._stats: bascenev1.Stats | None = None
         self._customdata: dict | None = {}
 
@@ -395,9 +498,11 @@ class Activity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         aprilfools = mell.get_festivity() == 'april_fools'
         noisetime = 0.4
         foxytime = 0.1
+        steamtime = 0.6
         if aprilfools:
             noisetime = 0.1
             foxytime = 0.001
+
         def checkdosound():
             if ba.app.config.get("squda_noisepolution", False) or aprilfools:
                 if random.random() < 0.2:
@@ -437,8 +542,22 @@ class Activity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                         color=(1, 0, 0),
                     )
                     bs.getsound('error').play(1.5)
+        def roll_steam():
+            if ba.app.config.get('squda_steam_msgs', False):
+                if random.random() < 0.02:
+                    msg = random.choice(get_steam_msgs())
+                    mell.steam_message(
+                        name=msg.get('name'), 
+                        text=msg.get('text'), 
+                        avatar=msg.get('avatar'),
+                        bar_color=msg.get(
+                            'bar_color', 
+                            (0.5, 0.7, 1.0)
+                        ),
+                    )
         self.noisePolTimer = bs.BaseTimer(noisetime, checkdosound, repeat=True)
         self.foxyTimer = bs.BaseTimer(foxytime, roll, repeat=True)
+        self.steamMSGTimer = bs.BaseTimer(steamtime, roll_steam, repeat=True)
 
     def on_transition_out(self) -> None:
         """Called when your activity begins transitioning out.

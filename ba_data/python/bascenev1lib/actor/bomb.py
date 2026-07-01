@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import random
+import math
 from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
@@ -762,7 +763,7 @@ class Bomb(bs.Actor):
         source_player: bs.Player | None = None,
         owner: bs.Node | None = None,
         nosound: bool = False,
-        manual: bool = False,
+        manual: str | bool = False,
         fuse_time: int = 2.0,
         skin: str | None = None,
     ):
@@ -984,7 +985,8 @@ class Bomb(bs.Actor):
                     attrs={'sound': factory.fuse_sound, 'volume': 0.25},
                 )
                 self.node.connectattr('position', sound, 'position')
-            bs.animate(self.node, 'fuse_length', {0.0: 1.0, fuse_time: 0.0})
+            if self.manual != 'kaizo':
+                bs.animate(self.node, 'fuse_length', {0.0: 1.0, fuse_time: 0.0})
 
         # Light the fuse!!!
         if self.bomb_type not in ('land_mine', 'tnt', 'tntfirework'):
@@ -1079,6 +1081,43 @@ class Bomb(bs.Actor):
     
     def _update_manual(self):
         if not self.node:
+            return
+        if self.manual == 'kaizo':
+            self._manual_dmg = 100
+            max_dist = 4.6
+            if not self.node:
+                return
+            # our pos
+            ox, oy, oz = self.node.position
+            close = False
+            best_dist_sq = max_dist * max_dist
+            node = self.owner
+            dele = node.getdelegate(bs.Actor)
+            # if not node or node is us
+            if (
+                not node 
+                or node.getnodetype() != 'spaz'
+                or not dele.is_alive()
+            ):
+                self.handlemessage(ExplodeMessage())
+                return
+            # get distance from them to us
+            pos = node.position
+            dx = pos[0] - ox
+            dy = pos[1] - oy
+            dz = pos[2] - oz
+            dist_sq = dx*dx + dy*dy + dz*dz
+            # if distance is below max, we close
+            if dist_sq < best_dist_sq:
+                close = True
+            # set fuse length to how close we are
+            self.node.fuse_length = max(
+                0.0,
+                min(1.0, 1.0 - (dist_sq / best_dist_sq))
+            )
+            # not close, we wanna explode
+            if not close:
+                self.handlemessage(ExplodeMessage())
             return
         if self._manual_dmg >= 100:
             self.fuse_timer = None

@@ -1599,6 +1599,8 @@
   },
   "melWindow": {
     "titleText": "bombsquda config",
+	"annoyingStuffText": "annoying stuff...",
+	"randomSteamMessagesText": "random 'steam' messages",
 	"camShakeText": "disable camera shake",
 	"windowShakeText": "disable window shake",
     "noisePollutionText": "make my game inaudible",
@@ -1828,7 +1830,7 @@
   "telnetAccessGrantedText": "Telnet access enabled.",
   "telnetAccessText": "Telnet access detected; allow?",
   "testBuildErrorText": "This test build is no longer active; please check for a new version.",
-  "modpackName": "Mell's stupid Modpack",
+  "modpackName": "Mell's Stupid Modpack",
   "notGatheredText": "Nice wifi you got there!",
   "titleWindow": {
 	"quitFuckinGame": "quit game",
@@ -2061,11 +2063,17 @@
 		"from": "from",
 		"by": "by"
 	},
+	"skinNames": {
+		"Metal": null,
+		"Retro": null,
+		"No Hat": null
+	},
     "characterNames": {
 		"GummyBoiYT": "Snakeling",
 		"Spaz": "Spazling",
 		"Ire": "Ire-ish",
-		"Dozer": "Doze-alike"
+		"Dozer": "Doze-alike",
+		"SqudaTaobaoMascot": "Taobao Mascot"
     },
     "coopLevelNames": {
       "${GAME} Training": "${GAME} ez",

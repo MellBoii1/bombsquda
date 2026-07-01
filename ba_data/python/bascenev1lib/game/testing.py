@@ -150,7 +150,6 @@ class TestingActivity(bs.TeamGameActivity[Player, Team]):
         z = -0.5
         HangingBar((2 + xoffs, y, z)).autoretain()
         HangingBar((-2 + xoffs, y, z)).autoretain()
-        HangingBar((0 + xoffs, y, z - 2)).autoretain()
         HangingBar((5 + xoffs, y + y, z - 2)).autoretain()
         HangingBar((-5 + xoffs, y + y, z - 2)).autoretain()
         HangingBar((-7 + xoffs, y, z)).autoretain()

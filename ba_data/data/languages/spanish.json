@@ -992,6 +992,18 @@
     "visualsText": "todo",
 	"rpcText": "cambiando Gráficos"
   },
+  "borderSettings": {
+      "titleText": "Ajustes de Bordes",
+      "infoText": "Cambia el tamaño del borde hasta\nque encaje la pantalla entera.\nTambien puedes quitar el borde aqui..",
+      "toggleText": "Activa o Desactiva el Borde",
+      "widthText": "Ancho",
+      "heightText": "Alto",
+      "styleText": "Estilo",
+      "stylefancy": "Moderno",
+      "stylefancy_logo": "Moderno (con Logo)",
+      "stylefancy_dark": "Moderno (Oscuro)",
+      "stylebasic": "Basico"
+  },
   "helpWindow": {
 	"rpcText": "mirando Como Jugar",
     "canHelpText": "bueno, ¡${APP_NAME} seguramente puede ayudar con eso!",
@@ -1543,6 +1555,8 @@
   "melWindow": {
     "titleText": "configuración de BombSquda",
     "noisePollutionText": "haz mi juego inaudible",
+	"annoyingStuffText": "cosas molestas...",
+	"randomSteamMessagesText": "mensajes aleatorios de 'Steam'",
 	"skipIntroText": "siempre saltar intro",
     "spazHardModeText": "¡¡¡puto malevolo modo dificil!!!",
 	"randomizeAllText": "randomizar todo el texto",
@@ -1569,9 +1583,8 @@
     "botNamesText": "bots tienen nombres",
     "powerupSetup": "ajustes de powerup",
     "nameSetup": "renombrar personajes",
-    "entityChance": "chance de entidades aparenciendo",
-    "menuMusic": "preferencia de musica\nde menu principal",
-    "disableOnlineMusic": "desactivar musica en la ventana de reunir",
+    "entityChance": "chance",
+    "menuMusic": "menu principal",
 	"favChar": "me gusta, me gusta MUCHO;",
 	"pickChar": "elejir...",
 	"resetText": "reset",
@@ -1583,7 +1596,25 @@
 	"rpcText": "cambiando Ajustes de BombSquda",
 	"resetAchievements": "restablecer logros",
 	"confirmReset": "¡¿Estás SEGURO/A que quieres hacer esto?!\nSi esto es correcto, presiona el botón unas veces más.",
-	"achResetDone": "Acción completada. Tus logros se han reestablecido."
+	"achResetDone": "Acción completada. Tus logros se han reestablecido.",
+	"musicPrefsText": "preferencias de música...",
+	"specialMusicText": "alternar música especial",
+	"openOnlineWindow": "abrir configuración en línea",
+	"customFontText": "fuente personalizada (EXPERIMENTAL)",
+	"infoSpecialMusic": "Activa o desactiva la música en ocasiones especiales,\ncomo al conseguir una estrella, volverte súper o usar la gorra de metal.",
+	"infoCustomFont": "Cambia la fuente por otra distinta,\nutilizada en versiones anteriores de BombSquad. Requiere modificar\nlas texturas del juego, por lo que se considera experimental.",
+	"infoNoSugarcoating": "Desactiva el susto repentino ('jumpscare') que aparece al infligir el 100% de daño a un Spaz, etc.",
+	"infoShowErrors": "Cada vez que ocurra una excepción (error), se mostrará un mensaje y sonará una alerta.\nSolo se recomienda para depuración (o si juegas con un desarrollador).",
+	"infoNoWiggle": "Desactiva el baile de meneo que se hace pulsando repetidamente izquierda y derecha.\nSe añadió originalmente debido a un error en móviles/mandos que ya fue corregido.",
+	"infoMarioDelay": "Desactiva el '¡Adiós!' que suena al salir del juego.\nTambién incluye la cinemática especial al salir desde el menú principal.",
+	"infoRandomizeText": "Cambia aleatoriamente todos los textos traducidos por otros al azar.\nNo incluye la etiqueta de esta opción, por razones obvias.",
+	"infoCoopNames": "Hace que los 4 jugadores en cooperativo adopten la apariencia\ny el nombre de sus personajes canónicos correspondientes.\nEl resto aparecerán como Spazzes de colores aleatorios.",
+	"infoPauseMusic": "Activa o desactiva la música que suena al pausar el juego.",
+	"infoNoShutdown": "Evita que el PC se apague cuando Mell recibe un ataque aéreo.",
+	"infoHardMode": "Activa un modo que reduce tu salud (HP) y tu daño,\nentre otras cosas. ¡Intenta superar el modo cooperativo así!",
+	"meterdisabledText": "Desactivado",
+	"meterbasicText": "Básico",
+	"meternormalText": "Normal"
   },
   "renameWindow": {
 	"titleText": "renombrar personajes",
@@ -1965,6 +1996,28 @@
   "tournamentsDisabledWorkspaceText": "Tournaments are disabled when workspaces are active.\nTo re-enable tournaments, disable your workspace and restart.",
   "tournamentsText": "Tournaments",
   "translations": {
+    "lobbyMenu": {
+        "choose profile": "seleccionar perfil",
+        "ready": "listo",
+        "settings": "preferencias",
+        "character": "personaje",
+        "sound": "sonidos",
+        "skin": null
+    },
+    "lobbySettings": {
+        "parry button": "botón de parry",
+        "bomb skin": "skin de bomba",
+        "scream sound": "sonido de grito"
+    },
+    "artistKeywords": {
+        "from": "de",
+        "by": "por"
+    },
+	"skinNames": {
+		"Metal": null,
+		"Retro": null,
+		"No Hat": "Sin Capucha"
+	},
     "characterNames": {
 		"GummyBoiYT": "Snakeling",
 		"Spaz": "Spazling",

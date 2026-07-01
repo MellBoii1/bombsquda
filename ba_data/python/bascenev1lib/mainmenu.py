@@ -1188,7 +1188,8 @@ def _preload4() -> None:
     for sname in ['metalHit', 'metalSkid', 'deek2', 'achievement', 'achRetro', 'achBig']:
         bs.getsound(sname)
     from bascenev1lib.actor.flag import FlagFactory
-
+    
+    mell.announcer_say('PRELOADPROCESS')
     FlagFactory.get()
 
 

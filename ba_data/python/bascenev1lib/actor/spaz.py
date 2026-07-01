@@ -97,7 +97,7 @@ PHRASES = {
     "SM64 Mario": ("marioPhrase", 5),
     "Ire": ("irePhrase", 4),
     "Dozer": ("dozerPhrase", 3),
-    "Taobao Mascot": ("aliPhrase", 1),
+    "SqudaTaobaoMascot": ("aliPhrase", 1),
     "Sonic": ("sonicPhrase", 5),
 }
 # A default fallback for characters that don't have it
@@ -281,6 +281,10 @@ class Spaz(bs.Actor):
 
     node: bs.Node
     """The 'spaz' bs.Node."""
+    
+    kaizo_mode: bool = False
+    """Kaizo mode. Global bool that changes some
+    stats and mechanics, to be more 'movement-based'."""
 
     points_mult = 1
     curse_time: float | None = 5.0
@@ -291,6 +295,7 @@ class Spaz(bs.Actor):
     default_shields = False
     default_shields_stronger = False
     default_hitpoints = 1000 
+    
     
     def __init__(
         self,
@@ -320,9 +325,10 @@ class Spaz(bs.Actor):
         # We need to behave slightly different in the tutorial.
         self._demo_mode = demo_mode
 
-        # Specific settings for alerting if a spaz died
+        # isaac stuff
         self.is_cry = False
         self.can_cry = True
+        # Specific settings for alerting if a spaz died
         self.play_big_death_sound = False
         self.broadcast_death = False     
         self.impact_scale = 1.0
@@ -385,6 +391,12 @@ class Spaz(bs.Actor):
         self.punchcwd = 450
         self.weakscale = 0.6
         self.weakcwd = 90
+        # slightly stronger on kaizo mode
+        # (we want faster, stronger bomb jumps)
+        if self.kaizo_mode:
+            self.boxingcwd = 320
+            self.punchcwd = 200
+            self.punchscale = 1.35
         self.last_victim_character = ''
         self.last_victim_name = ''
         self.weak_punches = False
@@ -571,6 +583,7 @@ class Spaz(bs.Actor):
         self._jump_cooldown = 0
         self._pickup_cooldown = 0
         self._bomb_cooldown = 0
+        self.bomb_fuse_time = 2.0
         self._has_boxing_gloves = False
         self._has_metalcap = False
         self._has_star = False
@@ -1637,6 +1650,11 @@ class Spaz(bs.Actor):
             dir_x *= mult
             dir_y *= mult
             dir_z *= mult
+            manual = (
+                'deton' if self.deton
+                else 'kaizo' if self.kaizo_mode
+                else False
+            )
             particle = Bomb(
                 position=pos,
                 velocity=vel,
@@ -1645,7 +1663,7 @@ class Spaz(bs.Actor):
                 source_player=self.source_player,
                 bomb_scale=0.7,
                 owner=self.node,
-                manual=self.deton,
+                manual=manual,
                 skin=self.bombskin,
             ).autoretain()
             # Also append to our manual bombs
@@ -4912,10 +4930,12 @@ class Spaz(bs.Actor):
         else:
             dropping_bomb = True
             bomb_type = self.bomb_type
-        deton = self.deton
-        fuse = 2.0
-        if self.hardmode:
-            fuse = 1.2
+        fuse = self.bomb_fuse_time
+        manual = (
+            'deton' if self.deton
+            else 'kaizo' if self.kaizo_mode
+            else False
+        )
         bomb = Bomb(
             position=(pos[0], pos[1] - 0.0, pos[2]),
             velocity=(vel[0], vel[1], vel[2]),
@@ -4923,11 +4943,11 @@ class Spaz(bs.Actor):
             blast_radius=self.blast_radius,
             source_player=self.source_player,
             owner=self.node,
-            manual=deton,
+            manual=manual,
             fuse_time=fuse,
             skin=self.bombskin,
         ).autoretain()
-        if deton:
+        if self.deton:
             self.deton_bombs.append(bomb)
 
         assert bomb.node

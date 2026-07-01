@@ -183,7 +183,7 @@ class CoopSession(Session):
                     bs.broadcastmessage(
                         bs.Lstr(
                             r='playerLeftCoopSpotText',
-                            s=[('${NAME}', player.get_name())]
+                            s=[('${NAME}', player.getname())]
                         )
                     )
         super().on_player_leave(sessionplayer)

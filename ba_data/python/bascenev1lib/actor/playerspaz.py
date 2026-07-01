@@ -89,6 +89,7 @@ class PlayerSpaz(Spaz):
             self.punchcwd = 560
             self._punch_power_scale = self.punchscale
             self._punch_cooldown = self.punchcwd
+            self.bomb_fuse_time = 1.2
             # punch stats
             bs.getsound('hardmode').play(position=self.node.position)
             intensity = 0.8

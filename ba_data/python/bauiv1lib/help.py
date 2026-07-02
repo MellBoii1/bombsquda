@@ -117,7 +117,7 @@ class HelpWindow(bui.MainWindow):
             parent=self._root_widget,
             size=(scroll_width, scroll_height),
             position=(width * 0.5 - scroll_width * 0.5, scroll_bottom),
-            simple_culling_v=100.0,
+            simple_culling_v=120.0,
             capture_arrows=True,
             border_opacity=0.4,
             center_small_content_horizontally=True,
@@ -140,7 +140,7 @@ class HelpWindow(bui.MainWindow):
         # self._sub_width = 810 if uiscale is bui.UIScale.SMALL else 660
         self._sub_width = 660
         self._sub_height = (
-            3400
+            4060
             + bui.app.lang.get_resource(f'{self._r}.someDaysExtraSpace')
             + bui.app.lang.get_resource(
                 f'{self._r}.orPunchingSomethingExtraSpace'
@@ -829,8 +829,107 @@ class HelpWindow(bui.MainWindow):
             v_align='center',
             flatness=1.0,
         )
-
-
+        
+        v -= spacing * 100.0
+        txt = getres(f'{self._r}.gimmicksText')
+        txt_scale = 1.4
+        txt_maxwidth = 480
+        bui.textwidget(
+            parent=self._subcontainer,
+            position=(h, v),
+            size=(0, 0),
+            scale=txt_scale,
+            flatness=0.5,
+            text=txt,
+            h_align='center',
+            color=header,
+            v_align='center',
+            maxwidth=txt_maxwidth,
+        )   
+        
+        v -= spacing * 50.0
+        txt_scale = 1
+        txt = bui.Lstr(resource=f'{self._r}.gimmicksSubtitleText').evaluate()
+        scale = 40
+        bui.textwidget(
+            parent=self._subcontainer,
+            position=(h, v),
+            size=(0, 0),
+            scale=txt_scale,
+            flatness=0.5,
+            text=txt,
+            h_align='center',
+            color=header,
+            v_align='center',
+            maxwidth=txt_maxwidth,
+        )   
+        v -= spacing * 50.0
+        txt_scale = 0.9
+        txt = bui.Lstr(resource=f'{self._r}.gimmicksIsaacTitle').evaluate()
+        scale = 40
+        bui.textwidget(
+            parent=self._subcontainer,
+            position=(h, v),
+            size=(0, 0),
+            scale=txt_scale,
+            flatness=0.5,
+            text=txt,
+            h_align='center',
+            color=header,
+            v_align='center',
+            maxwidth=txt_maxwidth,
+        )   
+        v -= spacing * 40.0
+        txt_scale = 0.8
+        txt = bui.Lstr(resource=f'{self._r}.gimmicksIsaacText').evaluate()
+        scale = 40
+        bui.textwidget(
+            parent=self._subcontainer,
+            position=(h, v),
+            size=(0, 0),
+            scale=txt_scale,
+            flatness=0.5,
+            text=txt,
+            h_align='center',
+            color=header,
+            v_align='top',
+            maxwidth=txt_maxwidth,
+        )   
+        v -= spacing * 350.0
+        txt_scale = 1.1
+        txt = bui.Lstr(resource=f'{self._r}.gimmicksBallerTitle').evaluate()
+        scale = 40
+        bui.textwidget(
+            parent=self._subcontainer,
+            position=(h, v),
+            size=(0, 0),
+            scale=txt_scale,
+            flatness=0.5,
+            text=txt,
+            h_align='center',
+            color=header,
+            v_align='center',
+            maxwidth=txt_maxwidth,
+        )   
+        v -= spacing * 50.0
+        txt_scale = 1.2
+        txt = bui.Lstr(resource=f'{self._r}.gimmicksBallerText').evaluate()
+        scale = 40
+        bui.textwidget(
+            parent=self._subcontainer,
+            position=(h, v),
+            size=(0, 0),
+            scale=txt_scale,
+            flatness=0.5,
+            text=txt,
+            h_align='center',
+            color=header,
+            v_align='top',
+            maxwidth=txt_maxwidth + 60,
+        )   
+        
+        
+        
     def _play_sound(self, text: str, num: int) -> None:
         bui.getsound(text + str(random.randint(1, num))).play()
         

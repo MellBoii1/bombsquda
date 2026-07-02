@@ -14,7 +14,8 @@ import random
 
 from bascenev1._player import EmptyPlayer
 from bascenev1._team import EmptyTeam
-from bascenev1._music import MusicType, setmusic
+from bascenev1._music import setmusic
+from baclassic._music import MusicType
 
 
 if TYPE_CHECKING:

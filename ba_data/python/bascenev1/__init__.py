@@ -217,7 +217,8 @@ from bascenev1._multiteamsession import (
     DEFAULT_TEAM_NAMES,
     DEFAULT_TEAM_EBL,
 )
-from bascenev1._music import MusicType, setmusic, localsetmusic, getmusic
+from baclassic._music import MusicType
+from bascenev1._music import setmusic, localsetmusic, getmusic
 from bascenev1._net import HostInfo
 from bascenev1._nodeactor import NodeActor
 from bascenev1._powerup import get_default_powerup_distribution

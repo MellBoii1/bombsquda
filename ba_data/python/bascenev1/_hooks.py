@@ -216,6 +216,8 @@ def cmd_cur(ctx: CommandContext):
             cursor.connect_controls()
             # Keep em knocked out (just for the funsies)
             def do_knockout(player: bs.Player):
+                if not player.actor:
+                    return
                 if not player.actor.node:
                     return
                 player.actor.node.handlemessage(

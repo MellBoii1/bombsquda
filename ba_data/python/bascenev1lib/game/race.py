@@ -258,7 +258,7 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
                 }
             )
         else:
-            bs.getsound('startGrid').play()
+            bs.setmusic(bs.MusicType.RACE_START_GRID)
         pts = self.map.get_def_points('race_point')
         mat = self.race_region_material = bs.Material()
         mat.add_actions(
@@ -313,10 +313,9 @@ class RaceGame(bs.TeamGameActivity[Player, Team]):
         this_region = region.index
 
         if last_region != this_region:
-            # If a player tries to skip regions, smite them.
-            # Allow a one region leeway though (its plausible players can get
-            # blown over a region, etc).
-            if this_region > last_region + 2:
+            # If a player tries to skip a HUGE chunk
+            # of the track, we don't wanna allow that
+            if this_region > last_region + 4:
                 if player.is_alive():
                     assert player.actor
                     player.actor.handlemessage(bs.DieMessage())

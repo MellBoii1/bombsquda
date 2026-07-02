@@ -198,6 +198,138 @@ ENTITY_CONFIG = {
 def playsound(name, pos):
     bs.getsound(name).play(position=pos)
 
+class MinecraftItem(bs.Actor):
+    # bs.getplayers()[0].actor.spawn_in_buncha_items()
+
+    def __init__(self, position: Sequence[float]):
+        super().__init__()
+        self.non_collide_mat = bs.Material()
+        self.non_collide_mat.add_actions(
+            actions=(
+                ('modify_part_collision', 'collide', False),
+                ('modify_part_collision', 'physical', False),
+                ('modify_part_collision', 'use_node_collide', False),
+            ),
+        )
+        self.only_collide_with_floor = bs.Material()
+        self.only_collide_with_floor.add_actions(
+            actions=(
+                ('modify_part_collision', 'collide', False),
+            ),
+        )
+        self.only_collide_with_floor.add_actions(
+            conditions=('they_have_material', SharedObjects.get().footing_material),
+            actions=(
+                ('modify_part_collision', 'collide', True),
+            ),
+        )
+        # hitbox
+        self.node: bs.Node = bs.newnode(
+            'prop',
+            delegate=self,
+            attrs={
+                'body': 'box',
+                'body_scale': 0.5,
+                'position': position,
+                'velocity': (random.uniform(-4.5, 4.5), 4.5, random.uniform(-4.5, 4.5)),
+                'gravity_scale': 1.1,
+                'materials': [self.only_collide_with_floor],
+            },
+        )
+        # actual thing
+        item = [
+            ['tnt', 'rocky', 0.35],
+            ['spazlingHead', 'spazlingHeadColor', 0.35],
+        ]
+        selected_item = random.choice(item)
+        self.item_node: bs.Node = bs.newnode(
+            'prop',
+            delegate=self,
+            attrs={
+                'mesh': bs.getmesh(selected_item[0]),
+                'color_texture': bs.gettexture(selected_item[1]),
+                'mesh_scale': selected_item[2],
+                    'gravity_scale': 0,
+                'body': 'landMine',
+                'position': position,
+                'materials': [self.non_collide_mat],
+            },
+        )
+        self.tick_timer = bs.Timer(0.01, bs.Call(self._tick), repeat=True)
+        self.do_rotate()
+      
+        bs.timer(8, bs.Call(self.handlemessage, bs.DieMessage()))
+    
+    def _rotate(self):
+        if not self.node.exists() or not self.item_node.exists():
+            return
+
+        dir_x = 0.2
+        dir_z = 0
+        pos = self.item_node.position
+        force = 3.5
+        self.item_node.handlemessage(
+            'impulse',
+            pos[0],
+            pos[1],
+            pos[2]+0.2,
+            0, 0, 0,
+            force,
+            force,
+            0,
+            0,
+            dir_x,
+            0,
+            dir_z,
+        )
+        bs.timer(0.5, bs.Call(self.do_rotate))
+    
+    def do_rotate(self):
+        if not self.node.exists() or not self.item_node.exists():
+            return
+        self.item_node.velocity = (0, 0, 0) 
+        bs.timer(0.1, bs.Call(self._rotate))
+
+    def _tick(self):
+        if not self.node.exists() or not self.item_node.exists():
+            return
+        
+        
+        self.item_node.position = (
+            self.node.position[0],
+            self.node.position[1] + 0.1 + (math.sin((bs.time()) * 3.0) * 0.1),
+            self.node.position[2],
+        )
+        
+         
+            #self.node.angular_velocity = self.item_node.angular_velocity
+    
+    @override
+    def handlemessage(self, msg):
+        if isinstance(msg, bs.DieMessage):
+            if not self.node.exists() or not self.item_node.exists():
+                self.node.delete()
+                self.item_node.delete()
+                return
+            if msg.immediate:
+                self.node.delete()
+                self.item_node.delete()
+            else:
+                bs.animate(
+                    self.item_node, 'mesh_scale', {0: 
+                                                   self.item_node.mesh_scale, 
+                                                   0.2: 0.0}
+                )
+                bs.timer(0.2, bs.Call(self.node.delete))
+                bs.timer(0.2, bs.Call(self.item_node.delete))
+                
+
+        elif isinstance(msg, bs.OutOfBoundsMessage):
+            self.handlemessage(bs.DieMessage())
+        else: return super().handlemessage(msg)
+        
+
+
 class PickupMessage:
     """We wanna pick something up."""
 
@@ -3446,6 +3578,12 @@ class Spaz(bs.Actor):
 
         setattr(self, cfg['attr_obj'], obj)
         setattr(self, cfg['attr_flag'], True)
+    
+    def spawn_in_buncha_items(self):
+        if self.node:
+            for _ in range(random.randint(5, 18)):
+                MinecraftItem(position=self.node.position).autoretain()
+
 
     @override
     def handlemessage(self, msg: Any) -> Any:
@@ -4392,6 +4530,7 @@ class Spaz(bs.Actor):
             self.bomb_count += 1
 
         elif isinstance(msg, bs.DieMessage):
+            
             try:
                 wasdead = self._dead
                 self._dead = True
@@ -4465,6 +4604,27 @@ class Spaz(bs.Actor):
                 squdalog.error(f'Spaz failed to die because {e}. Setting its\' node to dead to prevent multiple errors.')
                 self.node.dead = True
                 raise e
+            
+            # ok death effect
+            # make sure we just died
+            should_do_mc_death_effect = True #random.random() < 0.5
+            if should_do_mc_death_effect and not wasdead:
+                    bs.getsound('minecraftDamage').play()
+                    self.spawn_in_buncha_items()
+                    def del_if_exists():
+                        if self.node:
+                            self.node.handlemessage(bs.DieMessage(True))
+                    # turn red, and delete ourself
+                    if self.node:
+                        self.node.style = 'agent'
+                        self.node.color_texture = bs.gettexture('white')
+                        self.node.color_mask_texture = bs.gettexture('white')
+                        self.node.color = (1,0,0)
+                        self.node.highlight = (1,0,0)
+                        bs.timer(0.75, del_if_exists)
+
+
+                    
         elif isinstance(msg, bs.OutOfBoundsMessage):
             if self.parrying == True:
                 self.tptosafety()

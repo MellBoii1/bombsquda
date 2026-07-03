@@ -43,6 +43,7 @@ def register_all_maps() -> None:
         Rampage,
         Nothing,
         TestMap,
+        WeegeeMap,
     ]:
         bs.register_map(maptype)
 
@@ -101,6 +102,55 @@ class TestMap(bs.Map):
         gnode.vignette_outer = (0.57, 0.57, 0.57)
         gnode.vignette_inner = (0.9, 0.9, 0.9)
 
+class WeegeeMap(bs.Map):
+    """Map for the Weegee boss."""
+    from bascenev1lib.mapdata import weegee as defs
+    name = 'Weegee\'s Tower of Doom'
+
+    @override
+    @classmethod
+    def get_play_types(cls) -> list[str]:
+        return []
+
+    @override
+    @classmethod
+    def get_preview_texture_name(cls) -> str:
+        return 'footballStadiumPreview'
+
+    @override
+    @classmethod
+    def on_preload(cls) -> Any:
+        data: dict[str, Any] = {
+            'mesh': bs.getmesh('weegee_map'),
+            'collision_mesh': bs.getcollisionmesh('weegee_map'),
+            'tex': bs.gettexture('weegeeStage'),
+            'bgmesh': bs.getmesh('weegee_mapBG'),
+        }
+        return data
+
+    def __init__(self) -> None:
+        super().__init__()
+        shared = SharedObjects.get()
+        self.node = bs.newnode(
+            'terrain',
+            delegate=self,
+            attrs={
+                'mesh': self.preloaddata['mesh'],
+                'collision_mesh': self.preloaddata['collision_mesh'],
+                'color_texture': self.preloaddata['tex'],
+                'materials': [shared.footing_material],
+            },
+        )
+        self.background = bs.newnode(
+            'terrain',
+            attrs={
+                'mesh': self.preloaddata['bgmesh'],
+                'lighting': False,
+                'background': True,
+                'color_texture': self.preloaddata['tex'],
+            },
+        )
+        gnode = bs.getactivity().globalsnode
 
 class Nothing(bs.Map):
     """

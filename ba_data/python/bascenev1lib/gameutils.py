@@ -66,6 +66,7 @@ class SharedObjects:
         self._emerald_material: bs.Material | None = None
         self._non_collide_mat: bs.Material | None = None
         self._only_collide_with_floor_mat: bs.Material | None = None
+        self._no_object_collide_mat: bs.Material | None = None
 
     @classmethod
     def get(cls) -> SharedObjects:
@@ -354,9 +355,22 @@ class SharedObjects:
                 ),
             )
             mat.add_actions(
-                conditions=('they_have_material', SharedObjects.get().footing_material),
+                conditions=('they_have_material', self.footing_material),
                 actions=(
                     ('modify_part_collision', 'collide', True),
                 ),
             )
         return self._only_collide_with_floor_mat
+    
+    @property
+    def no_object_collide_mat(self) -> bs.Material:
+        """A material that only collides with non-objects."""
+        if self._no_object_collide_mat is None:
+            mat = self._no_object_collide_mat = bs.Material()
+            mat.add_actions(
+                conditions=('they_have_material', self.object_material),
+                actions=(
+                    ('modify_part_collision', 'collide', False),
+                ),
+            )
+        return self._no_object_collide_mat

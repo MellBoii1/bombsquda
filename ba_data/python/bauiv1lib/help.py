@@ -160,7 +160,7 @@ class HelpWindow(bui.MainWindow):
         logo_tex = bui.gettexture('logo')
         icon_buffer = 1.1
         header = (0.7, 1.0, 0.7, 1.0)
-        header2 = (0.8, 0.8, 1.0, 1.0)
+        header2 = (0.7, 0.9, 0.8, 1.0)
         paragraph = (0.8, 0.8, 1.0, 1.0)
 
         txt = bui.Lstr(
@@ -859,7 +859,7 @@ class HelpWindow(bui.MainWindow):
             flatness=0.5,
             text=txt,
             h_align='center',
-            color=header,
+            color=paragraph,
             v_align='center',
             maxwidth=txt_maxwidth,
         )   
@@ -875,7 +875,7 @@ class HelpWindow(bui.MainWindow):
             flatness=0.5,
             text=txt,
             h_align='center',
-            color=header,
+            color=header2,
             v_align='center',
             maxwidth=txt_maxwidth,
         )   
@@ -891,7 +891,7 @@ class HelpWindow(bui.MainWindow):
             flatness=0.5,
             text=txt,
             h_align='center',
-            color=header,
+            color=paragraph,
             v_align='top',
             maxwidth=txt_maxwidth,
         )   
@@ -907,7 +907,7 @@ class HelpWindow(bui.MainWindow):
             flatness=0.5,
             text=txt,
             h_align='center',
-            color=header,
+            color=header2,
             v_align='center',
             maxwidth=txt_maxwidth,
         )   
@@ -923,7 +923,7 @@ class HelpWindow(bui.MainWindow):
             flatness=0.5,
             text=txt,
             h_align='center',
-            color=header,
+            color=paragraph,
             v_align='top',
             maxwidth=txt_maxwidth + 60,
         )   

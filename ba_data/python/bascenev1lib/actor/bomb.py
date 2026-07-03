@@ -1111,10 +1111,11 @@ class Bomb(bs.Actor):
             if dist_sq < best_dist_sq:
                 close = True
             # set fuse length to how close we are
-            self.node.fuse_length = max(
-                0.0,
-                min(1.0, 1.0 - (dist_sq / best_dist_sq))
-            )
+            if self.node.getnodetype() == 'bomb':
+                self.node.fuse_length = max(
+                    0.0,
+                    min(1.0, 1.0 - (dist_sq / best_dist_sq))
+                )
             # not close, we wanna explode
             if not close:
                 self.handlemessage(ExplodeMessage())

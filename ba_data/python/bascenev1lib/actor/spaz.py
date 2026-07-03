@@ -198,32 +198,58 @@ ENTITY_CONFIG = {
 def playsound(name, pos):
     bs.getsound(name).play(position=pos)
 
+class MinecraftDust(bs.Actor):
+    # bs.getplayers()[0].actor.spawn_in_buncha_dust()
+
+    def __init__(self, position: Sequence[float]):
+        super().__init__()
+        # hitbox
+        shared = SharedObjects.get()
+        self.node: bs.Node = bs.newnode(
+            'prop',
+            delegate=self,
+            attrs={
+                'body': 'box',
+                'mesh': bs.getmesh('ball'),
+                'color_texture': bs.gettexture('white'),
+                'body_scale': 0.5,
+                'position': position,
+                'velocity': (random.uniform(-1.3, 1.3), 2, random.uniform(-1.3, 1.3)),
+                'gravity_scale': 0.01,
+                'shadow_size': 0.2,
+                'materials': [shared.non_collide_mat],
+            },
+        )
+        bs.animate(
+            self.node, 
+            'mesh_scale',
+            {
+                0: 0,
+                0.05: 0.4,
+                0.15: 1.2,
+                0.2: 0.5,
+                1.7: 0,
+            }
+        )
+        bs.timer(1.7, bs.Call(self.handlemessage, bs.DieMessage()))
+    
+    @override
+    def handlemessage(self, msg):
+        if isinstance(msg, bs.DieMessage):
+            if self.node:
+                self.node.delete()
+        elif isinstance(msg, bs.OutOfBoundsMessage):
+            self.handlemessage(bs.DieMessage(immediate=True))
+        else: 
+            return super().handlemessage(msg)
+
 class MinecraftItem(bs.Actor):
     # bs.getplayers()[0].actor.spawn_in_buncha_items()
 
     def __init__(self, position: Sequence[float]):
         super().__init__()
-        self.non_collide_mat = bs.Material()
-        self.non_collide_mat.add_actions(
-            actions=(
-                ('modify_part_collision', 'collide', False),
-                ('modify_part_collision', 'physical', False),
-                ('modify_part_collision', 'use_node_collide', False),
-            ),
-        )
-        self.only_collide_with_floor = bs.Material()
-        self.only_collide_with_floor.add_actions(
-            actions=(
-                ('modify_part_collision', 'collide', False),
-            ),
-        )
-        self.only_collide_with_floor.add_actions(
-            conditions=('they_have_material', SharedObjects.get().footing_material),
-            actions=(
-                ('modify_part_collision', 'collide', True),
-            ),
-        )
         # hitbox
+        shared = SharedObjects.get()
         self.node: bs.Node = bs.newnode(
             'prop',
             delegate=self,
@@ -233,13 +259,26 @@ class MinecraftItem(bs.Actor):
                 'position': position,
                 'velocity': (random.uniform(-4.5, 4.5), 4.5, random.uniform(-4.5, 4.5)),
                 'gravity_scale': 1.1,
-                'materials': [self.only_collide_with_floor],
+                'materials': [shared.only_collide_with_floor_mat],
+                'shadow_size': 0,
             },
         )
         # actual thing
         item = [
             ['tnt', 'rocky', 0.35],
-            ['spazlingHead', 'spazlingHeadColor', 0.35],
+            ['tnt', 'dirt', 0.35],
+            ['tnt', 'netherrack', 0.35],
+            ['ender_pearl', 'enderPearl', 0.5],
+            ['wind_charge', 'windCharge', 0.5],
+            ['totem', 'totemOfUndying', 0.5],
+            ['arrow', 'arrow', 0.4],
+            ['bread', 'bread', 0.5],
+            ['pickaxe', 'ironPickaxe', 0.6],
+            ['axe', 'ironAxe', 0.6],
+            ['sword', 'ironSword', 0.6],
+            ['bow', 'bow', 0.6],
+            ['mace', 'mace', 0.6],
+            ['bomb', 'bombStickyColor', 0.6],
         ]
         selected_item = random.choice(item)
         self.item_node: bs.Node = bs.newnode(
@@ -249,10 +288,11 @@ class MinecraftItem(bs.Actor):
                 'mesh': bs.getmesh(selected_item[0]),
                 'color_texture': bs.gettexture(selected_item[1]),
                 'mesh_scale': selected_item[2],
-                    'gravity_scale': 0,
+                'gravity_scale': 0,
                 'body': 'landMine',
                 'position': position,
-                'materials': [self.non_collide_mat],
+                'shadow_size': 0.3,
+                'materials': [shared.non_collide_mat],
             },
         )
         self.tick_timer = bs.Timer(0.01, bs.Call(self._tick), repeat=True)
@@ -325,8 +365,9 @@ class MinecraftItem(bs.Actor):
                 
 
         elif isinstance(msg, bs.OutOfBoundsMessage):
-            self.handlemessage(bs.DieMessage())
-        else: return super().handlemessage(msg)
+            self.handlemessage(bs.DieMessage(immediate=True))
+        else: 
+            return super().handlemessage(msg)
         
 
 
@@ -3581,8 +3622,13 @@ class Spaz(bs.Actor):
     
     def spawn_in_buncha_items(self):
         if self.node:
-            for _ in range(random.randint(5, 18)):
+            for _ in range(random.randint(5, 15)):
                 MinecraftItem(position=self.node.position).autoretain()
+    
+    def spawn_in_buncha_dust(self):
+        if self.node:
+            for _ in range(random.randint(8, 13)):
+                MinecraftDust(position=self.node.position).autoretain()
 
 
     @override
@@ -4607,21 +4653,34 @@ class Spaz(bs.Actor):
             
             # ok death effect
             # make sure we just died
-            should_do_mc_death_effect = True #random.random() < 0.5
+            should_do_mc_death_effect = random.random() < 0.15
             if should_do_mc_death_effect and not wasdead:
-                    bs.getsound('minecraftDamage').play()
-                    self.spawn_in_buncha_items()
-                    def del_if_exists():
-                        if self.node:
-                            self.node.handlemessage(bs.DieMessage(True))
-                    # turn red, and delete ourself
+                self.spawn_in_buncha_items()
+                # defs
+                def del_if_exists():
                     if self.node:
-                        self.node.style = 'agent'
-                        self.node.color_texture = bs.gettexture('white')
-                        self.node.color_mask_texture = bs.gettexture('white')
-                        self.node.color = (1,0,0)
-                        self.node.highlight = (1,0,0)
-                        bs.timer(0.75, del_if_exists)
+                        self.spawn_in_buncha_dust()
+                        self.node.handlemessage(bs.DieMessage(True))
+                def anim(attr: str):
+                        truattr = getattr(self.node, attr)
+                        bs.animate_array(self.node, attr, 3,
+                            {
+                                0: truattr,
+                                0.35: (1, 0, 0),
+                            }
+                        )
+                # turn red, and delete ourself
+                if self.node:
+                    bs.getsound('minecraftDamage').play(
+                        position=self.node.position
+                    )
+                    self.node.style = 'agent'
+                    self.node.color_texture = bs.gettexture('white')
+                    self.node.color_mask_texture = bs.gettexture('white')
+                    
+                    anim('color')
+                    anim('highlight')
+                    bs.timer(0.75, del_if_exists)
 
 
                     

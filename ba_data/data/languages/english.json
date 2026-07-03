@@ -34,6 +34,8 @@
     "signOutText": "leave account",
     "signingInText": "signin innnn...",
     "signingOutText": "alright wait a sec",
+	"manualLoginText": "login via credentials",
+	"manualLoginInfo": "(an easier, storable sign in)",
     "ticketsText": "Tickets: ${COUNT}",
     "titleText": "Account",
     "unlinkAccountsInstructionsText": "Select an account to unlink",
@@ -43,6 +45,12 @@
     "viaAccount": "(via account ${NAME})",
     "youAreSignedInAsText": "your ID is:",
 	"rpcText": "viewing Account Settings"
+  },
+  "manualSignInWindow": {
+	  "titleText": "Sign in via Credentials",
+	  "infoText": "Keep getting signed out randomly? Can't sign\nin since V1 doesn't work for some fuckin reason??\nWell, this allows you to sign in by using your credentials.\nCurrently, this shouldn't be used (since you\nprobably don't know how, and i'll be adding more to this later)",
+	  "storeText": "store this credential",
+	  "doneText": "sign in"
   },
   "achievementChallengesText": "Achievement Challenges",
   "achievementText": "Achievement",

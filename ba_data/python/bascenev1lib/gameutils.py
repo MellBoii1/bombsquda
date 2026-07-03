@@ -64,6 +64,8 @@ class SharedObjects:
         self._touch_material: bs.Material | None = None
         self._fireball_material: bs.Material | None = None
         self._emerald_material: bs.Material | None = None
+        self._non_collide_mat: bs.Material | None = None
+        self._only_collide_with_floor_mat: bs.Material | None = None
 
     @classmethod
     def get(cls) -> SharedObjects:
@@ -326,3 +328,35 @@ class SharedObjects:
                 ),
             )
         return self._railing_material
+    
+    @property
+    def non_collide_mat(self) -> bs.Material:
+        """A material that collides with nothing."""
+        if self._non_collide_mat is None:
+            mat = self._non_collide_mat = bs.Material()
+            mat.add_actions(
+                actions=(
+                    ('modify_part_collision', 'collide', False),
+                    ('modify_part_collision', 'physical', False),
+                    ('modify_part_collision', 'use_node_collide', False),
+                ),
+            )
+        return self._non_collide_mat
+    
+    @property
+    def only_collide_with_floor_mat(self) -> bs.Material:
+        """A material that only collides with footing."""
+        if self._only_collide_with_floor_mat is None:
+            mat = self._only_collide_with_floor_mat = bs.Material()
+            mat.add_actions(
+                actions=(
+                    ('modify_part_collision', 'collide', False),
+                ),
+            )
+            mat.add_actions(
+                conditions=('they_have_material', SharedObjects.get().footing_material),
+                actions=(
+                    ('modify_part_collision', 'collide', True),
+                ),
+            )
+        return self._only_collide_with_floor_mat

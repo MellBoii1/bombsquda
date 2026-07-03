@@ -206,10 +206,8 @@ class PlusAppSubsystem(AppSubsystem):
         return _baplus.sign_in_v1(account_type)
 
     @staticmethod
-    def sign_out_v1(v2_embedded: bool = False, notthefuckinggameautosigningmeout: bool = False) -> None:
+    def sign_out_v1(v2_embedded: bool = False) -> None:
         """:meta private:"""
-        if not notthefuckinggameautosigningmeout:
-            return False
         return _baplus.sign_out_v1(v2_embedded)
 
     @staticmethod

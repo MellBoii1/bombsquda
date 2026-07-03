@@ -112,6 +112,9 @@ class AccountSettingsWindow(bui.MainWindow):
 
         # Always want to show our web-based v2 login option.
         self._show_sign_in_buttons.append('V2Proxy')
+        
+        # MANUAL BUTTON (UNUSED)
+        #self._show_sign_in_buttons.append('Manual')
 
         # Legacy v1 device accounts available only if the user has
         # explicitly enabled deprecated login types.
@@ -333,6 +336,11 @@ class AccountSettingsWindow(bui.MainWindow):
             and self._signing_in_adapter is None
             and 'V2Proxy' in self._show_sign_in_buttons
         )
+        show_manual_sign_in_button = (
+            v1_state == 'signed_out'
+            and self._signing_in_adapter is None
+            and 'Manual' in self._show_sign_in_buttons
+        )
         show_device_sign_in_button = (
             v1_state == 'signed_out'
             and self._signing_in_adapter is None
@@ -432,6 +440,8 @@ class AccountSettingsWindow(bui.MainWindow):
         if show_game_center_sign_in_button:
             self._sub_height += sign_in_button_space
         if show_v2_proxy_sign_in_button:
+            self._sub_height += sign_in_button_space
+        if show_manual_sign_in_button:
             self._sub_height += sign_in_button_space
         if show_device_sign_in_button:
             self._sub_height += sign_in_button_space + deprecated_space
@@ -799,6 +809,62 @@ class AccountSettingsWindow(bui.MainWindow):
             bui.widget(edit=btn, left_widget=bbtn)
             bui.widget(edit=btn, show_buffer_bottom=40, show_buffer_top=100)
             self._sign_in_text = None
+        
+        if show_manual_sign_in_button:
+            button_width = 350
+            v -= sign_in_button_space
+            self._manual_signin_button = btn = bui.buttonwidget(
+                parent=self._subcontainer,
+                position=((self._sub_width - button_width) * 0.5, v - 20),
+                autoselect=True,
+                size=(button_width, 60),
+                label='',
+                on_activate_call=self._manual_signin,
+            )
+
+            manlabeltext: bui.Lstr | str = (
+                bui.Lstr(resource=f'{self._r}.manualLoginText')
+            )
+            maninfotext: bui.Lstr | str = (
+                bui.Lstr(resource=f'{self._r}.manualLoginInfo')
+            )
+
+            bui.textwidget(
+                parent=self._subcontainer,
+                draw_controller=btn,
+                h_align='center',
+                v_align='center',
+                size=(0, 0),
+                position=(
+                    self._sub_width * 0.5,
+                    v + (17 if maninfotext is not None else 10),
+                ),
+                text=manlabeltext,
+                maxwidth=button_width * 0.8,
+                color=(0.75, 1.0, 0.7),
+            )
+            if maninfotext is not None:
+                bui.textwidget(
+                    parent=self._subcontainer,
+                    draw_controller=btn,
+                    h_align='center',
+                    v_align='center',
+                    size=(0, 0),
+                    position=(self._sub_width * 0.5, v - 4),
+                    text=maninfotext,
+                    flatness=1.0,
+                    scale=0.57,
+                    maxwidth=button_width * 0.9,
+                    color=(0.55, 0.8, 0.5),
+                )
+            if first_selectable is None:
+                first_selectable = btn
+            bui.widget(
+                edit=btn, right_widget=bui.get_special_widget('squad_button')
+            )
+            bui.widget(edit=btn, left_widget=bbtn)
+            bui.widget(edit=btn, show_buffer_bottom=40, show_buffer_top=100)
+            self._sign_in_text = None
 
         if show_device_sign_in_button:
             button_width = 350
@@ -866,26 +932,6 @@ class AccountSettingsWindow(bui.MainWindow):
             bui.widget(edit=btn, left_widget=bbtn)
             bui.widget(edit=btn, show_buffer_bottom=40, show_buffer_top=100)
             self._sign_in_text = None
-
-        if show_v1_obsolete_note:
-            v -= v1_obsolete_note_space
-            bui.textwidget(
-                parent=self._subcontainer,
-                h_align='center',
-                v_align='center',
-                size=(0, 0),
-                position=(self._sub_width * 0.5, v + 35.0),
-                text=(
-                    'YOU ARE SIGNED IN WITH A V1 ACCOUNT.\n'
-                    'THESE ARE NO LONGER SUPPORTED AND MANY\n'
-                    'FEATURES WILL NOT WORK. PLEASE SWITCH TO\n'
-                    'A V2 ACCOUNT OR UPGRADE THIS ONE.'
-                ),
-                maxwidth=self._sub_width * 0.8,
-                color=(1, 0, 0),
-                shadow=1.0,
-                flatness=1.0,
-            )
 
         if show_manage_account_button:
             button_width = 300
@@ -1574,7 +1620,6 @@ class AccountSettingsWindow(bui.MainWindow):
         assert plus is not None
 
         if plus.accounts.have_primary_credentials():
-            return
             if (
                 plus.accounts.primary is not None
                 and LoginType.GPGS in plus.accounts.primary.logins
@@ -1582,9 +1627,7 @@ class AccountSettingsWindow(bui.MainWindow):
                 self._explicitly_signed_out_of_gpgs = True
             plus.accounts.set_primary_credentials(None)
         else:
-            plus.sign_out_v1(
-                notthefuckinggameautosigningout=True
-            )
+            plus.sign_out_v1()
 
         cfg = bui.app.config
 
@@ -1725,6 +1768,12 @@ class AccountSettingsWindow(bui.MainWindow):
 
         assert self._sign_in_v2_proxy_button is not None
         V2ProxySignInWindow(origin_widget=self._sign_in_v2_proxy_button)
+    
+    def _manual_signin(self) -> None:
+        # pylint: disable=cyclic-import
+        from bauiv1lib.account.manual_signin import ManualSignInWindow
+        ManualSignInWindow()
+
 
     def _save_state(self) -> None:
         try:

@@ -66,7 +66,8 @@ class SharedObjects:
         self._emerald_material: bs.Material | None = None
         self._non_collide_mat: bs.Material | None = None
         self._only_collide_with_floor_mat: bs.Material | None = None
-        self._no_object_footing_collide_mat: bs.Material | None = None
+        self._no_object_collide_mat: bs.Material | None = None
+        self._collide_only_spaz: bs.Material | None = None
 
     @classmethod
     def get(cls) -> SharedObjects:
@@ -363,20 +364,34 @@ class SharedObjects:
         return self._only_collide_with_floor_mat
     
     @property
-    def no_object_footing_collide_mat(self) -> bs.Material:
-        """A material that only collides with non-objects and non-footing."""
-        if self._no_object_footing_collide_mat is None:
-            mat = self._no_object_footing_collide_mat = bs.Material()
+    def no_object_collide_mat(self) -> bs.Material:
+        """A material that only collides with non-objects."""
+        if self._no_object_collide_mat is None:
+            mat = self._no_object_collide_mat = bs.Material()
             mat.add_actions(
                 conditions=('they_have_material', self.object_material),
                 actions=(
                     ('modify_part_collision', 'collide', False),
                 ),
             )
+        return self._no_object_collide_mat
+    
+    @property
+    def collide_only_spaz(self) -> bs.Material:
+        """A material that collides with spazes"""
+        from bascenev1lib.actor.spazfactory import SpazFactory
+        if self._collide_only_spaz is None:
+            mat = self._collide_only_spaz = bs.Material()
             mat.add_actions(
-                conditions=('they_have_material', self.footing_material),
                 actions=(
                     ('modify_part_collision', 'collide', False),
                 ),
             )
-        return self._no_object_footing_collide_mat
+            mat.add_actions(
+                conditions=('they_have_material', SpazFactory.get().spaz_material),
+                actions=(
+                    ('modify_part_collision', 'collide', True),
+                ),
+            )
+         
+        return self._collide_only_spaz

@@ -538,6 +538,8 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
 
         elif isinstance(msg, bs.PlayerScoredMessage):
             self._score += msg.score
+            self.session._total_score += msg.score
+            self.session._update_for_arcade()
             self._update_scores()
             super().handlemessage(msg)
 
@@ -559,11 +561,12 @@ class TheFinaleGame(bs.CoopGameActivity[Player, Team]):
                     self._dingsound if importance == 1 else self._dingsoundhigh
                 )
                 diesound.play(volume=0.6)
-
             # Normally we pull scores from the score-set, but if there's no
             # player lets be explicit.
             else:
                 self._score += pts
+                self.session._total_score += pts
+                self.session._update_for_arcade()
             self._update_scores()
             super().handlemessage(msg)
         else:

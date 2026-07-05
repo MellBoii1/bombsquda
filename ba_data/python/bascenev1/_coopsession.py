@@ -9,6 +9,7 @@ import babase
 
 import _bascenev1
 from bascenev1._session import Session
+from bascenev1lib.actor.background import Background
 import bascenev1 as bs
 
 if TYPE_CHECKING:
@@ -83,6 +84,45 @@ class CoopSession(Session):
             classic.coop_session_args['campaign']
         )
         self.campaign_level_name: str = classic.coop_session_args['level']
+        self._arcade_mode = False
+        self._arcade_lives = 3
+        self._total_score = 0
+        if self._arcade_mode:
+            self._arcade_lives_text = bs.newnode(
+                'text',
+                attrs={
+                    'v_attach': 'bottom',
+                    'h_align': 'center',
+                    'position': (0, 80),
+                    'scale': 0.8,
+                    'color': (0.9, 0.9, 0.9),
+                    'opacity': 0.6,
+                    'front': True,
+                }
+            )
+            self._arcade_score_text = bs.newnode(
+                'text',
+                attrs={
+                    'v_attach': 'bottom',
+                    'h_align': 'center',
+                    'position': (0, 10),
+                    'scale': 1.2,
+                    'front': True,
+                }
+            )
+            self._arcade_score_info_text = bs.newnode(
+                'text',
+                attrs={
+                    'v_attach': 'bottom',
+                    'h_align': 'center',
+                    'position': (0, 50),
+                    'color': (0.6, 0.7, 0.9),
+                    'scale': 0.9,
+                    'opacity': 0.8,
+                    'front': True,
+                }
+            )
+            self._update_for_arcade()
 
         self._ran_tutorial_activity = False
         self._tutorial_activity: bascenev1.Activity | None = None
@@ -96,6 +136,70 @@ class CoopSession(Session):
         self._next_game_instance: bascenev1.GameActivity | None = None
         self._next_game_level_name: str | None = None
         self._update_on_deck_game_instances()
+    
+    def _update_for_arcade(self):
+        if not self._arcade_mode:
+            return
+        self._arcade_lives_text.text = bs.Lstr(
+            value='${A}: ${B}',
+            subs=[
+                ('${A}', bs.Lstr(r='livesText')),
+                ('${B}', str(self._arcade_lives)),
+            ],
+        )
+        self._arcade_score_info_text.text = bs.Lstr(
+            value='- ${A} -',
+            subs=[
+                ('${A}', bs.Lstr(r='totalScoreText')),
+            ],
+        )
+        self._arcade_score_text.text = str(self._total_score)
+    
+    def _show_gameover_text(self):
+        time = 1.5
+        def text(h_align: str):
+            return bs.newnode(
+                'text',
+                attrs={
+                    'h_align': h_align,
+                    'position': (-600, 0),
+                    'scale': 2.5,
+                    'opacity': 1,
+                    'flatness': 0.6,
+                    'shadow': 0.1,
+                    'front': True,
+                }
+            )
+        game_text = text(h_align='right')
+        over_text = text(h_align='left')
+        game_text.text = bs.Lstr(r='gameoverGameText')
+        over_text.text = bs.Lstr(r='gameoverOverText')
+        xoffnum = 800
+        xnum = 20
+        xoffs = 15
+        v = -30
+        bs.animate_array(
+            game_text,
+            'position',
+            2,
+            {
+                0: (-xoffnum, v),
+                time: (-xnum + xoffs, v),
+                9: (-xnum + xoffs, v),
+                9.5: (-xnum + xoffs, 600),
+            }
+        )
+        bs.animate_array(
+            over_text,
+            'position',
+            2,
+            {
+                0: (xoffnum, v),
+                time: (xnum + xoffs, v),
+                9: (xnum + xoffs, v),
+                9.5: (xnum + xoffs, 600),
+            }
+        )
 
     def get_current_game_instance(self) -> bascenev1.GameActivity:
         """Get the game instance currently being played."""
@@ -178,7 +282,7 @@ class CoopSession(Session):
             if player.actor:
                 # If within reasonable hitpoints or
                 # alive, allow mid activity rejoining.
-                if player.actor.hitpoints >= 410:
+                if player.actor.hitpoints >= 410 and not self._arcade_mode:
                     self.amaj_players += 1
                     bs.broadcastmessage(
                         bs.Lstr(
@@ -364,6 +468,17 @@ class CoopSession(Session):
         activity = self.getactivity()
         if activity is not None and not activity.expired:
             activity.can_show_ad_on_death = True
+            if self._arcade_mode:
+                if self._arcade_lives > 0:
+                    self._arcade_lives -= 1
+                else:
+                    with self.getactivity().context:
+                        bs.broadcastmessage(
+                            bs.Lstr(r='noLivesRestartArcadeMode'),
+                            color=(1, 0.1, 0.1),
+                        )
+                        bs.getsound('error').play()
+                    return
             with activity.context:
                 activity.end(results={'outcome': 'restart'}, force=True)
 
@@ -553,23 +668,43 @@ class CoopSession(Session):
                 # THIS IS WHAT RESTARTS THE LEVEL
                 self.setactivity(_bascenev1.newactivity(TransitionActivity))
             else:
-                self.setactivity(
-                    _bascenev1.newactivity(
-                        CoopScoreScreen,
-                        {
-                            'playerinfos': playerinfos,
-                            'score': score,
-                            'fail_message': fail_message,
-                            'score_order': score_order,
-                            'score_type': scoretype,
-                            'outcome': outcome,
-                            'campaign': self.campaign,
-                            'level': self.campaign_level_name,
-                            'win_music_override': win_music_override,
-                            'lose_music_override': lose_music_override,
-                        },
+                arcade = self._arcade_mode
+                if arcade:
+                    if outcome == 'victory':
+                        def nextgame():
+                            next_game = self._next_game_instance
+                            self.setactivity(next_game)
+                        Background(fade_time=0.6).autoretain()
+                        bs.timer(0.9, nextgame)
+                    else:
+                        if self._arcade_lives > 0:
+                            self.setactivity(_bascenev1.newactivity(TransitionActivity))
+                            self._arcade_lives -= 1
+                        else:
+                            self._show_gameover_text()
+                            bs.setmusic(bs.MusicType.COOP_GAMEOVER)
+                            bs.timer(10, self._do_arcade_results)
+                else:
+                    self.setactivity(
+                        _bascenev1.newactivity(
+                            CoopScoreScreen,
+                            {
+                                'playerinfos': playerinfos,
+                                'score': score,
+                                'fail_message': fail_message,
+                                'score_order': score_order,
+                                'score_type': scoretype,
+                                'outcome': outcome,
+                                'campaign': self.campaign,
+                                'level': self.campaign_level_name,
+                                'win_music_override': win_music_override,
+                                'lose_music_override': lose_music_override,
+                            },
+                        )
                     )
-                )
-
+        # Only IF we're on arcade,
+        # update the lives text (doesn't matter the condition)
+        if self._arcade_mode:
+            bs.timer(0.01, self._update_for_arcade)
         # No matter what, get the next 2 levels ready to go.
         self._update_on_deck_game_instances()

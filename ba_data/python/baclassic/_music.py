@@ -160,6 +160,7 @@ ASSET_SOUNDTRACK_ENTRIES: dict[str, AssetSoundtrackEntry] = {
     'HARDMODE2': AssetSoundtrackEntry('music/asgore', volume=1.0),
     'HARDMODE3': AssetSoundtrackEntry('music/sans', volume=1.0),
     'RACE_START_GRID': AssetSoundtrackEntry('music/startGrid', loop=False),
+    'COOP_GAMEOVER': AssetSoundtrackEntry('music/coop_gover', loop=False),
     'COOP_VICTORY': AssetSoundtrackEntry(
         'music/coop_victory', volume=1.0, loop=False
     ),

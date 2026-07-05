@@ -4179,7 +4179,7 @@ class Spaz(bs.Actor):
             damage_scale = 0.22
             # Reset our times parried, due to getting hurt.
             self.timesparried = 0
-            bs.timer(0.1, self.updatemeter)
+            bs.timer(0, self.updatemeter)
             self.stop_voicelines()
             source_player = msg.get_source_player(bs.Player)
             if source_player:
@@ -4571,6 +4571,7 @@ class Spaz(bs.Actor):
                 if damage_avg >= 1000 * self.impulse_scale:
                     # WITHER AND DIE :fire::fire::fire::fire::fire::fire::fire:
                     self.shatter()
+            return damage
 
         elif isinstance(msg, BombDiedMessage):
             self.bomb_count += 1
@@ -5323,7 +5324,6 @@ class Spaz(bs.Actor):
         bs.getsound(sound).play(volume=1.5, position=pos)
         self.impulse(y=150)
         self.die()
-        # don't make particles if the player disabled them
         # Momentary flash of light.
         light = bs.newnode(
             'light',
@@ -5340,33 +5340,23 @@ class Spaz(bs.Actor):
         bs.timer(0.3, light.delete)
         
         if not ba.app.config.get('squda_noparticles'):
-            for _ in range(65):
-                offset_x = random.uniform(-0.3, 0.3)
-                offset_z = random.uniform(-0.3, 0.3)
-                offset_y = random.uniform(0, 0.5)
-                particle_pos = (pos[0] + offset_x, pos[1] + offset_y, pos[2] + offset_z)
+            def make_particle():
+                pos = self.node.torso_position
+                x = random.uniform(-5, 5)
+                y = random.uniform(3, 6)
+                z = random.uniform(-5, 5)
+                particle_pos = (pos[0], pos[1] + 0.6, pos[2])
                 particle = particle_type(
                     position=particle_pos, 
                     spaz_type=self.char_style
                 )
                 particle.autoretain()
-                num = random.randint(3, 13)
-                y = num = random.randint(6, 9)
-                particle.node.handlemessage('impulse', 
-                    particle_pos[0], 
-                    particle_pos[1], 
-                    particle_pos[2],
-                    0, 25, 0, num, 0.05, 0, 0,
-                    offset_x*15*2, 0, offset_z*15*2
-                )
-                particle.node.handlemessage('impulse', 
-                    particle_pos[0], 
-                    particle_pos[1], 
-                    particle_pos[2],
-                    0, 25, 0,
-                    y, 0.05, 0, 0,
-                    0, 20*400, 0
-                )
+                particle.node.velocity = (x, y, z)
+            delay = 0.01
+            for _ in range(15):
+                bs.timer(delay, make_particle)
+                delay += 0.005
+
         self.hexploded = True
         
     def updatemeter(self):

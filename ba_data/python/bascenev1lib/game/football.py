@@ -788,6 +788,8 @@ class FootballCoopGame(bs.CoopGameActivity[Player, Team]):
             assert team is not None
             if team.id == i:
                 team.score += 7
+                self.session._total_score += 15
+                self.session._update_for_arcade()
 
                 # Tell all players (or bots) to celebrate.
                 if i == 0:
@@ -857,8 +859,7 @@ class FootballCoopGame(bs.CoopGameActivity[Player, Team]):
                     if team is self._bot_team:
                         self.end_game()
                     else:
-                        bs.setmusic(None)
-                        bs.getsound('music/coop_victory').play()
+                        bs.setmusic(bs.MusicType.COOP_VICTORY)
 
                         self._bots.stop_moving()
                         self.show_zoom_message(

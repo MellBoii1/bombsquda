@@ -910,8 +910,7 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
                 bs.timer(base_delay, self._award_completion_bonus)
                 base_delay += 0.85
                 self._winsound.play()
-                bs.getsound('music/coop_victory').play()
-                bs.setmusic(None)
+                bs.setmusic(bs.MusicType.COOP_VICTORY)
                 bs.cameraflash()
                 self._game_over = True
                 bs.timer(base_delay, bs.Call(self.do_end, 'victory'))
@@ -941,6 +940,8 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
             position=(0, 1.5, -1),
         ).autoretain()
         self._score += bonus
+        self.session._total_score += bonus
+        self.session._update_for_arcade()
         self._update_scores()
 
     def _award_lives_bonus(self) -> None:
@@ -959,6 +960,8 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
             position=(0, 1, -1),
         ).autoretain()
         self._score += bonus
+        self.session._total_score += bonus
+        self.session._update_for_arcade()
         self._update_scores()
 
     def _award_time_bonus(self, bonus: int) -> None:
@@ -977,6 +980,8 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
         ).autoretain()
 
         self._score += self._time_bonus
+        self.session._total_score += self._time_bonus
+        self.session._update_for_arcade()
         self._update_scores()
 
     def _award_flawless_bonus(self) -> None:
@@ -1046,6 +1051,8 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
 
         assert self._flawless_bonus is not None
         self._score += self._flawless_bonus
+        self.session._total_score += self._flawless_bonus
+        self.session._update_for_arcade()
         self._update_scores()
 
     def _start_time_bonus_timer(self) -> None:
@@ -1491,6 +1498,8 @@ class RunaroundGame(bs.CoopGameActivity[Player, Team]):
 
         if isinstance(msg, bs.PlayerScoredMessage):
             self._score += msg.score
+            self.session._total_score += msg.score
+            self.session._update_for_arcade()
             self._update_scores()
             super().handlemessage(msg)
 

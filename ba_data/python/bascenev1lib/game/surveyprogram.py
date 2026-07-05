@@ -7,7 +7,6 @@ import logging
 
 import bauiv1 as bui
 import bascenev1 as bs
-from bascenev1lib.actor.cutsceneplayer import CutscenePlayerSpecialEditionCuzFucked
 import babase as ba
 
 if TYPE_CHECKING:
@@ -475,6 +474,21 @@ class SURVEYActivity2(bs.Activity[bs.Player, bs.Team]):
     def __init__(self, settings: dict):
         super().__init__(settings)
         
+    def _makeplayer(self):
+        player = CutscenePlayer(
+            cutscene_id=41,
+            frame_delays=[
+                2.2, 0.3, 0.3, 0.3, 0.3, 0.3,
+                0.3, 0.3, 0.3, 0.2, 0.1, 
+                0.1, 0.1, 0.1, 0.1, 0.1,
+                0.1, 0.1, 0.1, 0.1, 0.1,
+                0.1, 0.1, 0.1, 0.1, 21.2,
+            ],
+            fade_duration=2.0
+        )
+        player.autoretain()
+        player.node.fill_screen = True
+        
     def on_transition_in(self) -> None:
         from bascenev1lib.mainmenu import MainMenuSession
         self.bgterrain = bs.NodeActor(
@@ -492,30 +506,26 @@ class SURVEYActivity2(bs.Activity[bs.Player, bs.Team]):
         self.blackthing = bs.newnode('image', 
             attrs={
                 'texture': bs.gettexture('white'),
-                'absolute_scale': True,
-                'position': (0, 0),
-                'attach': 'center',
                 'opacity': 0.0,
                 'fill_screen': True,
                 'color': (0, 0, 0)
             }
         )
         bs.setmusic(None)
-        bs.animate(self.blackthing, "opacity", {
-            0.0: (0.0),
-            1.5: (1.0)
-        })
-        bs.timer(2.5, lambda: bs.setmusic(bs.MusicType.LOGOTYPE))
-        bs.timer(2.5, lambda: CutscenePlayerSpecialEditionCuzFucked(
-            cutscene_id=41,
-            frame_delays=[
-                2.2, 0.3, 0.3, 0.3, 0.3, 0.3,
-                0.3, 0.2, 0.2, 0.2, 0.1, 
-                0.1, 0.1, 0.1, 0.1, 0.1,
-                0.1, 0.1, 0.1, 0.1, 0.1,
-                0.1, 0.1, 0.1, 0.1, 21.2,
-            ],
-            fade_duration=2.0
+        bs.animate(
+            self.blackthing, 
+            "opacity", 
+            {
+                0.0: 0.0,
+                1.5: 1.0
+            }
         )
+        bs.timer(
+            2.5, 
+            bs.Call(
+                bs.setmusic, 
+                bs.MusicType.LOGOTYPE
+            )
         )
-        bs.timer(36.0, lambda: bs.pushcall(lambda: bs.new_host_session(MainMenuSession)))
+        bs.timer(2.5, self._makeplayer)
+        bs.timer(36.0, bs.Call(bs.new_host_session, MainMenuSession))

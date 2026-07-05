@@ -1025,11 +1025,12 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
 
             self.cutscene_player = CutscenePlayer(
                 cutscene_id=1,
-                frame_delays=[3.0, 3.0, 2.0, 15.0, 3.0, 3.0],
-                fade_duration=2.0
+                frame_times=[3, 6, 8, 23, 26],
+                end_time=29,
+                fade_duration=1.8
             )
 
-            self._music_timer = bs.Timer(30.0, lambda: bs.setmusic(self.chosen_music))
+            self._music_timer = bs.Timer(30.0, bs.Call(bs.setmusic, self.chosen_music))
             self._wave_timer = bs.Timer(30.0, self._start_updating_waves)
             self._input_timer = bs.Timer(30.0, self.givebackinput)
 
@@ -1040,33 +1041,36 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
 
             self.cutscene_player = CutscenePlayer(
                 cutscene_id=2,
-                frame_delays=[2.0, 0.9, 2.1, 2.1, 3.1, 1.4, 2.1, 2.1],
+                frame_times=[2.0, 2.9, 5, 7.1, 10.2, 11.6, 12.7],
+                end_time=13.4,
                 fade_duration=0.5
             )
-            self._tp_timer = bs.Timer(15.7, self.rookie_teleport)
-            self._wave_timer = bs.Timer(18.7, self._start_updating_waves)
-            self._input_timer = bs.Timer(18.0, self.givebackinput)
-            self._music_timer = bs.Timer(18.0, lambda: bs.setmusic(self.chosen_music))
+            self._tp_timer = bs.Timer(13.4, self.rookie_teleport)
+            self._wave_timer = bs.Timer(16.7, self._start_updating_waves)
+            self._input_timer = bs.Timer(15.0, self.givebackinput)
+            self._music_timer = bs.Timer(15.0, bs.Call(bs.setmusic, self.chosen_music))
 
             self._enable_cutscene_skip()
 
         else:
-            bs.timer(3.0, self._start_updating_waves)
+            bs.timer(2.7, self._start_updating_waves)
+            
     def rookie_teleport(self):
         for player in self.players:
-            def begin(p=player):
-                if not p.actor.node.exists():
-                    return
-                p.actor.node.handlemessage(
-                    bs.StandMessage(
-                        (
-                            random.randint(-1, 1),
-                            10,
-                            random.randint(-1, 1)
-                        )
+            if not player.actor:
+                continue
+            if not player.actor.node:
+                continue
+            player.actor.handlemessage(
+                bs.StandMessage(
+                    (
+                        random.randint(-1, 1),
+                        10,
+                        random.randint(-1, 1)
                     )
                 )
-            begin()
+            )
+
     def givebackinput(self):
         for player in self.players:
             player.actor.connect_controls_to_player()
@@ -1097,17 +1101,19 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
         # Listen to any button press from any player
         for player in self.players:
             try:
+                player.resetinput()
                 player.assigninput(
-                ( 
-                    InputType.JUMP_PRESS,
-                    InputType.BOMB_PRESS,
-                    InputType.PICK_UP_PRESS,
-                    InputType.PUNCH_PRESS,
-                ),
-                bs.Call(self._skip_cutscene)
-            )
+                    (
+                        InputType.JUMP_PRESS,
+                        InputType.BOMB_PRESS,
+                        InputType.PICK_UP_PRESS,
+                        InputType.PUNCH_PRESS,
+                    ),
+                    bs.Call(self._skip_cutscene)
+                )
             except: 
                 pass
+
     def _get_dist_grp_totals(self, grps: list[Any]) -> tuple[int, int]:
         totalpts = 0
         totaldudes = 0
@@ -1404,8 +1410,7 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
                 base_delay += 0.85
                 self._winsound.play()
                 bs.cameraflash()
-                bs.setmusic(None)
-                bs.getsound('music/coop_victory').play()
+                bs.setmusic(bs.MusicType.COOP_VICTORY)
                 self._game_over = True
 
                 # Can't just pass delay to do_end because our extra bonuses
@@ -1498,6 +1503,8 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
             position=(0, 3, -1),
         ).autoretain()
         self._score += self._time_bonus
+        self.session._total_score += self._time_bonus
+        self.session._update_for_arcade()
         self._update_scores()
 
     def _award_flawless_bonus(self, player: Player) -> None:
@@ -1876,6 +1883,8 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
 
         elif isinstance(msg, bs.PlayerScoredMessage):
             self._score += msg.score
+            self.session._total_score += msg.score
+            self.session._update_for_arcade()
             self._update_scores()
             super().handlemessage(msg)
 

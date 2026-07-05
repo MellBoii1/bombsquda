@@ -612,13 +612,17 @@ class Blast(bs.Actor):
         )
 
         scl = random.uniform(0.6, 0.9)
+        iscale = 1.6
         scorch_radius = light_radius = self.radius
         if self.blast_type == 'tnt':
             light_radius *= 1.4
             scorch_radius *= 1.15
             scl *= 3.0
 
-        iscale = 1.6
+        if self.hit_subtype == 'snowgrave':
+            light_radius *= 0.5
+            iscale *= 0.1
+
         bs.animate(
             light,
             'intensity',
@@ -670,7 +674,7 @@ class Blast(bs.Actor):
         bs.animate(scorch, 'presence', {3.000: 1, 13.000: 0})
         bs.timer(13.0, scorch.delete)
 
-        if self.blast_type == 'ice':
+        if self.blast_type == 'ice' and not self.nosound:
             factory.hiss_sound.play(position=light.position)
 
         lpos = light.position
@@ -733,7 +737,8 @@ class Blast(bs.Actor):
                 )
             )
             if self.blast_type == 'ice':
-                BombFactory.get().freeze_sound.play(position=nodepos)
+                if not self.nosound:
+                    BombFactory.get().freeze_sound.play(position=nodepos)
                 node.handlemessage(bs.FreezeMessage())
 
         else:
@@ -792,6 +797,7 @@ class Bomb(bs.Actor):
         self.bomb_type = bomb_type
 
         self._exploded = False
+        self._last_pos = (0, 0, 0)
         self.scale = bomb_scale
         self.nosound = nosound
         self.manual = manual
@@ -1281,6 +1287,24 @@ class Bomb(bs.Actor):
             return
         if self._lunatic_mode and self._lunatic_time > 0:
             return
+        if (
+            self.bomb_type == 'ice'
+            and random.random() < 0.006
+        ):
+            self._last_pos = self.node.position
+            bs.emitfx(
+                position=self._last_pos,
+                velocity=self.node.velocity,
+                count=30,
+                spread=2.0,
+                scale=0.4,
+                chunk_type='ice',
+                emit_type='stickers',
+            )
+            bs.getsound('boowomp').play(position=self._last_pos)
+            from bascenev1lib.actor.snowgrave import Snowgrave
+            bs.timer(6, Snowgrave(self._last_pos).autoretain)
+            self.handlemessage(bs.DieMessage())
         self._exploded = True
         if self.node:
             if self._lunatic_mode:

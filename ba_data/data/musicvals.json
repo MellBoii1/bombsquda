@@ -150,5 +150,10 @@
 		"title": "Start Grid",
 		"artist": "Mario Kart 64",
 		"artist_keyword": "from"
+	},
+	"MusicType.COOP_GAMEOVER": {
+		"title": "Game Over",
+		"artist": "Sonic Robo Blast 2",
+		"artist_keyword": "from"
 	}
 }

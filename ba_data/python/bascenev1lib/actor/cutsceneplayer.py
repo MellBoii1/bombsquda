@@ -1,129 +1,116 @@
-# Define a cutscene player we can use for coop levels.
+"""Cutscene player."""
+from typing import override, Any
+from bascenev1lib.actor.background import Background
 import bascenev1 as bs
 
-class CutscenePlayer:
-    def __init__(self, cutscene_id: int, frame_delays: list[float],
-                 fade_duration: float = 1.0):
-        """
-        Plays a cutscene frame-by-frame with individual delays.
-
-        cutscene_id: number used in texture names "cutsceneXframeY"
-        frame_delays: list of delays per frame, e.g. [2.0, 1.5, 3.0]
-        fade_duration: fade-out time after the last frame
-        """
-        self.cutscene_id = cutscene_id
+class CutscenePlayer(bs.Actor):
+    def __init__(
+        self, 
+        cutscene_id: int, 
+        frame_times: list[float],
+        end_time: float,
+        fade_duration: float = 1.0,
+    ):
+        super().__init__()
+        self._cutscene_id = cutscene_id
         self._stopped = False
-        self.frame_delays = frame_delays
+        self._timers = []
+        self._frame_times = frame_times
         self.fade_duration = fade_duration
-        self.bgimage = bs.newnode('image', attrs={
-            'texture': bs.gettexture('bg'),
-            'absolute_scale': True,
-            'position': (0, 0),
-            'fill_screen': True,
-            'opacity': 1.0,
-            'color': (1, 1, 1)
-        })
-        self.node = None
-        self._show_frame(1)
-    def _show_frame(self, frame_number: int):
-        if self._stopped == True:
-            return
-        if frame_number > len(self.frame_delays):
-            self._fade_out()
-            return
-
-        # Texture name example: "cutscene1frame2"
-        texture_name = f"cutscene{self.cutscene_id}frame{frame_number}"
-        tex = bs.gettexture(texture_name)
-
-        # Delete last frame before showing new one
-        if self.node:
-            self.node.delete()
+        self.bgimage = bs.newnode(
+            'image',
+            delegate=self,
+            attrs={
+                'fill_screen': True,
+                'texture': bs.gettexture('bg'),
+                'color': (0, 0.6, 0),
+                'opacity': 1.0
+            }
+        )
+        self.node = bs.newnode(
+            'image',
+            delegate=self,
+            attrs={
+                'absolute_scale': True,
+                'position': (0, 0),
+                'scale': (1000, 500),
+                'opacity': 1.0
+            }
+        )
+        self.border_node = bs.newnode(
+            'image',
+            delegate=self,
+            attrs={
+                'absolute_scale': True,
+                'position': (0, 0),
+                'scale': (1000, 500),
+                'opacity': 1.0
+            }
+        )
+        frame = 1
+        self._show_frame(frame)
+        frame += 1
+        for delay in frame_times:
+            timer = bs.Timer(
+                delay,
+                bs.Call(self._show_frame, frame)
+            )
+            frame += 1
+            self._timers.append(timer)
+        timer = bs.Timer(end_time, self._fade_out)
+        self._timers.append(timer)
         
-        # Show the new frame
-        self.node = bs.newnode('image', attrs={
-            'texture': tex,
-            'absolute_scale': True,
-            'position': (0, 0),
-            'scale': (1000, 500),
-            'opacity': 1.0
-        })
 
-        # Schedule the next frame using FRAME-SPECIFIC delay
-        delay = self.frame_delays[frame_number - 1]
-        bs.timer(delay, lambda: self._show_frame(frame_number + 1))
+    def _show_frame(self, frame_number: int):
+        texture_name = f"cutscene{self._cutscene_id}frame{frame_number}"
+        tex = bs.gettexture(texture_name)
+        self.node.texture = tex
 
     def _fade_out(self):
         if self.bgimage:
-            bs.animate(self.bgimage, 'opacity',
-                       {0: 1.0, self.fade_duration: 0.0})
-            bs.timer(self.fade_duration + 0.05, self.bgimage.delete)
-
+            bs.animate(
+                self.bgimage, 
+                'opacity',
+                {
+                    0: 1.0, 
+                    self.fade_duration: 0.0
+                }
+            )
         if self.node:
-            bs.animate(self.node, 'opacity',
-                       {0: 1.0, self.fade_duration: 0.0})
-            bs.timer(self.fade_duration + 0.06, self.node.delete)
+            bs.animate(
+                self.node, 
+                'opacity',
+                {
+                    0: 1.0, 
+                    self.fade_duration: 0.0
+                }
+            )
+        if self.border_node:
+            bs.animate(
+                self.border_node, 
+                'opacity',
+                {
+                    0: 1.0, 
+                    self.fade_duration: 0.0
+                }
+            )
+
     def stop(self):
         self._stopped = True
-        if hasattr(self, 'node') and self.node:
-            self.node.delete()
-        if hasattr(self, 'bgimage') and self.bgimage:
-            self.bgimage.delete()
-            
-class CutscenePlayerSpecialEditionCuzFucked:
-    def __init__(self, cutscene_id: int, frame_delays: list[float],
-                 fade_duration: float = 1.0):
-        """
-        Plays a cutscene frame-by-frame with individual delays.
-
-        cutscene_id: number used in texture names "cutsceneXframeY"
-        frame_delays: list of delays per frame, e.g. [2.0, 1.5, 3.0]
-        fade_duration: fade-out time after the last frame
-        """
-        self.cutscene_id = cutscene_id
-        self._stopped = False
-        self.frame_delays = frame_delays
-        self.fade_duration = fade_duration
-        self.node = None
-        self._show_frame(1)
-
-    def _show_frame(self, frame_number: int):
-        if self._stopped == True:
-            return
-        if frame_number > len(self.frame_delays):
-            self._fade_out()
-            return
-
-        # Texture name example: "cutscene1frame2"
-        texture_name = f"cutscene{self.cutscene_id}frame{frame_number}"
-        tex = bs.gettexture(texture_name)
-
-        # Delete last frame before showing new one
         if self.node:
             self.node.delete()
-        
-        # Show the new frame
-        self.node = bs.newnode('image', attrs={
-            'texture': tex,
-            'absolute_scale': True,
-            'position': (0, 0),
-            'fill_screen': True,
-            'opacity': 1.0
-        })
-
-        # Schedule the next frame using FRAME-SPECIFIC delay
-        delay = self.frame_delays[frame_number - 1]
-        bs.timer(delay, lambda: self._show_frame(frame_number + 1))
-
-    def _fade_out(self):
-        if self.node:
-            bs.animate(self.node, 'opacity',
-                       {0: 1.0, self.fade_duration: 0.0})
-            bs.timer(self.fade_duration + 0.06, self.node.delete)
-    def stop(self):
-        self._stopped = True
-        if hasattr(self, 'node') and self.node:
-            self.node.delete()
-        if hasattr(self, 'bgimage') and self.bgimage:
+        if self.bgimage:
             self.bgimage.delete()
+        self._timers.clear()
+    
+    def handlemessage(self, msg: Any):
+        if isinstance(msg, bs.DieMessage):
+            self.stop()
+        else:
+            return super().handlemessage(msg)
+        return None
+    
+    @override
+    def exists(self):
+        return bool(self.node)
 

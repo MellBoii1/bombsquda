@@ -97,7 +97,8 @@ def setmusic(musictype: MusicType | None, continuous: bool = False, show_playing
         with bs.get_foreground_host_session().context:
             from bascenev1lib.actor.musicnotif import MusicNotifier
             MusicNotifier(music_type=musictype)
-    ba.apptimer(0, make)
+    with ba.ContextRef.empty():
+        ba.apptimer(0, make)
     
 def localsetmusic(musictype: MusicType | None, continuous: bool = False) -> None:
     """

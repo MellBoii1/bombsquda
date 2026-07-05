@@ -167,6 +167,9 @@ ASSET_SOUNDTRACK_ENTRIES: dict[str, AssetSoundtrackEntry] = {
     'MARCHING': AssetSoundtrackEntry(
         'music/runaroundMusic', volume=0.8
     ),
+    'WATERCOOLER': AssetSoundtrackEntry(
+        'music/battle_vapor'
+    )
 }
 # remake musictype based on 
 # THIS dict instead

@@ -70,6 +70,9 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
     # (unless overridden by the map).
     default_music: bascenev1.MusicType | None = None
 
+    # watercoloer mini bos
+    water_cooler_spawned: bool = False
+
     @classmethod
     def getscoreconfig(cls) -> bascenev1.ScoreConfig:
         """Return info about game scoring setup; can be overridden by games."""
@@ -457,7 +460,10 @@ class GameActivity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
                 },
                 callback=babase.WeakCall(self._on_tournament_query_response),
             )
+        
+       
 
+        
     def _on_tournament_query_response(
         self, data: dict[str, Any] | None
     ) -> None:

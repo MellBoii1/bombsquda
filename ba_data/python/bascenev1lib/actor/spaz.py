@@ -4688,18 +4688,6 @@ class Spaz(bs.Actor):
                     anim('highlight')
                     bs.timer(0.75, del_if_exists)
 
-
-                    
-        elif isinstance(msg, bs.OutOfBoundsMessage):
-            if self.parrying == True:
-                self.tptosafety()
-                return
-            self.lasthittype = 'fall'
-            if random.random() < 0.1:
-                self.smashkill(sound='cheer')
-            else:
-                self.die(how=bs.DeathType.FALL)
-
         elif isinstance(msg, bs.StandMessage):
             self._last_stand_pos = (
                 msg.position[0],

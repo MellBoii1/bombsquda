@@ -46,6 +46,14 @@ class PowerupAcceptMessage:
 def get_default_powerup_distribution() -> Sequence[tuple[str, int]]:
     """Standard set of powerups."""
     # set a powerup's str to debug it
+
+    # testing test test test woohoo test
+    import bascenev1
+    if bascenev1.get_foreground_host_activity().water_cooler_spawned is False:
+        return (
+            ('watercooler', 1), ('watercooler', 1)
+        )
+    
     base_distribution = {
         'triple_bombs': 2,
         'ice_bombs': 3,
@@ -65,6 +73,12 @@ def get_default_powerup_distribution() -> Sequence[tuple[str, int]]:
         'fireball': 2,
         'bloxy': 2,
         'hook': 1,
+        'watercooler': (
+            1 if 
+            not isinstance(bascenev1.get_foreground_host_session(), bascenev1.CoopSession) and
+            bascenev1.get_foreground_host_activity().water_cooler_spawned is False
+            else 0
+        )
     }
     cfg = ba.app.config.get("squda_powerup_dist", {})
     for key in base_distribution:

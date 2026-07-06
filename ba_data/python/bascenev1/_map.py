@@ -140,7 +140,7 @@ class Map(Actor):
 
         # Set map bounds.
         classic_mb = True
-        if classic_mb:
+        if not classic_mb:
             hugenum = 999999999
             def get(pos: tuple):
                 box = pos

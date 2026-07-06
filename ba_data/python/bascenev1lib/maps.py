@@ -432,7 +432,7 @@ class Bridgit(bs.Map):
                 'materials': [
                     shared.footing_material,
                     self.preloaddata['bg_material'],
-                    shared.death_material,
+                    shared.safe_death_mat,
                 ],
             },
         )
@@ -546,7 +546,7 @@ class BigG(bs.Map):
                 'materials': [
                     shared.footing_material,
                     self.preloaddata['bg_material'],
-                    shared.death_material,
+                    shared.safe_death_mat,
                 ],
             },
         )
@@ -645,7 +645,7 @@ class Roundabout(bs.Map):
                 'materials': [
                     shared.footing_material,
                     self.preloaddata['bg_material'],
-                    shared.death_material,
+                    shared.safe_death_mat,
                 ],
             },
         )
@@ -753,7 +753,7 @@ class MonkeyFace(bs.Map):
                 'materials': [
                     shared.footing_material,
                     self.preloaddata['bg_material'],
-                    shared.death_material,
+                    shared.safe_death_mat,
                 ],
             },
         )
@@ -864,7 +864,7 @@ class ZigZag(bs.Map):
                 'materials': [
                     shared.footing_material,
                     self.preloaddata['bg_material'],
-                    shared.death_material,
+                    shared.safe_death_mat,
                 ],
             },
         )
@@ -1330,7 +1330,7 @@ class DoomShroom(bs.Map):
             'terrain',
             attrs={
                 'collision_mesh': self.preloaddata['collide_bg'],
-                'materials': [shared.footing_material, shared.death_material],
+                'materials': [shared.footing_material, shared.safe_death_mat,],
             },
         )
         gnode = bs.getactivity().globalsnode

@@ -9,7 +9,10 @@ from typing import TYPE_CHECKING, override
 import babase
 
 import _bascenev1
+import bascenev1 as bs
 from bascenev1._actor import Actor
+
+from bascenev1lib.gameutils import SharedObjects
 
 if TYPE_CHECKING:
     from typing import Sequence, Any
@@ -136,11 +139,208 @@ class Map(Actor):
         gnode.area_of_interest_bounds = aoi_bounds
 
         # Set map bounds.
-        map_bounds = self.get_def_bound_box('map_bounds')
+        classic_mb = True
+        if classic_mb:
+            hugenum = 999999999
+            def get(pos: tuple):
+                box = pos
+                return (
+                    box[0] - box[6] / 2.0,
+                    box[1] - box[7] / 2.0,
+                    box[2] - box[8] / 2.0,
+                    box[0] + box[6] / 2.0,
+                    box[1] + box[7] / 2.0,
+                    box[2] + box[8] / 2.0,
+                )
+            # map bounds is a fake num, we do something else
+            map_bounds = get((
+                -30, -10, -30, # pos
+                0, 0, 0, # offset??? idfk ask efro
+                hugenum, hugenum, hugenum # scale
+            ))
+        else:
+            map_bounds = self.get_def_bound_box('map_bounds')
+
+        _bascenev1.set_map_bounds(map_bounds)
+        # Get actual map bounds.
+        map_bounds = self.defs.boxes.get('map_bounds')
         if map_bounds is None:
             print('WARNING: no "map_bounds" found for map:', self.getname())
             map_bounds = (-30, -10, -30, 30, 100, 30)
-        _bascenev1.set_map_bounds(map_bounds)
+        if not classic_mb:
+            # Get bounds
+            cx, cy, cz = map_bounds[0:3]
+            ox, oy, oz = map_bounds[3:6]
+            sx, sy, sz = map_bounds[6:9]
+
+            # Add offsets
+            cx += ox
+            cy += oy
+            cz += oz
+
+            # XYZ minimum and maximum
+            xmin = cx - sx * 0.5
+            xmax = cx + sx * 0.5
+            ymin = cy - sy * 0.5
+            ymax = cy + sy * 0.5
+            zmin = cz - sz * 0.5
+            zmax = cz + sz * 0.5
+
+            # Center of the map
+            center_x = (xmin + xmax) * 0.5
+            center_y = (ymin + ymax) * 0.5
+            center_z = (zmin + zmax) * 0.5
+
+            # size
+            size_x = xmax - xmin
+            size_y = ymax - ymin
+            size_z = zmax - zmin
+
+            # Wall thickness (to ensure we get hit)
+            thickness = 0.15
+
+            shared = SharedObjects.get()
+            materials = [shared.safe_death_mat,]
+
+            self._regions = []
+
+            # Floor
+            self._regions.append(
+                bs.newnode(
+                    'region',
+                    attrs={
+                        'position': (
+                            center_x,
+                            ymin - thickness * 0.5,
+                            center_z,
+                        ),
+                        'scale': (
+                            size_x,
+                            thickness,
+                            size_z,
+                        ),
+                        'type': 'box',
+                        'materials': materials,
+                    },
+                )
+            )
+
+            # Ceiling
+            self._regions.append(
+                bs.newnode(
+                    'region',
+                    attrs={
+                        'position': (
+                            center_x,
+                            ymax + thickness * 0.5,
+                            center_z,
+                        ),
+                        'scale': (
+                            size_x,
+                            thickness,
+                            size_z,
+                        ),
+                        'type': 'box',
+                        'materials': materials,
+                    },
+                )
+            )
+
+            # Left wall (-X)
+            self._regions.append(
+                bs.newnode(
+                    'region',
+                    attrs={
+                        'position': (
+                            xmin - thickness * 0.5,
+                            center_y,
+                            center_z,
+                        ),
+                        'scale': (
+                            thickness,
+                            size_y,
+                            size_z,
+                        ),
+                        'type': 'box',
+                        'materials': materials,
+                    },
+                )
+            )
+
+            # Right wall (+X)
+            self._regions.append(
+                bs.newnode(
+                    'region',
+                    attrs={
+                        'position': (
+                            xmax + thickness * 0.5,
+                            center_y,
+                            center_z,
+                        ),
+                        'scale': (
+                            thickness,
+                            size_y,
+                            size_z,
+                        ),
+                        'type': 'box',
+                        'materials': materials,
+                    },
+                )
+            )
+
+            # Back wall (-Z)
+            self._regions.append(
+                bs.newnode(
+                    'region',
+                    attrs={
+                        'position': (
+                            center_x,
+                            center_y,
+                            zmin - thickness * 0.5,
+                        ),
+                        'scale': (
+                            size_x,
+                            size_y,
+                            thickness,
+                        ),
+                        'type': 'box',
+                        'materials': materials,
+                    },
+                )
+            )
+
+            # Front wall (+Z)
+            self._regions.append(
+                bs.newnode(
+                    'region',
+                    attrs={
+                        'position': (
+                            center_x,
+                            center_y,
+                            zmax + thickness * 0.5,
+                        ),
+                        'scale': (
+                            size_x,
+                            size_y,
+                            thickness,
+                        ),
+                        'type': 'box',
+                        'materials': materials,
+                    },
+                )
+            )
+            test_mode = False
+            if test_mode:
+                for region in self._regions:
+                    bs.newnode(
+                        'locator', 
+                        attrs={
+                            'position': region.position,
+                            'size': region.scale,
+                            'shape': 'box',
+                        }
+                    )
+
 
         # Set shadow ranges.
         try:

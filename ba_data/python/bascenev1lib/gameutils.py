@@ -66,8 +66,11 @@ class SharedObjects:
         self._emerald_material: bs.Material | None = None
         self._non_collide_mat: bs.Material | None = None
         self._only_collide_with_floor_mat: bs.Material | None = None
-        self._no_object_collide_mat: bs.Material | None = None
         self._collide_only_spaz: bs.Material | None = None
+        self._no_object_footing_collide_mat: bs.Material | None = None
+        self._disallow_pickup_material: bs.Material | None = None
+        self._safe_death_mat: bs.Material | None = None
+        self._anti_death_mat: bs.Material | None = None
 
     @classmethod
     def get(cls) -> SharedObjects:
@@ -112,6 +115,25 @@ class SharedObjects:
         if self._pickup_material is None:
             self._pickup_material = bs.Material()
         return self._pickup_material
+    
+    @property
+    def disallow_pickup_material(self) -> bs.Material:
+        if self._disallow_pickup_material is None:
+            from bascenev1lib.actor.spazfactory import SpazFactory
+            spazfac = SpazFactory.get()
+            mat = self._disallow_pickup_material = bs.Material()
+            mat.add_actions(
+                conditions=(
+                    ('they_have_material', self.pickup_material),
+                    'or',
+                    ('they_have_material', spazfac.pickup_material),
+                ),
+                actions=(
+                    ('modify_part_collision', 'collide', False),
+                    ('modify_part_collision', 'physical', False),
+                ),
+            )
+        return self._disallow_pickup_material
 
     @property
     def footing_material(self) -> bs.Material:
@@ -142,9 +164,47 @@ class SharedObjects:
         if self._death_material is None:
             mat = self._death_material = bs.Material()
             mat.add_actions(
-                ('message', 'their_node', 'at_connect', bs.OutOfBoundsMessage())
+                conditions=(
+                    ('they_dont_have_material', self.anti_death_mat)
+                ),
+                actions=(
+                    ('message', 'their_node', 'at_connect', bs.OutOfBoundsMessage())
+                ),
             )
         return self._death_material
+    
+    @property
+    def safe_death_mat(self) -> bs.Material:
+        """Just a safer version of death_material that only
+        sends a bs.DieMessage and if the prop is a object."""
+        if self._safe_death_mat is None:
+            mat = self._safe_death_mat = bs.Material()
+            mat.add_actions(
+                conditions=( 
+                    ('they_have_material', self.object_material),
+                    'and',
+                    ('they_dont_have_material', self.anti_death_mat),
+                ),
+                actions=(
+                    ('modify_part_collision', 'collide', True),
+                    ('modify_part_collision', 'physical', False),
+                    (
+                        'message', 
+                        'their_node', 
+                        'at_connect',
+                        bs.DieMessage(how=bs.DeathType.FALL)
+                    ),
+                )
+            )
+        return self._safe_death_mat
+    
+    @property
+    def anti_death_mat(self) -> bs.Material:
+        """A material that doesn't get 
+        affected by death materials."""
+        if self._anti_death_mat is None:
+            self._anti_death_mat = bs.Material()
+        return self._anti_death_mat
         
     # Kay so rule of thumb is; Don't make a
     # thousand materials. Just make one shared instance. Learned that the hard way.
@@ -346,6 +406,25 @@ class SharedObjects:
         return self._non_collide_mat
     
     @property
+    def no_object_footing_collide_mat(self) -> bs.Material:
+        """A material that only collides with footing."""
+        if self._no_object_footing_collide_mat is None:
+            mat = self._no_object_footing_collide_mat = bs.Material()
+            mat.add_actions(
+                conditions=(
+                    ('they_have_material', self.footing_material),
+                    'or',
+                    ('they_have_material', self.object_material),
+                ),
+                actions=(
+                    ('modify_part_collision', 'collide', False),
+                    ('modify_part_collision', 'physical', False),
+                    ('modify_part_collision', 'use_node_collide', False),
+                ),
+            )
+        return self._no_object_footing_collide_mat
+    
+    @property
     def only_collide_with_floor_mat(self) -> bs.Material:
         """A material that only collides with footing."""
         if self._only_collide_with_floor_mat is None:
@@ -362,19 +441,6 @@ class SharedObjects:
                 ),
             )
         return self._only_collide_with_floor_mat
-    
-    @property
-    def no_object_collide_mat(self) -> bs.Material:
-        """A material that only collides with non-objects."""
-        if self._no_object_collide_mat is None:
-            mat = self._no_object_collide_mat = bs.Material()
-            mat.add_actions(
-                conditions=('they_have_material', self.object_material),
-                actions=(
-                    ('modify_part_collision', 'collide', False),
-                ),
-            )
-        return self._no_object_collide_mat
     
     @property
     def collide_only_spaz(self) -> bs.Material:

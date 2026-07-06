@@ -1289,7 +1289,7 @@ class Bomb(bs.Actor):
             return
         if (
             self.bomb_type == 'ice'
-            and random.random() < 0.006
+            and random.random() < 0.001
         ):
             self._last_pos = self.node.position
             bs.emitfx(

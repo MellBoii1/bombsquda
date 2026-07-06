@@ -12,15 +12,11 @@ class Snowgrave(bs.Actor):
         super().__init__()
         self._grave_sound = bs.getsound('snowgrave')
         self.node = bs.newnode(
-            'locator',
+            'light',
             attrs={
-                'shape': 'circle',
                 'position': position,
                 'color': (0, 0.6, 0.9),
-                'opacity': 0,
-                'size': (0.0,),
-                'draw_beauty': False,
-                'additive': True,
+                'intensity': 0,
             },
         )
         self.sound = bs.newnode(
@@ -42,10 +38,10 @@ class Snowgrave(bs.Actor):
         )
         bs.animate(
             self.node, 
-            'opacity',
+            'radius',
             {
                 0: 0,
-                4.5: 0.4,
+                4.5: 0.6,
             }
         )
         bs.animate_array(
@@ -57,24 +53,24 @@ class Snowgrave(bs.Actor):
                 4.9: (0, 0.6, 0.9),
             }
         )
-        bs.animate_array(
+        bs.animate(
             self.node, 
-            'size', 1,
+            'intensity',
             {
-                0: (0.0,),
-                4.8: (2.5,),
+                0: 0.0,
+                4.8: 1.2,
             },
         )
         bs.timer(5, self._start)
     
     
     def _start(self):
-        bs.animate_array(
+        bs.animate(
             self.node, 
-            'size', 1,
+            'intensity',
             {
-                0: (2.5,),
-                0.1: (0,),
+                0: 1.3,
+                0.1: 0,
             },
         )
         bs.animate_array(

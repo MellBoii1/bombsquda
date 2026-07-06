@@ -4577,7 +4577,14 @@ class Spaz(bs.Actor):
             self.bomb_count += 1
 
         elif isinstance(msg, bs.DieMessage):
-            
+            # old outofbounds behavior
+            if msg.how == bs.DeathType.FALL:
+                if self.parrying == True:
+                    self.tptosafety()
+                    return
+                self.lasthittype = 'fall'
+                if random.random() < 0.1:
+                    self.smashkill(sound='cheer')
             try:
                 wasdead = self._dead
                 self._dead = True
@@ -4682,18 +4689,6 @@ class Spaz(bs.Actor):
                     anim('color')
                     anim('highlight')
                     bs.timer(0.75, del_if_exists)
-
-
-                    
-        elif isinstance(msg, bs.OutOfBoundsMessage):
-            if self.parrying == True:
-                self.tptosafety()
-                return
-            self.lasthittype = 'fall'
-            if random.random() < 0.1:
-                self.smashkill(sound='cheer')
-            else:
-                self.die(how=bs.DeathType.FALL)
 
         elif isinstance(msg, bs.StandMessage):
             self._last_stand_pos = (
@@ -5353,9 +5348,9 @@ class Spaz(bs.Actor):
                 particle.autoretain()
                 particle.node.velocity = (x, y, z)
             delay = 0.01
-            for _ in range(15):
+            for _ in range(120):
                 bs.timer(delay, make_particle)
-                delay += 0.005
+                delay += 0.006
 
         self.hexploded = True
         
@@ -5434,24 +5429,23 @@ class Spaz(bs.Actor):
                 pos = self.node.position    
                 if not bloody:
                     SoundFactory.get().party_blower.play(position=pos)
-                for _ in range(110):
-                    offset_x = random.uniform(-0.3, 0.3)
-                    offset_z = random.uniform(-0.3, 0.3)
-                    offset_y = random.uniform(0, 0.5)
-                    particle_pos = (pos[0] + offset_x, pos[1] + offset_y, pos[2] + offset_z)
+                self.impulse(y=120)
+                def make_particle():
+                    pos = self.node.torso_position
+                    x = random.uniform(-5, 5)
+                    y = random.uniform(3, 6)
+                    z = random.uniform(-5, 5)
+                    particle_pos = (pos[0], pos[1] + 0.6, pos[2])
                     particle = particle_type(
                         position=particle_pos, 
                         spaz_type=self.char_style
                     )
                     particle.autoretain()
-                    num = random.randint(6, 17)
-                    particle.node.handlemessage('impulse', 
-                        particle_pos[0], 
-                        particle_pos[1], 
-                        particle_pos[2],
-                        0, 25, 0, num, 0.05, 0, 0,
-                        offset_x*15*2, 0, offset_z*15*2
-                    )
+                    particle.node.velocity = (x, y, z)
+                delay = 0.01
+                for _ in range(500):
+                    bs.timer(delay, make_particle)
+                    delay += 0.003
             mell.add_spaz(30, 'tix', self.node.position, 'popup')
         self.node.shattered = 2 if extreme else 1
 

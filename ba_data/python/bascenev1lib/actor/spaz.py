@@ -4577,6 +4577,9 @@ class Spaz(bs.Actor):
 
         elif isinstance(msg, BombDiedMessage):
             self.bomb_count += 1
+        
+        elif isinstance(msg, bs.OutOfBoundsMessage):
+            self.die(how=bs.DeathType.FALL)
 
         elif isinstance(msg, bs.DieMessage):
             

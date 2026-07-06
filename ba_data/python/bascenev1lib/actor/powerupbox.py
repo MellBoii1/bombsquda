@@ -68,6 +68,7 @@ class PowerupBoxFactory:
         self.tex_mime = bs.gettexture('curseMime')
         self.tex_rue = bs.gettexture('curseRue')
         self.tex_litany = bs.gettexture('curseLitany')
+        self.tex_watercooler = bs.gettexture('bombColorIce')
         self.health_powerup_sounds = (
             bs.getsound('healthPowerup'),
             bs.getsound('healthPowerup2'),
@@ -260,6 +261,8 @@ class PowerupBox(bs.Actor):
             tex = factory.tex_strong
         elif poweruptype == 'spongebob':
             tex = factory.tex_spongebob
+        elif poweruptype == 'watercooler':
+            tex = factory.tex_watercooler
         else:
             raise ValueError('invalid poweruptype: ' + str(poweruptype))
 

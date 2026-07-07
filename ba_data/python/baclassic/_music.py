@@ -161,6 +161,11 @@ ASSET_SOUNDTRACK_ENTRIES: dict[str, AssetSoundtrackEntry] = {
     'HARDMODE3': AssetSoundtrackEntry('music/sans', volume=1.0),
     'RACE_START_GRID': AssetSoundtrackEntry('music/startGrid', loop=False),
     'COOP_GAMEOVER': AssetSoundtrackEntry('music/coop_gover', loop=False),
+    'WEEGEE_IMPACT1': AssetSoundtrackEntry('music/dramatic_impact1', loop=False),
+    'WEEGEE_IMPACT2': AssetSoundtrackEntry('music/dramatic_impact2', loop=False),
+    'WEEGEE_IMPACT3': AssetSoundtrackEntry('music/dramatic_impact3', loop=False),
+    'WEEGEE_IMPACT4': AssetSoundtrackEntry('music/dramatic_impact4', loop=False),
+    'WEEGEE': AssetSoundtrackEntry('music/weegee'),
     'COOP_VICTORY': AssetSoundtrackEntry(
         'music/coop_victory', volume=1.0, loop=False
     ),

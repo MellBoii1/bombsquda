@@ -44,7 +44,6 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
         self.use_fixed_vr_overlay = True
         self._win_music = settings['win_music_override']
         self._lose_music = settings['lose_music_override']
-        self.submit_thread = None
 
         self._do_new_rating: bool = self.session.tournament_id is not None
 
@@ -284,8 +283,13 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
         if isinstance(bs.get_foreground_host_session(), bs.CoopSession):
             sessionname = self.session.campaign_level_name
             if sessionname == 'The Finale':
-                from bascenev1lib.creditsroll import CreditsSession
-                bs.pushcall(lambda: bs.new_host_session(CreditsSession))
+                from bascenev1lib.creditsroll import CreditsActivity
+                bs.pushcall(
+                    bs.Call(
+                        self.session.setactivity, 
+                        CreditsActivity()
+                    )
+                )
                 return
         bui.containerwidget(edit=self._root_ui, transition='out_left')
         with self.context:
@@ -911,10 +915,9 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
                     }
                 )
             if self._score is not None:
-                self.submit_thread = threading.Thread(
+                bs.pushcall(threading.Thread(
                     target=submit_er,
-                )
-                self.submit_thread.start()
+                ).start)
             
         # If we're not doing the world's-best button, just show a title
         # instead.
@@ -1297,8 +1300,6 @@ class CoopScoreScreen(bs.Activity[bs.Player, bs.Team]):
                     scale=0.7,
                 )
                 return
-            if self.submit_thread:
-                self.submit_thread = None
             self._score_loading_status = None
             assert self._show_info is not None
             self._show_info['results'] = results

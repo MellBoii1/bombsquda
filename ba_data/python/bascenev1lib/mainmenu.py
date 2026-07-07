@@ -1108,6 +1108,7 @@ def _preload1() -> None:
 
     PowerupBoxFactory.get()
     SoundFactory.get()
+    mell.get_texture_for_powerup('', preload=True)
     bui.apptimer(0.1, _preload2)
 
 

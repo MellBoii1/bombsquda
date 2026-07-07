@@ -320,11 +320,13 @@ class Activity[PlayerT: bascenev1.Player, TeamT: bascenev1.Team](
         if self._transitioning_out:
             session = self._session()
             if session is not None:
+                from_other_thread = not babase.in_logic_thread()
                 babase.pushcall(
                     babase.Call(
                         session.transitioning_out_activity_was_freed,
                         self.can_show_ad_on_death,
-                    )
+                    ),
+                    from_other_thread=from_other_thread,
                 )
 
     @property

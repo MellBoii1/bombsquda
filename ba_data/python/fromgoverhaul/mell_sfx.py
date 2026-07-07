@@ -54,6 +54,15 @@ class SoundFactory:
             bs.getsound('tear_fire2'),
         )
         self.super_dash = bs.getsound('swordlunge')
+        self.invincible_hit_sound = bs.getsound('block')
+        self.critical_impact = bs.getsound('critical_impact')
+        self.critical_impact_concrete = bs.getsound('critical_impact_concrete')
+        self.tnt_break = bs.getsound('tnt_break')
+        self.player_ragdoll_impact = (
+            bs.getsound('ragdoll_impact1'),
+            bs.getsound('ragdoll_impact2'),
+            bs.getsound('ragdoll_impact3'),
+        )
     
     @classmethod
     def get(cls):

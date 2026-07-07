@@ -792,6 +792,7 @@ class Bomb(bs.Actor):
             'sticky',
             'tnt',
             'tntfirework',
+            'homing',
         ):
             raise ValueError('invalid bomb type: ' + bomb_type)
         self.bomb_type = bomb_type
@@ -1006,6 +1007,10 @@ class Bomb(bs.Actor):
                     0.01, self._update_manual, repeat=True
                 )
                 self._update_manual()
+        if self.bomb_type == 'homing':
+            self._homing_update_timer = bs.Timer(
+                0.015, self._update_homing, repeat=True,
+            )
 
         bs.animate(
             self.node,
@@ -1013,6 +1018,59 @@ class Bomb(bs.Actor):
             {0: 0, 0.2: 1.3 * self.scale, 0.26: self.scale},
         )
     
+    def _update_homing(self):
+        if not self.node:
+            self._homing_update_timer = None
+            return
+        pts = []
+        closest_dist = None
+        closest = None
+        ourpt = bs.Vec3(self.node.position)
+        for node in bs.getnodes():
+            actor = node.getdelegate(bs.Actor)
+            if node.getnodetype() != 'spaz' or actor is None or not actor.source_player:
+                continue
+            pts.append(
+                (
+                    bs.Vec3(node.position),
+                    bs.Vec3(node.velocity),
+                )
+            )
+        for plpt, plvl in pts:
+            dist = (plpt - ourpt).length()
+            # Ignore player-points that are significantly below the bot
+            # (keeps bots from following players off cliffs).
+            if (closest_dist is None or dist < closest_dist) and (
+                plpt[1] > ourpt[1] - 5.0
+            ):
+                closest_dist = dist
+                closest = plpt
+
+        # No valid target found this update; nothing to home in on.
+        if closest is None:
+            return
+
+        diff = closest - ourpt
+        dist = diff.length()
+        to_target = diff.normalized()
+        dir_x = to_target.x
+        dir_z = to_target.z
+        force = 13
+        self.node.handlemessage(
+            'impulse',
+            ourpt[0],
+            ourpt[1],
+            ourpt[2],
+            0, 0, 0,
+            force,
+            force,
+            0,
+            0,
+            dir_x,
+            0,
+            dir_z,
+        )
+
     def defuse(self):
         if self.node.getnodetype() != 'bomb':
             return

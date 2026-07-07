@@ -538,49 +538,57 @@ def show_unlockable(tex: str | dict):
     bs.getsound('unlockable').play()
     
 
-def get_texture_for_powerup(factory, ptype: str):
+def get_texture_for_powerup(
+    ptype: str,
+    ui: bool = False,
+    preload: bool = False
+):
     """Get a texture from a powerup string from a factory.
     Doesn't specifically have to be PowerupBoxFactory, 
     but you should use that."""
     import babase as ba
     import bascenev1 as bs
     import bauiv1 as bui
+    from babase._logging import squdalog
     texture_map = {
-        'triple_bombs': factory.tex_bomb,
-        'punch': factory.tex_punch,
-        'ice_bombs': factory.tex_ice_bombs,
-        'sticky_bombs': factory.tex_sticky_bombs,
-        'shield': factory.tex_shield,
-        'impact_bombs': factory.tex_impact_bombs,
-        'health': factory.tex_health,
-        'land_mines': factory.tex_land_mines,
-        'curse': factory.tex_curse,
-        'metal': factory.tex_metal,
-        'deton': factory.tex_deton,
-        'hook': factory.tex_hook,
-        'fireball': factory.tex_fireball,
-        'bloxy': factory.tex_bloxy,
-        'strong': factory.tex_strong,
-        'spongebob': factory.tex_spongebob,
-        'shotgun': factory.tex_shotgun,
-        'random': factory.tex_random,
-        'kookoo': factory.tex_kookoo,
-        'dozer': factory.tex_dozer,
-        'ire': factory.tex_ire,
-        'sorrow': factory.tex_sorrow,
-        'mime': factory.tex_mime,
-        'rue': factory.tex_rue,
-        'litany': factory.tex_litany
+        'triple_bombs': 'powerupBomb',
+        'punch': 'powerupPunch',
+        'ice_bombs': 'powerupIceBombs',
+        'sticky_bombs': 'powerupStickyBombs',
+        'shield': 'powerupShield',
+        'impact_bombs': 'powerupImpactBombs',
+        'health': 'powerupHealth',
+        'land_mines': 'powerupLandMines',
+        'curse': 'powerupCurse',
+        'metal': 'powerupMetal',
+        'deton': 'powerupDeton',
+        'hook': 'powerupHook',
+        'fireball': 'powerupFireball',
+        'bloxy': 'powerupBloxy',
+        'strong': 'powerupStrong',
+        'spongebob': 'powerupSponge',
+        'shotgun': 'powerupShotgun',
+        'random': 'powerupRandom',
+        'kookoo': 'curseKookoo',
+        'dozer': 'curseDozer',
+        'ire': 'curseIre',
+        'sorrow': 'curseSorrow',
+        'mime': 'curseMime',
+        'litany': 'curseLitany',
+        'watercooler': 'bombColorIce',
     }
+    if preload:
+        for texture in list(texture_map.values()):
+            bs.gettexture(texture)
+        return True
+    texture_name = texture_map.get(ptype, 'white')
+    texture = (
+        bs.gettexture(texture_name)
+        if not ui else bui.gettexture(texture_name)
+    )
     if ptype not in texture_map:
-        print(f'ERROR: {ptype} is not in the texture map. Please add it to mell_resources.\ndumbass')
-        # get whether we should use ui with..
-        # ..a context error. okay.
-        try:
-            return bs.gettexture('white')
-        except ba.ContextError:
-            return bui.gettexture('white')
-    return texture_map.get(ptype)
+        squdalog.error(f'{ptype} is not in the texture map. Please add it to mell_resources.\ndumbass')
+    return texture
 
 # wow... old code...
 def shake_node(

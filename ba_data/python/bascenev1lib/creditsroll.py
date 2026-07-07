@@ -9,13 +9,6 @@ from typing import TYPE_CHECKING, override
 LENGTH = 77
 TEXT_START = 5.0
 TEXT_END = LENGTH - 4.0
-
-
-class CreditsSession(bs.Session):
-    def __init__(self):
-        depsets: Sequence[bs.DependencySet] = [] 
-        super().__init__(depsets)
-        self.setactivity(bs.newactivity(CreditsActivity))
         
 class CreditsActivity(bs.GameActivity[bs.Player, bs.Team]):
     """Simple activity for rolling credits."""

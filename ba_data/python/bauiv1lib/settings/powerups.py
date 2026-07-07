@@ -16,33 +16,6 @@ class PowerupSetupWindow(bui.MainWindow):
         origin_widget: bui.Widget | None = None,
     ):
         bui.set_analytics_screen('Powerup Setup')
-        # textures
-        self.tex_bomb = bui.gettexture('powerupBomb')
-        self.tex_punch = bui.gettexture('powerupPunch')
-        self.tex_ice_bombs = bui.gettexture('powerupIceBombs')
-        self.tex_sticky_bombs = bui.gettexture('powerupStickyBombs')
-        self.tex_shield = bui.gettexture('powerupShield')
-        self.tex_impact_bombs = bui.gettexture('powerupImpactBombs')
-        self.tex_health = bui.gettexture('powerupHealth')
-        self.tex_metal = bui.gettexture('powerupMetal')
-        self.tex_fireball = bui.gettexture('powerupFireball')
-        self.tex_bloxy = bui.gettexture('powerupBloxy')
-        self.tex_deton = bui.gettexture('powerupDeton')
-        self.tex_hook = bui.gettexture('powerupHook')
-        self.tex_shotgun = bui.gettexture('powerupShotgun')
-        self.tex_random = bui.gettexture('powerupRandom')
-        self.tex_strong = bui.gettexture('powerupStrong')
-        self.tex_spongebob = bui.gettexture('powerupSponge')
-        self.tex_land_mines = bui.gettexture('powerupLandMines')
-        self.tex_curse = bui.gettexture('powerupCurse')
-        self.tex_random = bui.gettexture('powerupRandom')
-        self.tex_kookoo = bui.gettexture('curseKookoo')
-        self.tex_dozer = bui.gettexture('curseDozer')
-        self.tex_ire = bui.gettexture('curseIre')
-        self.tex_sorrow = bui.gettexture('curseSorrow')
-        self.tex_mime = bui.gettexture('curseMime')
-        self.tex_rue = bui.gettexture('curseRue')
-        self.tex_litany = bui.gettexture('curseLitany')
 
         self._r = 'powerupsWindow'
         uiscale = bui.app.ui_v1.uiscale
@@ -118,7 +91,7 @@ class PowerupSetupWindow(bui.MainWindow):
             maxwidth=4000,
         )
 
-        self._powerups = dict(bs._powerup.get_default_powerup_distribution())
+        self._powerups = dict(bs._powerup.get_powerup_dist2())
 
         cfg = bui.app.config
         custom = cfg.get('squda_powerup_dist', {})
@@ -130,7 +103,8 @@ class PowerupSetupWindow(bui.MainWindow):
         self._checkboxes: dict[str, bui.Widget] = {}
 
         self._all_enabled = all(
-            weight > 0 for weight in self._powerups.values()
+            thisvalue == True
+            for thisvalue in cfg.get('squda_powerup_dist').values()
         )
 
         button_y = yoffs - 120
@@ -184,9 +158,10 @@ class PowerupSetupWindow(bui.MainWindow):
             y = start_y - i * row_height
             x = 130
 
-            enabled = weight > 0
+            cfg = bui.app.config.get('squda_powerup_dist', {})
+            enabled = cfg.get(ptype, False)
 
-            tex = mell.get_texture_for_powerup(self, ptype)
+            tex = mell.get_texture_for_powerup(ptype, ui=True)
 
             bui.imagewidget(
                 parent=self._subcontainer,
@@ -225,7 +200,7 @@ class PowerupSetupWindow(bui.MainWindow):
         custom = cfg.get('squda_powerup_dist', {})
 
         for ptype, checkbox in self._checkboxes.items():
-            custom[ptype] = 1 if new_value else 0
+            custom[ptype] = True if new_value else False
 
             bui.checkboxwidget(
                 edit=checkbox,
@@ -251,13 +226,13 @@ class PowerupSetupWindow(bui.MainWindow):
 
         custom = cfg.get('squda_powerup_dist', {})
 
-        custom[ptype] = 1 if value else 0
+        custom[ptype] = True if value else False
 
         cfg['squda_powerup_dist'] = custom
         cfg.apply_and_commit()
 
         self._all_enabled = all(
-            thisvalue == 1
+            thisvalue == True
             for thisvalue in cfg.get('squda_powerup_dist').values()
         )
 

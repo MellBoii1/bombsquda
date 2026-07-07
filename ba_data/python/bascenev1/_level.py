@@ -26,6 +26,7 @@ class Level:
         preview_texture_name: str,
         *,
         displayname: str | None = None,
+        default_complete: bool = False,
     ):
         self._name = name
         self._gametype = gametype
@@ -35,6 +36,7 @@ class Level:
         self._campaign: weakref.ref[bascenev1.Campaign] | None = None
         self._index: int | None = None
         self._score_version_string: str | None = None
+        self._default_complete = default_complete
 
     @override
     def __repr__(self) -> str:
@@ -104,6 +106,8 @@ class Level:
         config = self._get_config_dict()
         val = config.get('Complete', False)
         assert isinstance(val, bool)
+        if self._default_complete:
+            return self._default_complete
         return val
 
     def set_complete(self, val: bool) -> None:

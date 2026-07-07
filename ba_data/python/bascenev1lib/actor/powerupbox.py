@@ -11,6 +11,7 @@ import bascenev1 as bs
 from bascenev1lib.actor.popuptext import PopupText
 
 from bascenev1lib.gameutils import SharedObjects
+import fromgoverhaul.mell_resources as mell
 
 if TYPE_CHECKING:
     from typing import Any, Sequence
@@ -43,32 +44,6 @@ class PowerupBoxFactory:
         self._lastpoweruptype: str | None = None
         self.mesh = bs.getmesh('powerup')
         self.mesh_simple = bs.getmesh('powerupSimple')
-        self.tex_bomb = bs.gettexture('powerupBomb')
-        self.tex_punch = bs.gettexture('powerupPunch')
-        self.tex_ice_bombs = bs.gettexture('powerupIceBombs')
-        self.tex_sticky_bombs = bs.gettexture('powerupStickyBombs')
-        self.tex_shield = bs.gettexture('powerupShield')
-        self.tex_impact_bombs = bs.gettexture('powerupImpactBombs')
-        self.tex_health = bs.gettexture('powerupHealth')
-        self.tex_metal = bs.gettexture('powerupMetal')
-        self.tex_fireball = bs.gettexture('powerupFireball')
-        self.tex_bloxy = bs.gettexture('powerupBloxy')
-        self.tex_deton = bs.gettexture('powerupDeton')
-        self.tex_hook = bs.gettexture('powerupHook')
-        self.tex_shotgun = bs.gettexture('powerupShotgun')
-        self.tex_random = bs.gettexture('powerupRandom')
-        self.tex_strong = bs.gettexture('powerupStrong')
-        self.tex_spongebob = bs.gettexture('powerupSponge')
-        self.tex_land_mines = bs.gettexture('powerupLandMines')
-        self.tex_curse = bs.gettexture('powerupCurse')
-        self.tex_kookoo = bs.gettexture('curseKookoo')
-        self.tex_dozer = bs.gettexture('curseDozer')
-        self.tex_ire = bs.gettexture('curseIre')
-        self.tex_sorrow = bs.gettexture('curseSorrow')
-        self.tex_mime = bs.gettexture('curseMime')
-        self.tex_rue = bs.gettexture('curseRue')
-        self.tex_litany = bs.gettexture('curseLitany')
-        self.tex_watercooler = bs.gettexture('bombColorIce')
         self.health_powerup_sounds = (
             bs.getsound('healthPowerup'),
             bs.getsound('healthPowerup2'),
@@ -189,10 +164,6 @@ class PowerupBox(bs.Actor):
     that touches it which has the
     :class:`~PowerupBoxFactory.powerup_accept_material` applied.
     """
-
-    #: The string powerup type. This can be 'triple_bombs', 'punch',
-    #: 'ice_bombs', 'impact_bombs', 'land_mines', 'sticky_bombs',
-    #: 'shield', 'health', or 'curse' or 'metal' or something idk bruh.
     poweruptype: str
 
     node: bs.Node
@@ -217,54 +188,34 @@ class PowerupBox(bs.Actor):
             if None in poweruptype:
                 self = None
                 return
-        shared = SharedObjects.get()
         factory = PowerupBoxFactory.get()
+        # If powerup was a watercooler but 
+        # if it had already spawned or we're in coop, 
+        # randomize it to another one instead.
+        if (
+            poweruptype == 'watercooler'
+            and (
+                isinstance(
+                    self.getactivity().session, 
+                    bs.CoopSession
+                )
+                or self.getactivity().water_cooler_spawned
+            )
+        ):
+            poweruptype = random.choice(
+                list(
+                    pwup for pwup in factory._powerupdist
+                    if pwup != 'watercooler'
+                )
+            )
+        shared = SharedObjects.get()
         self.interval = DEFAULT_POWERUP_INTERVAL
         if self.getactivity().hardmode:
             self.interval = 5.5
         self.poweruptype = poweruptype
         self._powersgiven = False
 
-        if poweruptype == 'triple_bombs':
-            tex = factory.tex_bomb
-        elif poweruptype == 'punch':
-            tex = factory.tex_punch
-        elif poweruptype == 'ice_bombs':
-            tex = factory.tex_ice_bombs
-        elif poweruptype == 'impact_bombs':
-            tex = factory.tex_impact_bombs
-        elif poweruptype == 'land_mines':
-            tex = factory.tex_land_mines
-        elif poweruptype == 'sticky_bombs':
-            tex = factory.tex_sticky_bombs
-        elif poweruptype == 'shield':
-            tex = factory.tex_shield
-        elif poweruptype == 'health':
-            tex = factory.tex_health
-        elif poweruptype == 'curse':
-            tex = factory.tex_curse
-        elif poweruptype == 'metal':
-            tex = factory.tex_metal
-        elif poweruptype == 'deton':
-            tex = factory.tex_deton
-        elif poweruptype == 'fireball':
-            tex = factory.tex_fireball
-        elif poweruptype == 'bloxy':
-            tex = factory.tex_bloxy
-        elif poweruptype == 'hook':
-            tex = factory.tex_hook
-        elif poweruptype == 'random':
-            tex = factory.tex_random
-        elif poweruptype == 'shotgun':
-            tex = factory.tex_shotgun
-        elif poweruptype == 'strong':
-            tex = factory.tex_strong
-        elif poweruptype == 'spongebob':
-            tex = factory.tex_spongebob
-        elif poweruptype == 'watercooler':
-            tex = factory.tex_watercooler
-        else:
-            raise ValueError('invalid poweruptype: ' + str(poweruptype))
+        tex = mell.get_texture_for_powerup(poweruptype)
 
         if len(position) != 3:
             raise ValueError('expected 3 floats for position')

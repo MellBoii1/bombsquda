@@ -156,42 +156,42 @@ ENTITY_CONFIG = {
         'attr_obj': 'kookoo',
         'appearsLstr': bs.Lstr(resource='kookooAppears'),
         'class': Kookoo,
-        'texture': lambda: PowerupBoxFactory.get().tex_kookoo,
+        'texture': lambda: mell.get_texture_for_powerup('kookoo'),
     },
     'dozer': {
         'attr_flag': 'dozered',
         'attr_obj': 'dozer',
         'appearsLstr': bs.Lstr(resource='dozerAppears'),
         'class': Dozer,
-        'texture': lambda: PowerupBoxFactory.get().tex_dozer,
+        'texture': lambda: mell.get_texture_for_powerup('dozer'),
     },
     'ire': {
         'attr_flag': 'ired',
         'attr_obj': 'ire',
         'appearsLstr': bs.Lstr(resource='ireAppears'),
         'class': Ire,
-        'texture': lambda: PowerupBoxFactory.get().tex_ire,
+        'texture': lambda: mell.get_texture_for_powerup('ire'),
     },
     'sorrow': {
         'attr_flag': 'sorrowful',
         'attr_obj': 'sorrow',
         'appearsLstr': bs.Lstr(resource='sorrowAppears'),
         'class': Sorrow,
-        'texture': lambda: PowerupBoxFactory.get().tex_sorrow,
+        'texture': lambda: mell.get_texture_for_powerup('sorrow'),
     },
     'mime': {
         'attr_flag': 'mimed',
         'attr_obj': 'mime',
         'appearsLstr': bs.Lstr(resource='mimeAppears'),
         'class': Mime,
-        'texture': lambda: PowerupBoxFactory.get().tex_mime,
+        'texture': lambda: mell.get_texture_for_powerup('mime'),
     },
     'litany': {
         'attr_flag': 'litanyd',
         'attr_obj': 'litany',
         'appearsLstr': bs.Lstr(resource='litanyAppears'),
         'class': Litany,
-        'texture': lambda: PowerupBoxFactory.get().tex_litany,
+        'texture': lambda: mell.get_texture_for_powerup('litany'),
     },
 }
 
@@ -555,6 +555,7 @@ class Spaz(bs.Actor):
 
         self.source_player = source_player
         self._dead = False
+        self._being_held = False
         # stats for punch
         self.knightscale = 2.3
         self.knightcwd = 1400
@@ -603,6 +604,7 @@ class Spaz(bs.Actor):
             factory.spaz_material,
             shared.object_material,
             shared.player_material,
+            shared.touch_material,
         ]
         roller_materials = [factory.roller_material, shared.player_material]
         extras_material = []
@@ -1881,7 +1883,7 @@ class Spaz(bs.Actor):
         self.shotgun_shots -= 1
         self.node.counter_text = 'x' + str(self.shotgun_shots)
         self.node.counter_texture = (
-            PowerupBoxFactory.get().tex_shotgun
+            mell.get_texture_for_powerup('shotgun')
         )
         if self.shotgun_shots == 0:
             self.shotgunned = False
@@ -1947,7 +1949,7 @@ class Spaz(bs.Actor):
         self.fireballs -= 1
         self.node.counter_text = 'x' + str(self.fireballs)
         self.node.counter_texture = (
-            PowerupBoxFactory.get().tex_fireball
+            mell.get_texture_for_powerup('fireball')
         )
         if self.fireballs == 0:
             self.fireballed = False
@@ -2011,9 +2013,6 @@ class Spaz(bs.Actor):
             dir_x = 0
             dir_y = forward[1]
             dir_z = -20
-        
-       
-        
         
         # this muldihplier depends on the
         # player's dihlocity.
@@ -2130,7 +2129,7 @@ class Spaz(bs.Actor):
             self.fireballs -= 1
             self.node.counter_text = 'x' + str(self.fireballs)
             self.node.counter_texture = (
-                PowerupBoxFactory.get().tex_fireball
+                mell.get_texture_for_powerup('fireball')
             )
             if self.fireballs == 0:
                 self.fireballed = False
@@ -3133,7 +3132,7 @@ class Spaz(bs.Actor):
                 self._roulette_current = ptype
 
             # Update billboard texture dynamically
-            tex = mell.get_texture_for_powerup(factory, ptype)
+            tex = mell.get_texture_for_powerup(ptype)
             if tex:
                 self.node.billboard_texture = tex
                 self.node.billboard_opacity = 1.0
@@ -3490,7 +3489,8 @@ class Spaz(bs.Actor):
             ).autoretain()
             self._activity().globalsnode.paused = ogpause
             self.lasthittype = 'swoon'
-            self._activate_mortal_damage()
+            if not self._activate_mortal_damage():
+                self.shatter()
             self.lasthittype = 'swoon'
             if self.character == 'Roaring Knight':
                 ba.app.classic.ach.award_local_achievement(
@@ -3638,6 +3638,60 @@ class Spaz(bs.Actor):
         # pylint: disable=too-many-branches
         assert not self.expired
         
+        if isinstance(msg, TouchedMessage):
+            toucher = bs.getcollision().opposingnode
+            actor = toucher.getdelegate(bs.Actor)
+            impact_speed = 4.9
+            our_speed = self.getspeed(ignore_y=False)
+            knocked = self.node.knockout
+            # Do impact based on hitting some guys
+            if (
+                isinstance(actor, Bomb)
+                and actor.bomb_type == 'tnt'
+            ):
+                if not knocked:
+                    return
+                if our_speed >= impact_speed:
+                    SoundFactory.get().tnt_break.play(
+                        position=toucher.position
+                    )
+                    bs.emitfx(
+                        position=toucher.position,
+                        velocity=self.node.velocity,
+                        count=int(20.0 + random.random() * 30),
+                        scale=1.15,
+                        spread=0.8,
+                        chunk_type='splinter',
+                    )
+                    self.impulse(x=-80, y=30)
+                    self.node.handlemessage('hurt_sound')
+                    actor.handlemessage(bs.DieMessage(True))
+            if (
+                isinstance(actor, Spaz)
+                and actor.is_alive()
+                and actor is not self
+                and not self._being_held
+            ):
+                if not knocked:
+                    return
+                if our_speed >= impact_speed:
+                    random.choice(
+                        SoundFactory.get().player_ragdoll_impact
+                    ).play(position=toucher.position)
+                    actor.handlemessage(
+                        bs.HitMessage(
+                            pos=self.node.position,
+                            velocity=self.node.velocity,
+                            magnitude=self.getspeed() * 2,
+                            velocity_magnitude=self.getspeed(),
+                            radius=0,
+                            srcnode=self.node,
+                            source_player=self.source_player,
+                            force_direction=self.node.velocity,
+                        )
+                    )
+                    
+        
         if isinstance(msg, FootingMessage):
             self.standing = msg.footing == 1
                 
@@ -3668,9 +3722,14 @@ class Spaz(bs.Actor):
             else:
                 bs.getsound('emerald_reject').play(position=self.node.position)
             self.update_emerald_indicator()
-            
+        
+        elif isinstance(msg, bs.DroppedMessage):
+            if self.node:
+                self._being_held = False
+        
         elif isinstance(msg, bs.PickedUpMessage):
             if self.node:
+                self._being_held = True
                 self.node.handlemessage('hurt_sound')
                 self.node.handlemessage('picked_up')
 
@@ -3740,7 +3799,7 @@ class Spaz(bs.Actor):
                 setattr(self, config['attr_flag'], True)
                 
             elif msg.poweruptype == 'triple_bombs':
-                tex = PowerupBoxFactory.get().tex_bomb
+                tex = mell.get_texture_for_powerup(msg.poweruptype)
                 self._flash_billboard(tex)
                 self.set_bomb_count(3)
                 if self.powerups_expire:
@@ -3767,18 +3826,18 @@ class Spaz(bs.Actor):
                 bs.getsound('shotgunload').play(position=self.node.position)
                 self.node.counter_text = 'x' + str(self.shotgun_shots)
                 self.node.counter_texture = (
-                    PowerupBoxFactory.get().tex_shotgun
+                    mell.get_texture_for_powerup('shotgun')
                 )
             elif msg.poweruptype == 'fireball':
                 self.fireballed = True
                 self.fireballs += 8
                 self.node.counter_text = 'x' + str(self.fireballs)
                 self.node.counter_texture = (
-                    PowerupBoxFactory.get().tex_fireball
+                    mell.get_texture_for_powerup('fireball')
                 )
             elif msg.poweruptype == 'hook':
                 self.whiplashed = True
-                tex = PowerupBoxFactory.get().tex_hook
+                tex = mell.get_texture_for_powerup(msg.poweruptype)
                 self._flash_billboard(tex)
                 self.node.mini_billboard_1_texture = tex
                 t_ms = int(bs.time() * 1000.0)
@@ -3796,7 +3855,7 @@ class Spaz(bs.Actor):
                     bs.WeakCall(self._hook_wear_off),
                 )
             elif msg.poweruptype == 'bloxy':
-                tex = PowerupBoxFactory.get().tex_bloxy
+                tex = mell.get_texture_for_powerup(msg.poweruptype)
                 self._flash_billboard(tex)
                 self._activate_bloxy()
             elif msg.poweruptype == 'impact_bombs':
@@ -3840,7 +3899,7 @@ class Spaz(bs.Actor):
                         bs.WeakCall(self._bomb_wear_off),
                     )
             elif msg.poweruptype == 'punch':
-                tex = PowerupBoxFactory.get().tex_punch
+                tex = mell.get_texture_for_powerup(msg.poweruptype)
                 self._flash_billboard(tex)
                 self.equip_boxing_gloves()
                 if self.powerups_expire and not self.default_boxing_gloves:
@@ -3861,7 +3920,7 @@ class Spaz(bs.Actor):
                         bs.WeakCall(self._gloves_wear_off),
                     )
             elif msg.poweruptype == 'strong':
-                tex = PowerupBoxFactory.get().tex_strong
+                tex = mell.get_texture_for_powerup(msg.poweruptype)
                 self._flash_billboard(tex)
                 self.equip_weak_punches()
                 if self.powerups_expire:
@@ -3928,7 +3987,7 @@ class Spaz(bs.Actor):
                     self.node.curse_death_time = 0
                 if self.hitpoints < self.hitpoints_max:
                     self.hitpoints = self.hitpoints_max
-                self._flash_billboard(PowerupBoxFactory.get().tex_health)
+                self._flash_billboard(mell.get_texture_for_powerup('health'))
                 self.node.hurt = 0
                 self._last_hit_time = None
                 self._num_times_hit = 0
@@ -3937,7 +3996,7 @@ class Spaz(bs.Actor):
             elif msg.poweruptype == 'metal':
                 self._activate_metalcap()
                 if self.powerups_expire:
-                    tex = PowerupBoxFactory.get().tex_metal
+                    tex = mell.get_texture_for_powerup(msg.poweruptype)
                     self._flash_billboard(tex)
                     self.node.mini_billboard_1_texture = tex
                     t_ms = int(bs.time() * 1000.0)
@@ -3958,7 +4017,7 @@ class Spaz(bs.Actor):
             elif msg.poweruptype == 'deton':
                 self.deton = True
                 if self.powerups_expire:
-                    tex = PowerupBoxFactory.get().tex_deton
+                    tex = mell.get_texture_for_powerup(msg.poweruptype)
                     self._flash_billboard(tex)
                     self.node.mini_billboard_3_texture = tex
                     t_ms = int(bs.time() * 1000.0)
@@ -4569,9 +4628,8 @@ class Spaz(bs.Actor):
             # If we're dead, take a look at the smoothed damage value
             # (which gives us a smoothed average of recent damage) and shatter
             # us if its grown high enough.
-            if self.hitpoints <= 0:                          
-                damage_avg = self.node.damage_smoothed * damage_scale
-                if damage_avg >= 1000 * self.impulse_scale:
+            if self.hitpoints <= 0:
+                if damage >= 1000:
                     # WITHER AND DIE :fire::fire::fire::fire::fire::fire::fire:
                     self.shatter()
 
@@ -5189,7 +5247,7 @@ class Spaz(bs.Actor):
             if self.land_mine_count != 0:
                 self.node.counter_text = 'x' + str(self.land_mine_count)
                 self.node.counter_texture = (
-                    PowerupBoxFactory.get().tex_land_mines
+                    mell.get_texture_for_powerup('land_mines')
                 )
             else:
                 self.node.counter_text = ''
@@ -5469,7 +5527,9 @@ class Spaz(bs.Actor):
             return
         if explode_head == True:
             if self._has_metalcap:
-                bs.getsound('block').play(volume=5.0, position=self.node.position)
+                SFXFactory.get().invincible_hit_sound.play(
+                    volume=5.0, position=self.node.position
+                )
                 ba.app.classic.ach.award_local_achievement('Hard Head')
                 return False
             text = PopupText(
@@ -5537,6 +5597,55 @@ class Spaz(bs.Actor):
                 level = 'hard'
             else:
                 level = 'medium'
+            if intensity >= 7 and not self.node.shattered:
+                position = self.node.position
+                scorch = bs.newnode(
+                    'scorch',
+                    attrs={
+                        'position': position,
+                        'size': 1.0,
+                    },
+                )
+                bs.animate(
+                    scorch, 
+                    'size',
+                    {
+                        0: 0, 
+                        0.05: 1.25,
+                        0.5: 0.9,
+                    }
+                )
+                bs.animate(
+                    scorch, 
+                    'presence',
+                    {
+                        0: 0,
+                        0.16: 1.2, 
+                        6: 0
+                    }
+                )
+                bs.timer(6.0, scorch.delete)
+                SoundFactory.get().critical_impact.play(
+                    position=position
+                )
+                SoundFactory.get().critical_impact_concrete.play(
+                    position=position
+                )
+                self.impulse(y=-170)
+                # Emit bigger fx.
+                bs.emitfx(
+                    position=pos,
+                    emit_type='distortion',
+                    spread=2.0,
+                )
+                bs.emitfx(
+                    position=position,
+                    velocity=self.node.velocity,
+                    count=min(30, 1 + int(intensity * 0.5)),
+                    scale=1.0,
+                    spread=0.2,
+                )
+                self.spawn_in_buncha_dust()
 
             material = {
                 'metallic': '_metal',
@@ -5552,13 +5661,12 @@ class Spaz(bs.Actor):
         sound.play(position=pos, volume=1.3)
 
     def _get_bomb_type_tex(self) -> bs.Texture:
-        factory = PowerupBoxFactory.get()
         if self.bomb_type == 'sticky':
-            return factory.tex_sticky_bombs
+            return mell.get_texture_for_powerup('sticky_bombs')
         if self.bomb_type == 'ice':
-            return factory.tex_ice_bombs
+            return mell.get_texture_for_powerup('ice_bombs')
         if self.bomb_type == 'impact':
-            return factory.tex_impact_bombs
+            return mell.get_texture_for_powerup('impact_bombs')
         raise ValueError('invalid bomb type')
 
     def _flash_billboard(self, tex: bs.Texture) -> None:
@@ -5582,13 +5690,13 @@ class Spaz(bs.Actor):
     def _gloves_wear_off_flash(self) -> None:
         if self.node:
             self.node.boxing_gloves_flashing = True
-            self.node.billboard_texture = PowerupBoxFactory.get().tex_punch
+            self.node.billboard_texture = mell.get_texture_for_powerup('punch')
             self.node.billboard_opacity = 1.0
             self.node.billboard_cross_out = True
             
     def _strong_wear_off_flash(self) -> None:
         if self.node:
-            self.node.billboard_texture = PowerupBoxFactory.get().tex_strong
+            self.node.billboard_texture = mell.get_texture_for_powerup('strong')
             self.node.billboard_opacity = 1.0
             self.node.billboard_cross_out = True
 
@@ -5611,7 +5719,7 @@ class Spaz(bs.Actor):
 
     def _multi_bomb_wear_off_flash(self) -> None:
         if self.node:
-            self.node.billboard_texture = PowerupBoxFactory.get().tex_bomb
+            self.node.billboard_texture = mell.get_texture_for_powerup('triple_bombs')
             self.node.billboard_opacity = 1.0
             self.node.billboard_cross_out = True
 
@@ -5625,7 +5733,7 @@ class Spaz(bs.Actor):
     
     def _deton_wear_off_flash(self) -> None:
         if self.node:
-            self.node.billboard_texture = PowerupBoxFactory.get().tex_deton
+            self.node.billboard_texture = mell.get_texture_for_powerup('deton')
             self.node.billboard_opacity = 1.0
             self.node.billboard_cross_out = True
             # Warn player that their bombs will explode
@@ -5644,7 +5752,7 @@ class Spaz(bs.Actor):
     
     def _hook_wear_off_flash(self) -> None:
         if self.node:
-            self.node.billboard_texture = PowerupBoxFactory.get().tex_hook
+            self.node.billboard_texture = mell.get_texture_for_powerup('hook')
             self.node.billboard_opacity = 1.0
             self.node.billboard_cross_out = True
 
@@ -5748,7 +5856,7 @@ class Spaz(bs.Actor):
             
     def _metal_wear_off_flash(self) -> None:
         if self.node:
-            self.node.billboard_texture = PowerupBoxFactory.get().tex_metal
+            self.node.billboard_texture = mell.get_texture_for_powerup('metal')
             self.node.billboard_opacity = 1.0
             self.node.billboard_cross_out = True
             

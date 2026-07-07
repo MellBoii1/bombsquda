@@ -44,7 +44,8 @@ class CutscenePlayer(bs.Actor):
                 'absolute_scale': True,
                 'position': (0, 0),
                 'scale': (1000, 500),
-                'opacity': 1.0
+                'opacity': 1.0,
+                'texture': bs.gettexture('cutscene_border'),
             }
         )
         frame = 1
@@ -101,6 +102,8 @@ class CutscenePlayer(bs.Actor):
             self.node.delete()
         if self.bgimage:
             self.bgimage.delete()
+        if self.border_node:
+            self.border_node.delete()
         self._timers.clear()
     
     def handlemessage(self, msg: Any):

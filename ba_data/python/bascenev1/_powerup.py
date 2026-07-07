@@ -49,11 +49,8 @@ def get_default_powerup_distribution() -> Sequence[tuple[str, int]]:
 
     # testing test test test woohoo test
     import bascenev1
-    if bascenev1.get_foreground_host_activity().water_cooler_spawned is False:
-        return (
-            ('watercooler', 1), ('watercooler', 1)
-        )
-    
+    sesh = bascenev1.get_foreground_host_session()
+    act = bascenev1.get_foreground_host_activity()
     base_distribution = {
         'triple_bombs': 2,
         'ice_bombs': 3,
@@ -73,17 +70,14 @@ def get_default_powerup_distribution() -> Sequence[tuple[str, int]]:
         'fireball': 2,
         'bloxy': 2,
         'hook': 1,
-        'watercooler': (
-            1 if 
-            not isinstance(bascenev1.get_foreground_host_session(), bascenev1.CoopSession) and
-            bascenev1.get_foreground_host_activity().water_cooler_spawned is False
-            else 0
-        )
+        'watercooler': 1
     }
     cfg = ba.app.config.get("squda_powerup_dist", {})
     for key in base_distribution:
-        if key in cfg:
-            base_distribution[key] = cfg[key]
+        if cfg.get(key, False):
+            base_distribution[key] = base_distribution[key]
+        else:
+            base_distribution[key] = 0
     return tuple(base_distribution.items())
 
 def get_powerup_dist2():
@@ -106,5 +100,6 @@ def get_powerup_dist2():
         'fireball': 2,
         'bloxy': 2,
         'hook': 1,
+        'watercooler': 1,
     }
     return tuple(be_distribution.items())

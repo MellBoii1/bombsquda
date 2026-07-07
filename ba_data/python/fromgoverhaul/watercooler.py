@@ -1,3 +1,5 @@
+"""WATERCOOOLERRRRR"""
+from typing import override, Any
 import bascenev1 as bs
 from bascenev1lib.gameutils import SharedObjects
 
@@ -32,30 +34,12 @@ class WaterCoolerSpawner(bs.Actor):
         self.node.position = (position[0], position[1] + 1, position[2])
         # The one and only chance to fight the water cooler this round
         self.getactivity().water_cooler_spawned = True
-        bs.timer(2, self.allow_attacks)
-        bs.timer(15, bs.Call(self.handlemessage, bs.DieMessage()))
+        bs.timer(1.6, self.allow_attacks)
+        bs.timer(10, bs.Call(self.handlemessage, bs.DieMessage()))
        
     
     def allow_attacks(self):
-        mat = bs.Material()
         from bascenev1lib.actor.spazfactory import SpazFactory
-        mat.add_actions(
-                actions=(
-                    ('modify_part_collision', 'collide', False),
-                ),
-            )
-        mat.add_actions(
-                conditions=('they_have_material', SpazFactory.get().spaz_material),
-                actions=(
-                    ('modify_part_collision', 'collide', True),
-                ),
-            )
-        mat.add_actions(
-                conditions=('they_have_material', SharedObjects.get().footing_material),
-                actions=(
-                    ('modify_part_collision', 'collide', True),
-                ),
-            )
         self.node.materials = []
         self.can_spawn = True
         
@@ -66,7 +50,6 @@ class WaterCoolerSpawner(bs.Actor):
     def handlemessage(self, msg):
         if isinstance(msg, bs.DieMessage):
             self.can_spawn = False
-            self.tick_timer = None
             if not self.exists():
                 return
             if msg.immediate:
@@ -82,8 +65,6 @@ class WaterCoolerSpawner(bs.Actor):
                 return
             # spawn the regular watercooler
             if self.can_spawn and self.node:
-                
-                
                 WaterCooler(position=self.node.position).autoretain()
                 self.handlemessage(bs.DieMessage(True))
         elif isinstance(msg, bs.OutOfBoundsMessage):
@@ -95,24 +76,20 @@ class WaterCooler(bs.Actor):
     
     def __init__(self, position: tuple[float, float, float]):
         super().__init__()
-       
         self.hp = 1700 * (10)
         self.node = bs.Node(None)
-   
-    
-
+        self._saved_music = bs.getmusic()
         bs.setmusic(getattr(bs.MusicType, 'WATERCOOLER'))
         self.node = bs.newnode(
             'prop',
             delegate=self,
             attrs={
-                'position': (position[0], position[1] + 1, position[2]),
+                'position': (position[0], position[1] + 0.5, position[2]),
                 'mesh': bs.getmesh('tnt'),
                 'body': 'puck',
                 'color_texture': bs.gettexture('tnt'),
                 'reflection': 'soft',
                 'shadow_size': 0.5,
-                'position': (0, 1, 0),
                 'mesh_scale': 1.0,
                 'gravity_scale': 1.5,
                 'materials': [
@@ -121,7 +98,24 @@ class WaterCooler(bs.Actor):
             },
         )
     
+    @override
+    def handlemessage(self, msg):
+        if isinstance(msg, bs.DieMessage):
+            if self._saved_music:
+                bs.setmusic(self._saved_music)
+                self._saved_music = None
+            if self.node:
+                self.node.delete()
+        elif isinstance(msg, bs.OutOfBoundsMessage):
+            self.handlemessage(bs.DieMessage())
+        else:
+            return super().handlemessage(msg)
+        return None
+    
+    @override
     def exists(self):
         return bool(self.node)
+    
+    @override
     def is_alive(self):
         return self.hp > 0

@@ -1957,6 +1957,8 @@ class OnslaughtGame(bs.CoopGameActivity[Player, Team]):
             # no player lets be explicit.
             else:
                 self._score += pts
+                self.session._total_score += pts
+                self.session._update_for_arcade()
             self._update_scores()
             super().handlemessage(msg)
         else:

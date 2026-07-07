@@ -21,6 +21,7 @@ from bascenev1lib.actor.respawnicon import RespawnIcon
 from bascenev1lib.actor.spazbot import SpazBot, SpazBotSet
 from .weegee_healthbar import HealthBar
 from .weegee_actor import Weegee
+from .weegee_toaster import Toaster
 
 if TYPE_CHECKING:
     from typing import Any, Sequence
@@ -90,6 +91,16 @@ class WeegeeBossGame(bs.CoopGameActivity[Player, bs.Team]):
         self._bots = SpazBotSet()
         self._win_sound = bs.getsound('score')
         self._attack_check_timer = None
+        self._attack_cooldowns = {
+            'spawn_bots': 7,
+            'toasters': 4,
+            'homing_bomb': 2.7,
+        }
+        # simplify by just generating a dict
+        self._attack_availabilities = {
+            attack: True for attack in
+            self._attack_cooldowns.keys()
+        }
         bs.getsound('music/weegee')
     
     def tp_spaz(self, spaz: bs.Node):
@@ -146,8 +157,13 @@ class WeegeeBossGame(bs.CoopGameActivity[Player, bs.Team]):
         def stop_timer():
             self._tp_timer = None
         bs.timer(time + 5.1, stop_timer)
+    
+    def _reset_cooldown(self, attack: str):
+        self._attack_availabilities[attack] = True
         
     def start(self):
+        # alright give everyone back their controls
+        # and show them on camera
         for player in self.players:
             if not player.actor:
                 continue
@@ -155,9 +171,14 @@ class WeegeeBossGame(bs.CoopGameActivity[Player, bs.Team]):
             if player.actor.node:
                 player.actor.node.is_area_of_interest = True
                 player.actor.node.area_of_interest_radius = 9
+        # weegee beat
         bs.setmusic(bs.MusicType.WEEGEE)
+        # now we show the game title and desc,
+        # cuz this looks visually better
         self.suppress_zoomtext = False
         self._show_info()
+        # make weegee appear onscreen too
+        # (and make him bounce)
         self._weegee.node.is_area_of_interest = True
         self._weegee.start_bouncy()
         self._starttime_ms = int(0 * 1000.0)
@@ -186,7 +207,7 @@ class WeegeeBossGame(bs.CoopGameActivity[Player, bs.Team]):
         self._time_text_input.node.connectattr(
             'output', self._time_text.node, 'text'
         )
-        self._attack_check_timer = bs.Timer(0.8, self._attack_check, repeat=True)
+        self._attack_check_timer = bs.Timer(1.7, self._attack_check, repeat=True)
         self._hp_bar = HealthBar(
             self._weegee.hitpoints,
             self._weegee.max_hitpoints,
@@ -195,6 +216,7 @@ class WeegeeBossGame(bs.CoopGameActivity[Player, bs.Team]):
         )
     
     def weegee_beaten(self):
+        # show victory text!!!
         self.show_zoom_message(
             bs.Lstr(resource='victoryText'), scale=1.0, duration=4.0
         )
@@ -204,9 +226,12 @@ class WeegeeBossGame(bs.CoopGameActivity[Player, bs.Team]):
         self.celebrate(20.0)
         self._bots.stop_moving()
         self._time_text_timer = None
+        # copied from fottbal but okey
         self._final_time_ms = int(
             int(bs.time() * 1000.0) - self._starttime_ms
         )
+        # make explosions around weegee for
+        # dramatic effect i assume
         def do_explosion():
             fac = BombFactory.get()
             
@@ -227,10 +252,12 @@ class WeegeeBossGame(bs.CoopGameActivity[Player, bs.Team]):
             )
             bs.timer(1.0, explosion.delete)
         i = 0
+        # scream
         bs.getsound('screams/scream1').play()
         for _ in range(160):
             bs.timer(i, do_explosion)
             i += 0.08
+        # make him zoom far out beyond...
         msc = self._weegee.visual_node.mesh_scale
         bs.animate(
             self._weegee.visual_node,
@@ -250,51 +277,79 @@ class WeegeeBossGame(bs.CoopGameActivity[Player, bs.Team]):
         self._hp_bar.update_hitpoints(hp, hp_max)
     
     def _attack_check(self):
-        attacks = [
-            ('spawn_bots', 0.3),
-            ('homing_bomb', 0.6),
-        ]
-        attack = random.choice(attacks)
-        if random.random() < attack[1]: # get attack's chance
-            attack = attack[0]
-            if attack == 'spawn_bots':
-                spawns = self._map.get_def_points('ffa_spawn')
-                def spawn():
-                    this_spawn = random.choice(spawns)
-                    self._bots.spawn_bot(
-                        SpazBot,
-                        pos=this_spawn[:3],
-                        spawn_time=1.6,
-                    )
-                for i in range(random.randrange(3, 5)):
-                    bs.timer(i * 0.05, spawn)
-            elif attack == 'homing_bomb':
-                for _ in range(len(self.players)):
-                    position = (
-                        random.uniform(-4.3, 4.3),
-                        random.uniform(5, 6),
-                        random.uniform(-3.2, 3.2),
-                    )
-                    velocity = (
-                        random.uniform(-0.6, 0.6),
-                        random.uniform(-1.5, 0.8),
-                        random.uniform(-0.6, 0.6),
-                    )
-                    Bomb(
-                        bomb_type='homing', 
-                        fuse_time=6,
-                        position=position,
-                        velocity=velocity,
-                        blast_radius=2.5,
-                        bomb_scale=1.45,
-                    ).autoretain()
-            elif attack == 'toasters':
-                for _ in range(len(self.players)):
-                    position = (
-                        random.uniform(-4.3, 4.3),
-                        random.uniform(6, 8),
-                        random.uniform(-3.2, 3.2),
-                    )
+        # mooore generation
+        attacks = list(self._attack_cooldowns.keys())
+        available_attacks = list(
+            attack for attack in
+            attacks if bool( 
+                self._attack_availabilities.get(attack)
+            ) # stupid to use bool but okay
+        )
+        # if no available attacks exist, we just stall
+        if not available_attacks:
+            return
+        attack = random.choice(
+            available_attacks
+        )
+        cooldown = self._attack_cooldowns.get(attack)
+        self._attack_availabilities[attack] = False
+        bs.timer(cooldown, bs.WeakCall(self._reset_cooldown, attack))
+        # map attacks to their actions
+        # spawn bots
+        if attack == 'spawn_bots':
+            spawns = self._map.get_def_points('ffa_spawn')
+            def spawn():
+                this_spawn = random.choice(spawns)
+                self._bots.spawn_bot(
+                    SpazBot,
+                    pos=this_spawn[:3],
+                    spawn_time=1.6,
+                )
+            for i in range(random.randrange(3, 4)):
+                bs.timer(i * 0.05, spawn)
+        # really slow homing bombs
+        # (also they look like boulders hehe)
+        elif attack == 'homing_bomb':
+            for i in range(len(self.players)):
+                # get the player
+                plr = self.players[i]
+                node = getattr(plr.actor, 'node', None)
+                if not node:
+                    continue
+                ppos = node.position
+                # yeah spr is spread
+                pspr = 1.5
+                position = (
+                    ppos[0] + random.uniform(-pspr, pspr),
+                    random.uniform(5, 6), # y can be static here; we don't need it that much
+                    ppos[2] + random.uniform(-pspr, pspr),
+                )
+                vspr = 0.5
+                velocity = (
+                    random.uniform(-vspr, vspr),
+                    random.uniform(-1.5, 0.8),
+                    random.uniform(-vspr, vspr),
+                )
+                # create a bomb with 'homing'
+                # bomb type; it'll handle homing by itself
+                Bomb(
+                    bomb_type='homing', 
+                    fuse_time=6,
+                    position=position,
+                    velocity=velocity,
+                    blast_radius=2.5,
+                    bomb_scale=1.45,
+                ).autoretain()
+        # TOASTERS??
+        # wip
+        elif attack == 'toasters':
+            for _ in range(len(self.players)):
+                position = (
+                    random.uniform(-4.3, 4.3),
+                    random.uniform(6, 8),
+                    random.uniform(-3.2, 3.2),
+                )
+                Toaster(position=position).autoretain()
     
     @override
     def spawn_player(self, player: bs.Player):

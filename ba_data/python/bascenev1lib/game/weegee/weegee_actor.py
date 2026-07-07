@@ -8,10 +8,10 @@ class Weegee(bs.Actor):
     """WWEEEEGEEEEEHHHH"""
     def __init__(self):
         super().__init__()
+        self._can_tp = False
         seshplrs = self.getactivity().session.sessionplayers
-        # 6900
         self.hitpoints = self.max_hitpoints = (
-            1 * len(seshplrs)
+            5500 * len(seshplrs)
         )
         shared = SharedObjects.get()
         self._scale = scale = 13
@@ -54,6 +54,7 @@ class Weegee(bs.Actor):
             }
         )
         pos = (0, 5, -15)
+        self._pos = pos
         # we rely on a combine to keep our position static.
         # by using connectattr, we don't rely on a timer to keep
         # resetting the position (game does it every sim-update)
@@ -83,11 +84,21 @@ class Weegee(bs.Actor):
             loop=True,
         )
         
+    def random_tp(self):
+        if not self._can_tp or not self.node:
+            return
+        pos = self._pos
+        x_spread = 2
+        self.combine.input0 = pos[0] + random.uniform(
+            -x_spread, x_spread
+        )
+        
     def handlemessage(self, msg):
         if isinstance(msg, bs.HitMessage):
+            self._can_tp = True
             damage = 0
             # punches hit us weaker
-            iscale = 0.5 if msg.hit_type == 'punch' else 1
+            iscale = 0.32 if msg.hit_type == 'punch' else 1
             if not msg.flat_damage:
                 # "code from bombgeon
                 # i already knew this method but i had a problem

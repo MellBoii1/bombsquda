@@ -3,6 +3,7 @@
 """Various utilities useful for gameplay."""
 
 from __future__ import annotations
+from dataclasses import dataclass
 
 from typing import TYPE_CHECKING
 
@@ -12,27 +13,32 @@ import random
 if TYPE_CHECKING:
     pass
 
+@dataclass
 class FootingMessage:
     """A message that tells a Spaz it's 
     current state of footing."""
-    def __init__(self, footing):
-        self.footing = footing
+    footing: int
 
+@dataclass
 class TouchedMessage:
     """A generic message for 
     when 2 objects touch."""
-    def __init__(self, state):
-        self.state = state
 
+@dataclass
+class ContactMessage:
+    """A message that can tell a object either
+    where it is in contact with something or not."""
+    state: bool
+
+@dataclass
 class BounceMessage:
     """A message that tells a 
     fireball to bounce."""
-    pass
     
+@dataclass
 class HookedMessage:
     """A message that tells a
     whiplash it has hooked onto something."""
-    pass
     
 class SharedObjects:
     """Various common components for use in games.
@@ -58,6 +64,7 @@ class SharedObjects:
         self._attack_material: bs.Material | None = None
         self._death_material: bs.Material | None = None
         self._region_material: bs.Material | None = None
+        self._region_material_physical: bs.Material | None = None
         self._railing_material: bs.Material | None = None
         self._particle_material: bs.Material | None = None
         self._sorrowful_material: bs.Material | None = None
@@ -256,7 +263,7 @@ class SharedObjects:
             mat.add_actions(
                 conditions=('they_have_material', self.object_material),
                 actions=(
-                    ('message', 'our_node', 'at_connect', TouchedMessage(1)),
+                    ('message', 'our_node', 'at_connect', TouchedMessage()),
                 ),
             )
             mat.add_actions(
@@ -288,22 +295,34 @@ class SharedObjects:
         if self._touch_material is None:
             self._touch_material = mat = bs.Material()
             mat.add_actions(
-                conditions=('they_have_material', self.object_material),
-                actions=(
-                    ('modify_part_collision', 'collide', True),
-                    ('modify_part_collision', 'physical', True),
-                    ('message', 'our_node', 'at_connect', TouchedMessage(1)),
+                conditions=(
+                    ('they_have_material', self.object_material),
+                    'or',
+                    ('they_have_material', self.player_material),
                 ),
-            )
-            mat.add_actions(
-                conditions=('they_have_material', self.player_material),
                 actions=(
                     ('modify_part_collision', 'collide', True),
                     ('modify_part_collision', 'physical', True),
-                    ('message', 'our_node', 'at_connect', TouchedMessage(1)),
+                    ('message', 'our_node', 'at_connect', TouchedMessage()),
+                    ('message', 'our_node', 'at_connect', ContactMessage(True)),
+                    ('message', 'our_node', 'at_disconnect', ContactMessage(False)),
                 ),
             )
         return self._touch_material
+    
+    @property
+    def region_material_physical(self) -> bs.Material:
+        if self._region_material_physical is None:
+            self._region_material_physical = mat = bs.Material()
+            mat.add_actions(
+                conditions=('they_have_material', self.object_material),
+                actions=(
+                    ('modify_part_collision', 'collide', True),
+                    ('modify_part_collision', 'physical', False),
+                    ('message', 'our_node', 'at_connect', TouchedMessage()),
+                ),
+            )
+        return self._region_material_physical
     
     @property
     def fireball_material(self) -> bs.Material:
@@ -312,13 +331,13 @@ class SharedObjects:
             mat.add_actions(
                 conditions=('they_have_material', self.object_material),
                 actions=(
-                    ('message', 'our_node', 'at_connect', TouchedMessage(1)),
+                    ('message', 'our_node', 'at_connect', TouchedMessage()),
                 ),
             )
             mat.add_actions(
                 conditions=('they_have_material', self.player_material),
                 actions=(
-                    ('message', 'our_node', 'at_connect', TouchedMessage(1)),
+                    ('message', 'our_node', 'at_connect', TouchedMessage()),
                 ),
             )
             mat.add_actions(

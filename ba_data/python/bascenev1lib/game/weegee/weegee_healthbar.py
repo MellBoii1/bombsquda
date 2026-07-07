@@ -1,4 +1,5 @@
 """Health bar."""
+from typing import override, Any
 import bascenev1 as bs
 
 class HealthBar(bs.Actor):
@@ -198,9 +199,11 @@ class HealthBar(bs.Actor):
                 f'{int((hitpoints / max_hitpoints) * 100)}%'
             )
 
+    @override
     def exists(self) -> bool:
         return self._bar is not None
 
+    @override
     def handlemessage(self, msg) -> None:
         if isinstance(msg, bs.DieMessage):
             self._backing = None

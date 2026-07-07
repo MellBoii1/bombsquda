@@ -236,19 +236,6 @@ class SpazFactory:
             ),
         )
 
-        self.spaz_material.add_actions(
-            conditions=('they_have_material', player_material),
-            actions=(
-                ('message', 'our_node', 'at_connect', TouchedMessage(1)),
-            ),
-        )
-        self.spaz_material.add_actions(
-            conditions=('they_have_material', object_material),
-            actions=(
-                ('message', 'our_node', 'at_connect', TouchedMessage(1)),
-            ),
-        )
-
         self.shield_up_sound = (
             bs.getsound('shieldUp'),
             bs.getsound('shield2'),

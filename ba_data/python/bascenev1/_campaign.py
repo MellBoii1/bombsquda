@@ -112,7 +112,7 @@ def init_campaigns() -> None:
     from bascenev1lib.game.meteorshower import MeteorShowerGame
     from bascenev1lib.game.easteregghunt import EasterEggHuntGame
     from bascenev1lib.game.ninjafight import NinjaFightGame
-    from bascenev1lib.game.weegee_boss import WeegeeBossGame
+    from bascenev1lib.game.weegee.weegee_game import WeegeeBossGame
     from bascenev1lib.creditsroll import CreditsActivity
 
     # TODO: Campaigns should be load-on-demand; not all imported at launch

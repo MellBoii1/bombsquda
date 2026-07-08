@@ -19,6 +19,7 @@ from bascenev1lib.actor.spaz import Spaz
 from bascenev1lib.actor.bomb import BombFactory, Bomb
 from bascenev1lib.actor.respawnicon import RespawnIcon
 from bascenev1lib.actor.spazbot import SpazBot, SpazBotSet
+from bascenev1lib.actor.powerupbox import PowerupBox, PowerupBoxFactory
 from .weegee_healthbar import HealthBar
 from .weegee_actor import Weegee
 from .weegee_toaster import Toaster
@@ -71,6 +72,10 @@ class WeegeeBossGame(bs.CoopGameActivity[Player, bs.Team]):
     )
 
     @override
+    def get_score_type(self) -> str:
+        return 'time'
+    
+    @override
     @classmethod
     def get_supported_maps(cls, sessiontype: type[bs.Session]) -> list[str]:
         return ['Weegee\'s Tower of Doom']
@@ -92,10 +97,12 @@ class WeegeeBossGame(bs.CoopGameActivity[Player, bs.Team]):
         self._win_sound = bs.getsound('score')
         self._attack_check_timer = None
         self._attack_cooldowns = {
-            'spawn_bots': 7,
-            'toasters': 4,
-            'homing_bomb': 2.7,
+            'spawn_bots': 11,
+            'toasters': 3,
+            'homing_bomb': 4,
         }
+        self._powerup_center = (0, 5, -1.6)
+        self._powerup_spread = (4.6, 2.7)
         # simplify by just generating a dict
         self._attack_availabilities = {
             attack: True for attack in
@@ -115,6 +122,7 @@ class WeegeeBossGame(bs.CoopGameActivity[Player, bs.Team]):
     
     def on_begin(self):
         super().on_begin()
+        self.allow_emeralds = False
         def disable_players():
             for player in self.players:
                 if not player.actor:
@@ -171,6 +179,8 @@ class WeegeeBossGame(bs.CoopGameActivity[Player, bs.Team]):
             if player.actor.node:
                 player.actor.node.is_area_of_interest = True
                 player.actor.node.area_of_interest_radius = 9
+        self._drop_powerups(standard_points=True)
+        bs.timer(4.0, self._start_powerup_drops)
         # weegee beat
         bs.setmusic(bs.MusicType.WEEGEE)
         # now we show the game title and desc,
@@ -305,7 +315,7 @@ class WeegeeBossGame(bs.CoopGameActivity[Player, bs.Team]):
                     pos=this_spawn[:3],
                     spawn_time=1.6,
                 )
-            for i in range(random.randrange(3, 4)):
+            for i in range(random.randrange(3, 5)):
                 bs.timer(i * 0.05, spawn)
         # really slow homing bombs
         # (also they look like boulders hehe)
@@ -318,10 +328,10 @@ class WeegeeBossGame(bs.CoopGameActivity[Player, bs.Team]):
                     continue
                 ppos = node.position
                 # yeah spr is spread
-                pspr = 1.5
+                pspr = 5
                 position = (
                     ppos[0] + random.uniform(-pspr, pspr),
-                    random.uniform(5, 6), # y can be static here; we don't need it that much
+                    random.uniform(7, 9), # y can be static here; we don't need it that much
                     ppos[2] + random.uniform(-pspr, pspr),
                 )
                 vspr = 0.5
@@ -341,7 +351,6 @@ class WeegeeBossGame(bs.CoopGameActivity[Player, bs.Team]):
                     bomb_scale=1.45,
                 ).autoretain()
         # TOASTERS??
-        # wip
         elif attack == 'toasters':
             for _ in range(len(self.players)):
                 position = (
@@ -398,6 +407,7 @@ class WeegeeBossGame(bs.CoopGameActivity[Player, bs.Team]):
             {
                 'outcome': outcome,
                 'score': score,
+                'score_order': 'decreasing',
                 'fail_message': None,
                 'playerinfos': self.initialplayerinfos,
             },
@@ -432,3 +442,53 @@ class WeegeeBossGame(bs.CoopGameActivity[Player, bs.Team]):
                     for player in self.players:
                         player.respawn_timer = None
                         player.respawn_icon = None
+    
+    def _drop_powerup(self, index: int, poweruptype: str | None = None) -> None:
+        poweruptype = PowerupBoxFactory.get().get_random_powerup_type(
+            forcetype=poweruptype
+        )
+        if not poweruptype:
+            return
+        PowerupBox(
+            position=self.map.powerup_spawn_points[index],
+            poweruptype=poweruptype,
+        ).autoretain()
+    
+    def _drop_powerups(
+        self, standard_points: bool = False, poweruptype: str | None = None
+    ) -> None:
+        """Generic powerup drop."""
+        if standard_points:
+            points = self.map.powerup_spawn_points
+            for i in range(len(points)):
+                bs.timer(
+                    1.0 + i * 0.5,
+                    bs.WeakCall(
+                        self._drop_powerup, i, poweruptype if i == 0 else None
+                    ),
+                )
+        else:
+            point = (
+                self._powerup_center[0]
+                + random.uniform(
+                    -1.0 * self._powerup_spread[0],
+                    1.0 * self._powerup_spread[0],
+                ),
+                self._powerup_center[1],
+                self._powerup_center[2]
+                + random.uniform(
+                    -self._powerup_spread[1], self._powerup_spread[1]
+                ),
+            )
+            r = PowerupBoxFactory.get().get_random_powerup_type()
+            # Drop one random one somewhere.
+            PowerupBox(
+                position=point,
+                poweruptype=r,
+            ).autoretain()
+    
+    def _start_powerup_drops(self) -> None:
+        self._powerup_drop_timer = bs.Timer(
+            3.0, bs.WeakCall(self._drop_powerups), repeat=True
+        )
+

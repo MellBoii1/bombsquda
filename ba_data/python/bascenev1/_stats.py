@@ -21,6 +21,36 @@ if TYPE_CHECKING:
 
     import bascenev1
 
+SUICIDE_MESSAGES = {
+    'explosion': 'nameSuicideBombText',
+    'impact': 'nameSuicideFallText',
+    'punch': 'nameSuicidePunchText',
+    'fall': 'nameSuicideOOBText',
+    'swoon': 'nameSuicideSwoonText',
+    'fireball': 'nameSuicideFBallText',
+}
+
+KILL_MESSAGES = {
+    'explosion': 'nameKillBombText',
+    'impact': 'nameKillFallText',
+    'punch': 'nameKillPunchText',
+    'fall': 'nameKillOOBText',
+    'swoon': 'nameKillSwoonText',
+    'fireball': 'nameKillFBallText',
+    'collision': 'nameKillBalledText',
+    'snowgrave': 'nameKillSnowgraveText',
+}
+DEATH_MESSAGES = {
+    'explosion': 'nameDiedBombText',
+    'impact': 'nameDiedFallText',
+    'punch': 'nameDiedPunchText',
+    'snowgrave': 'nameDiedSnowgraveText',
+    'electricity': 'nameDiedElectricityText',
+    'swoon': 'nameDiedSwoonText',
+    'fall': 'nameDiedOOBText',
+    'fireball': 'nameDiedFireballText',
+}
+
 
 @dataclass
 class PlayerScoredMessage:
@@ -501,24 +531,6 @@ class Stats:
         if killed:
             prec.accum_killed_count += 1
             prec.killed_count += 1
-        SUICIDE_MESSAGES = {
-            'explosion': 'nameSuicideBombText',
-            'impact': 'nameSuicideFallText',
-            'punch': 'nameSuicidePunchText',
-            'fall': 'nameSuicideOOBText',
-            'swoon': 'nameSuicideSwoonText',
-            'fireball': 'nameSuicideFBallText',
-        }
-
-        KILL_MESSAGES = {
-            'explosion': 'nameKillBombText',
-            'impact': 'nameKillFallText',
-            'punch': 'nameKillPunchText',
-            'fall': 'nameKillOOBText',
-            'swoon': 'nameKillSwoonText',
-            'fireball': 'nameKillFBallText',
-            'collision': 'nameKillBalledText',
-        }
         try:
             def broadcast(resource: str, subs, color, image):
                 _bascenev1.broadcastmessage(
@@ -540,6 +552,11 @@ class Stats:
                 if killer is not None:
                     if killer is player:
                         hit = killer.actor.lasthittype
+                        sub = killer.actor.lasthitsubtype
+                        if SUICIDE_MESSAGES.get(sub):
+                            resource = SUICIDE_MESSAGES.get(sub)
+                        else:
+                            resource = SUICIDE_MESSAGES.get(hit, 'nameKilledText')
                         resource = SUICIDE_MESSAGES.get(hit, 'nameSuicideText')
 
                         broadcast(
@@ -559,7 +576,11 @@ class Stats:
 
                     else:
                         hit = player.actor.lasthittype
-                        resource = KILL_MESSAGES.get(hit, 'nameKilledText')
+                        sub = player.actor.lasthitsubtype
+                        if KILL_MESSAGES.get(sub):
+                            resource = KILL_MESSAGES.get(sub)
+                        else:
+                            resource = KILL_MESSAGES.get(hit, 'nameKilledText')
 
                         broadcast(
                             resource,
@@ -569,8 +590,14 @@ class Stats:
                         )
 
                 else:
+                    hit = player.actor.lasthittype
+                    sub = player.actor.lasthitsubtype
+                    if DEATH_MESSAGES.get(sub):
+                        resource = DEATH_MESSAGES.get(sub)
+                    else:
+                        resource = DEATH_MESSAGES.get(hit, 'nameDiedText')
                     broadcast(
-                        'nameDiedText',
+                        resource,
                         [('${NAME}', name)],
                         player.color,
                         player.get_icon()

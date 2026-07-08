@@ -364,13 +364,19 @@ class CoopGameActivity[PlayerT: bs.Player, TeamT: bs.Team](
                 subhittype = None
             if hittype == 'explosion' and msg.killerplayer:
                 player = msg.killerplayer.actor
-                bot = msg.spazbot
-                distance = math.dist(bot.node.position, player.node.position)
-                if distance >= 6.9:
-                    if self.ultrameter:
-                        self.ultrameter.style_text(bs.Lstr(resource='styleSniped'), 50, (0, 0.5, 0.8))
+                if not player.node:
+                    ppos = None
+                else:
+                    ppos = player.node.position
+                if ppos:
+                    bot = msg.spazbot
+                    distance = math.dist(bot.node.position, ppos)
+                    if distance >= 6.9:
+                        if self.ultrameter:
+                            self.ultrameter.style_text(bs.Lstr(resource='styleSniped'), 50, (0, 0.5, 0.8))
             if self.ultrameter:
                 self.ultrameter.style_text(bs.Lstr(resource='styleKilled'), 30, (1, 0.1, 0.1))
+            super().handlemessage(msg)
         elif isinstance(msg, ShatteredMessage):
             if self.ultrameter:
                 self.ultrameter.style_text(bs.Lstr(resource='styleShattered'), 40, (0.9, 0, 0.6))

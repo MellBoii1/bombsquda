@@ -171,6 +171,8 @@ class Toaster(bs.Actor):
                     magnitude=20,
                     radius=0,
                     srcnode=self.node,
+                    hit_type='electricity',
+                    hit_subtype='toaster',
                 )
             )
     

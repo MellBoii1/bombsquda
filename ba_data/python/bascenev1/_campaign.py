@@ -261,7 +261,7 @@ def init_campaigns() -> None:
                     default_complete=True,
                 ),
                 Level(
-                    'Weegee',
+                    'Weegee Boss',
                     gametype=WeegeeBossGame,
                     settings={},
                     preview_texture_name='weegeeMapPreview',

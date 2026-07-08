@@ -616,7 +616,7 @@ class CoopBrowserWindow(bui.MainWindow):
             'Challenges:Meteor Shower',
             'Challenges:Target Practice B',
             'Challenges:Target Practice',
-            'Default:Weegee',
+            'Default:Weegee Boss',
             'Challenges:Race',
             'Challenges:Lake Frigid Race',
             'Challenges:Pro Race',

@@ -78,8 +78,7 @@ class Weegee(bs.Actor):
             {
                 0: self._scale,
                 0.06: self._scale - 3.5,
-                0.13: self._scale - 4,
-                0.38: self._scale,
+                0.35: self._scale,
             },
             loop=True,
         )

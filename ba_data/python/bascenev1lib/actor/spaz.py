@@ -56,6 +56,23 @@ BASE_PUNCH_COOLDOWN = 400
 
 SUPPORTED_STYLES = ['normal', 'metallic', 'robot', 'fancy']
 
+MINECRAFT_ITEMS = [
+    ['tnt', 'rocky', 0.35],
+    ['tnt', 'dirt', 0.35],
+    ['tnt', 'netherrack', 0.35],
+    ['ender_pearl', 'enderPearl', 0.5],
+    ['wind_charge', 'windCharge', 0.5],
+    ['totem', 'totemOfUndying', 0.5],
+    ['arrow', 'arrow', 0.4],
+    ['bread', 'bread', 0.5],
+    ['pickaxe', 'ironPickaxe', 0.6],
+    ['axe', 'ironAxe', 0.6],
+    ['sword', 'ironSword', 0.6],
+    ['bow', 'bow', 0.6],
+    ['mace', 'mace', 0.6],
+    ['bomb', 'bombStickyColor', 0.6],
+]
+
 RAINBOW_SPEED = 0.4  # determine speed
 RAINBOW_COLORS = [
     (1.0, 0.0, 0.0),  # red
@@ -263,24 +280,7 @@ class MinecraftItem(bs.Actor):
                 'shadow_size': 0,
             },
         )
-        # actual thing
-        item = [
-            ['tnt', 'rocky', 0.35],
-            ['tnt', 'dirt', 0.35],
-            ['tnt', 'netherrack', 0.35],
-            ['ender_pearl', 'enderPearl', 0.5],
-            ['wind_charge', 'windCharge', 0.5],
-            ['totem', 'totemOfUndying', 0.5],
-            ['arrow', 'arrow', 0.4],
-            ['bread', 'bread', 0.5],
-            ['pickaxe', 'ironPickaxe', 0.6],
-            ['axe', 'ironAxe', 0.6],
-            ['sword', 'ironSword', 0.6],
-            ['bow', 'bow', 0.6],
-            ['mace', 'mace', 0.6],
-            ['bomb', 'bombStickyColor', 0.6],
-        ]
-        selected_item = random.choice(item)
+        selected_item = random.choice(MINECRAFT_ITEMS)
         self.item_node: bs.Node = bs.newnode(
             'prop',
             delegate=self,
@@ -743,6 +743,7 @@ class Spaz(bs.Actor):
         self.instructimage = None
         self.cansay = False
         self.lasthittype = None
+        self.lasthitsubtype = None
         self.letimer = None
         self.letimer2 = None
         self.timesparried = 0
@@ -4254,6 +4255,7 @@ class Spaz(bs.Actor):
                         self.handle_ffire()
             # Change last hit type to the message's hit type.
             self.lasthittype = msg.hit_type
+            self.lasthitsubtype = msg.hit_subtype
             # If they've got a shield, deliver it to that instead.
             if self.shield:
                 if msg.flat_damage:

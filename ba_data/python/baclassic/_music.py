@@ -166,6 +166,8 @@ ASSET_SOUNDTRACK_ENTRIES: dict[str, AssetSoundtrackEntry] = {
     'WEEGEE_IMPACT3': AssetSoundtrackEntry('music/dramatic_impact3', loop=False),
     'WEEGEE_IMPACT4': AssetSoundtrackEntry('music/dramatic_impact4', loop=False),
     'WEEGEE': AssetSoundtrackEntry('music/weegee'),
+    'FINALRESULTS_GOOD': AssetSoundtrackEntry('music/finalresults_good'),
+    'FINALRESULTS_BAD': AssetSoundtrackEntry('music/finalresults_bad'),
     'COOP_VICTORY': AssetSoundtrackEntry(
         'music/coop_victory', volume=1.0, loop=False
     ),

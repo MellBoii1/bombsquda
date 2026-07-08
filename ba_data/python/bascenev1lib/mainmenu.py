@@ -39,6 +39,7 @@ from bascenev1lib.actor.spazbot import (
     MelisoBot,
     BuddieBot,
 )
+from bascenev1lib.actor.spaz import MINECRAFT_ITEMS
 from bascenev1lib.game.thefinale import SpawnInfo
 
 if TYPE_CHECKING:
@@ -1156,6 +1157,9 @@ def _preload2() -> None:
         'gong',
     ]:
         bs.getsound(sname)
+    for mesh, texture, _ in MINECRAFT_ITEMS:
+        bs.getmesh(mesh)
+        bs.gettexture(texture)
     from bascenev1lib.actor.bomb import BombFactory
 
     BombFactory.get()

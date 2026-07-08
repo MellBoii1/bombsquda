@@ -185,8 +185,6 @@ class CoopSession(Session):
             {
                 0: (-xoffnum, v),
                 time: (-xnum + xoffs, v),
-                9: (-xnum + xoffs, v),
-                9.5: (-xnum + xoffs, 600),
             }
         )
         bs.animate_array(
@@ -196,10 +194,54 @@ class CoopSession(Session):
             {
                 0: (xoffnum, v),
                 time: (xnum + xoffs, v),
-                9: (xnum + xoffs, v),
-                9.5: (xnum + xoffs, 600),
             }
         )
+        bs.timer(9, game_text.delete)
+        bs.timer(9, over_text.delete)
+    
+    def _fade_out_gameover(self):
+        from bascenev1lib.activity.coop_arcade_results import CoopArcadeResults
+        sound = bs.getsound('closet_impact')
+        def node():
+            return bs.newnode(
+                'image',
+                attrs={
+                    'position': (-600, 0),
+                    'scale': (1000, 800),
+                    'texture': bs.gettexture('white2'),
+                    'color': (0, 0, 0),
+                    'front': True,
+                }
+            )
+        node1 = node()
+        node2 = node()
+        def anim(leftside: bool, node: bs.Node):
+            n = 1000
+            n2 = 300
+            xoffnum = -n if leftside else n
+            xnum = -n2 if leftside else n2
+            v = 0
+            bs.animate_array(
+                node,
+                'position',
+                2,
+                {
+                    0: (xoffnum, v),
+                    0.12: (xnum, v),
+                }
+            )
+        anim(node=node1, leftside=True)
+        anim(node=node2, leftside=False)
+        bs.timer(0.035, sound.play)
+        def start():
+            node1.delete()
+            node2.delete()
+            self._arcade_lives_text.delete()
+            self._arcade_score_text.delete()
+            self._arcade_score_info_text.delete()
+            self.setactivity(bs.newactivity(CoopArcadeResults))
+        bs.timer(2.1, start)
+
 
     def get_current_game_instance(self) -> bascenev1.GameActivity:
         """Get the game instance currently being played."""
@@ -672,6 +714,10 @@ class CoopSession(Session):
                 if arcade:
                     if outcome == 'victory':
                         def nextgame():
+                            # hardcoded but eh
+                            if self.getactivity().name == 'The Finale':
+                                self._fade_out_gameover()
+                                return
                             next_game = self._next_game_instance
                             self.setactivity(next_game)
                         Background(fade_time=0.6).autoretain()
@@ -683,7 +729,7 @@ class CoopSession(Session):
                         else:
                             self._show_gameover_text()
                             bs.setmusic(bs.MusicType.COOP_GAMEOVER)
-                            bs.timer(10, self._do_arcade_results)
+                            bs.timer(8.3, self._fade_out_gameover)
                 else:
                     self.setactivity(
                         _bascenev1.newactivity(

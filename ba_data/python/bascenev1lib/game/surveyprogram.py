@@ -475,22 +475,68 @@ class SURVEYActivity2(bs.Activity[bs.Player, bs.Team]):
         super().__init__(settings)
         
     def _makeplayer(self):
-        player = CutscenePlayer(
-            cutscene_id=41,
-            frame_delays=[
-                2.2, 0.3, 0.3, 0.3, 0.3, 0.3,
-                0.3, 0.3, 0.3, 0.2, 0.1, 
-                0.1, 0.1, 0.1, 0.1, 0.1,
-                0.1, 0.1, 0.1, 0.1, 0.1,
-                0.1, 0.1, 0.1, 0.1, 21.2,
-            ],
-            fade_duration=2.0
+        bs.setmusic(bs.MusicType.LOGOTYPE)
+        bs.animate_array(
+            self.blackthing, 
+            "color", 3, 
+            {
+                0: (0, 0, 0),
+                2.5: (1, 1, 1),
+                32: (1, 1, 1),
+                33: (0, 0, 0),
+            }
         )
-        player.autoretain()
-        player.node.fill_screen = True
+        bs.animate(
+            self.logo, 
+            "opacity", 
+            {
+                3: 0,
+                4.7: 1,
+                32: 1,
+                33: 0,
+            }
+        )
+        sc = self._logo_scale
+        sc2 = sc + 0.5
+        intex = list(
+            bs.gettexture(
+                'title_mono_shaky' + str(i + 1)
+            ) 
+            for i in range(4)
+        )
+        texs = bs.newnode(
+            'texture_sequence',
+            attrs={'rate': 100, 'input_textures': intex},
+        )
+        texs.connectattr('output_texture', self.logo, 'texture')
+        def anim():
+            nonlocal texs
+            bs.animate_array(
+                self.logo, 
+                "scale", 2, 
+                {
+                    0: (1024 * sc, 256 * sc),
+                    0.07: (1024 * sc2, 256 * sc2),
+                    0.4: (1024 * sc, 256 * sc),
+                }
+            )
+            def on():
+                nonlocal texs
+                texs.rate = 30
+            def tw():
+                nonlocal texs
+                texs.rate = 100
+            bs.timer(0.07, on)
+            bs.timer(0.4, tw)
+        bs.timer(5.1, anim)
+        bs.timer(10.5, anim)
+        bs.timer(15.4, anim)
+        bs.timer(24.5, anim)
+        
         
     def on_transition_in(self) -> None:
         from bascenev1lib.mainmenu import MainMenuSession
+        self._logo_scale = 0.8
         self.bgterrain = bs.NodeActor(
             bs.newnode(
                 'terrain',
@@ -505,10 +551,20 @@ class SURVEYActivity2(bs.Activity[bs.Player, bs.Team]):
         )
         self.blackthing = bs.newnode('image', 
             attrs={
-                'texture': bs.gettexture('white'),
+                'texture': bs.gettexture('white2'),
                 'opacity': 0.0,
                 'fill_screen': True,
                 'color': (0, 0, 0)
+            }
+        )
+        self.logo = bs.newnode('image', 
+            attrs={
+                'texture': bs.gettexture('title_mono'),
+                'opacity': 0.0,
+                'fill_screen': False,
+                'color': (1, 1, 1),
+                'scale': (1024 * self._logo_scale, 256 * self._logo_scale),
+                'opacity': 0,
             }
         )
         bs.setmusic(None)
@@ -520,12 +576,5 @@ class SURVEYActivity2(bs.Activity[bs.Player, bs.Team]):
                 1.5: 1.0
             }
         )
-        bs.timer(
-            2.5, 
-            bs.Call(
-                bs.setmusic, 
-                bs.MusicType.LOGOTYPE
-            )
-        )
         bs.timer(2.5, self._makeplayer)
-        bs.timer(36.0, bs.Call(bs.new_host_session, MainMenuSession))
+        bs.timer(36.0, lambda: bs.pushcall(bs.Call(bs.new_host_session, MainMenuSession)))

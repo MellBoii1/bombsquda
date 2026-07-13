@@ -85,7 +85,7 @@ class CoopSession(Session):
         )
         self.campaign_level_name: str = classic.coop_session_args['level']
         self._arcade_mode = False
-        self._arcade_lives = 3
+        self._arcade_lives = 2
         self._total_score = 0
         if self._arcade_mode:
             self._arcade_lives_text = bs.newnode(

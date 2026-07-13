@@ -49,12 +49,9 @@ class CreditsActivity(bs.GameActivity[bs.Player, bs.Team]):
         # Create image node
         node = bs.newnode('image', 
             attrs={
-                'texture': bs.gettexture('logo2'),
-                'position': (0, 0), 
+                'texture': bs.gettexture('title_hd'),
                 'scale': (800, 200),
-                'opacity': 1.0,
                 'absolute_scale': True,
-                'attach': 'center'
             }
         )
         bs.animate_array(node, 'position', 2, {
@@ -67,12 +64,10 @@ class CreditsActivity(bs.GameActivity[bs.Player, bs.Team]):
         # Create image node
         node = bs.newnode('image', 
             attrs={
-                'texture': bs.gettexture('logo2'),
+                'texture': bs.gettexture('title_hd'),
                 'position': (0, -500), 
                 'scale': (800, 200),
-                'opacity': 1.0,
                 'absolute_scale': True,
-                'attach': 'center'
             }
         )
         # create text

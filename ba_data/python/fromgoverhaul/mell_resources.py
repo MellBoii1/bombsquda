@@ -5,6 +5,7 @@ like lists, dicts, server address, game version, and some useful functions.
 
 screams = ['screams/scream' + str(i + 1) + '' for i in range(15)]
 server = "https://bombsquda.tailc76b25.ts.net/"
+server = "http://192.168.1.105:5000"
 version = '2.5'
 update_date = '6/1/2026'
 from babase._logging import squdalog
@@ -1313,7 +1314,7 @@ def get_clean_account_name() -> str:
     name = "".join(c for c in display if not (0xE000 <= ord(c) <= 0xF8FF))
     return name
 
-def _request(endpoint: str, payload: dict):
+def _request(endpoint: str, payload: dict, timeout=4):
     try:
         import json
         import urllib.request
@@ -1327,7 +1328,7 @@ def _request(endpoint: str, payload: dict):
             method="POST"
         )
 
-        with urllib.request.urlopen(req, timeout=2) as response:
+        with urllib.request.urlopen(req, timeout=timeout) as response:
             thefuckingjson = json.loads(response.read().decode('utf-8'))
             squdalog.debug(f'Requested: {thefuckingjson}')
             return thefuckingjson
@@ -1335,6 +1336,81 @@ def _request(endpoint: str, payload: dict):
     except Exception as exc:
         return {'status': 'fail', 'message': str(exc)}
 
+def download_file(url: str, filename: str | None = None):
+    import urllib.request
+    from pathlib import Path
+
+    if filename is None:
+        filename = url.split("/")[-1] or "download"
+
+    path = Path(filename)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with urllib.request.urlopen(url) as response:
+        with open(path, "wb") as f:
+            while True:
+                chunk = response.read(8192)
+                if not chunk:
+                    break
+                f.write(chunk)
+
+    return True
+
+def dlc_test(name: str):
+    from babase._logging import squdalog
+    import babase
+    import bascenev1 as bs
+    import os
+    babase.app.env.data_directory
+    print('DOING DLC DOWNLOAD TEST')
+    request = _request(
+        'api/get_dlc',
+        {'name': name},
+        timeout=20, # need extra time so server can process converting, and etc
+    )
+    if (
+        not request or 
+        request.get('status', '') == 'fail'
+    ):
+        print('FAILURE :(')
+        return
+    print('GOT DLC DATA; ATTEMPTING TO DOWNLOAD REQUIRED FILES')
+    dlc_folder = 'dlc' if not request.get('persistent') else 'dlc_persistent'
+    output_folders = {
+        'audio': ['ba_data', 'audio', dlc_folder],
+        'meshes': ['ba_data', 'meshes', dlc_folder],
+        'textures': ['ba_data', 'textures', dlc_folder],
+    }
+    keyname_suffixes = {
+        'audio': '.ogg',
+        'meshes': '.bob',
+        'textures': '.dds',
+    }
+    for keyname, urls in request.items():
+        if not isinstance(urls, dict):
+            continue
+        for filename, file_url in urls.items():
+            output = [babase.app.env.data_directory]
+            output.extend(output_folders.get(keyname))
+            suffix = keyname_suffixes.get(keyname)
+            output.append(filename+suffix)
+            output = os.path.join(*output)
+            download_file(
+                file_url,
+                filename=output,
+            )
+            print(f'DOWNLOADED FILE {filename}')
+            print('ATTEMPTING TO GET ITS TYPE...')
+            funcs = {
+                'audio': bs.getsound,
+                'meshes': bs.getmesh,
+                'textures': bs.gettexture,
+            }
+            func = funcs.get(keyname)
+            print(func(f'{dlc_folder}/{filename}'))
+        print(f'FINISHED DOWNLOADING FILES FOR {keyname}')
+    print('hopefully finished yeah')
+    
 
 def send_friend_request(name: str):
     return _request('friends/request', {

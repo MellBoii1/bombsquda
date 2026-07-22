@@ -1232,7 +1232,7 @@ class Spaz(bs.Actor):
         shakiness: int = 0.035,
     ):
         """
-        Show some "scary text". Ah!
+        Show some shaky text.
         :param text: the text. you know
         :param xpos: the offset where the text will start
         :param color: color of the text

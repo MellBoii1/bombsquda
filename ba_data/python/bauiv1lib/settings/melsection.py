@@ -126,25 +126,26 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
             background=False,
             selection_loops_to_parent=True,
         )
-        if uiscale is bui.UIScale.SMALL:
-            self._back_button = None
-            bui.containerwidget(
-                edit=self._root_widget, on_cancel_call=self.main_window_back
-            )
-        else:
-            self._back_button = btn = bui.buttonwidget(
-                parent=self._root_widget,
-                autoselect=True,
-                position=(50, yoffs - 50.0),
-                size=(70, 70),
-                scale=0.8,
-                text_scale=1.2,
-                label=bui.charstr(bui.SpecialChar.BACK),
-                button_type='backSmall',
-                on_activate_call=self.main_window_back,
-            )
-            
-            bui.containerwidget(edit=self._root_widget, cancel_button=btn)
+        if not first_time:
+            if uiscale is bui.UIScale.SMALL:
+                self._back_button = None
+                bui.containerwidget(
+                    edit=self._root_widget, on_cancel_call=self.main_window_back
+                )
+            else:
+                self._back_button = btn = bui.buttonwidget(
+                    parent=self._root_widget,
+                    autoselect=True,
+                    position=(50, yoffs - 50.0),
+                    size=(70, 70),
+                    scale=0.8,
+                    text_scale=1.2,
+                    label=bui.charstr(bui.SpecialChar.BACK),
+                    button_type='backSmall',
+                    on_activate_call=self.main_window_back,
+                )
+                
+                bui.containerwidget(edit=self._root_widget, cancel_button=btn)
         if first_time:
             position = (width - 30, yoffs - 80.0)
             scale = 0.8
@@ -463,17 +464,16 @@ class MelWindow(bui.MainWindow, CharacterPickerDelegate):
                 bui.getsound(sound[1]).play()
 
     def _continue(self) -> None:
-        from bascenev1lib.game.surveyprogram import SurveyIntroWindow
         # no-op if we're not currently in control.
         if not self.main_window_has_control():
             return
             
-        self.main_window_replace(
-            SurveyIntroWindow(
-                transition='in_right',
-                origin_widget=self._root_widget,
-                step=1,
-            )
+        activity = bs.get_foreground_host_activity()
+        with activity.context:
+            activity._settings_done()
+        bui.containerwidget(
+            edit=self._root_widget,
+            transition='out_scale',
         )
         
     def _open_name_setup(self):

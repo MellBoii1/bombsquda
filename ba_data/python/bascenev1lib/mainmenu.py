@@ -16,7 +16,7 @@ import bascenev1 as bs
 import bauiv1 as bui
 import babase as ba
 import fromgoverhaul.mell_resources as mell
-from bascenev1lib.game.surveyprogram import SURVEYActivity
+from bascenev1lib.game.surveyprogram import SURVEYActivity, SurveySessionThing
 from bascenev1lib.actor.cutsceneplayer import CutscenePlayer
 from bascenev1lib.gameutils import SharedObjects
 from bascenev1._messages import PlayerDiedMessage, StandMessage
@@ -1207,11 +1207,10 @@ class MainMenuSession(bs.Session):
 
         super().__init__([self._activity_deps])
         self._locked = False
-        if not ba.app.config.get("squda_playersfirsttime"):
+        if ba.app.config.get("squda_playersfirsttime", True):
+            bs.pushcall(lambda: bs.new_host_session(SurveySessionThing))
+        else:
             self.setactivity(bs.newactivity(MainMenuActivity))
-            return
-        self.setactivity(bs.newactivity(SURVEYActivity))
-
     @override
     def on_activity_end(self, activity: bs.Activity, results: Any) -> None:
         if self._locked:

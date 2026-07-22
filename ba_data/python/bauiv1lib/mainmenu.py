@@ -14,7 +14,7 @@ import babase as ba
 import bauiv1
 import fromgoverhaul.mell_resources as mell
 
-DEBUG_CUSTOM_GATHER = False
+DEBUG_CUSTOM_GATHER = True
 
 if TYPE_CHECKING:
     from typing import Any, Callable

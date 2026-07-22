@@ -139,20 +139,6 @@ class TestActivity(bs.GameActivity[bs.Player, bs.Team]):
         pos = textnode.position
         num1 = -0.2
         num2 = 0.2
-        bs.animate_array(
-            textnode, 
-            'position', 
-            2,
-            {
-                0: (pos[0], pos[1]),
-                0.1: (pos[0] + random.uniform(num1, num2), pos[1] + random.uniform(num1, num2)),
-                0.2: (pos[0] + random.uniform(num1, num2), pos[1] + random.uniform(num1, num2)),
-                0.3: (pos[0] + random.uniform(num1, num2), pos[1] + random.uniform(num1, num2)),
-                0.4: (pos[0] + random.uniform(num1, num2), pos[1] + random.uniform(num1, num2)),
-                0.5: (pos[0], pos[1]),
-            },
-            loop=True
-        )
         def fade_out():
             def deleteit():
                 textnode.delete()

@@ -127,7 +127,11 @@
 	"MusicType.DS1": "Battle Theme - Mario Kart DS",
 	"MusicType.DS2": "Waluigi Pinball - Mario Kart DS",
 	"MusicType.DS3": "Twilight House - Mario Kart Wii",
-	"MusicType.SURVEY": "ANOTHER HIM - Deltarune",
+	"MusicType.SURVEY": {
+		"title": "Fun Naming",
+		"artist": "MOTHER 3",
+		"artist_keyword": "from"
+	},
 	"MusicType.CRASH_HANDLER": "Cloudcones - Nagz",
 	"MusicType.LOGOTYPE": "LOGOTYPE - Mother 3",
 	"MusicType.FLAG_CATCHER": "Metallic Madness 1 - Tee Lopes",

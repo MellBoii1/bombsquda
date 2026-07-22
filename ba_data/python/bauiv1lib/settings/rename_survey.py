@@ -6,7 +6,6 @@ import logging
 
 import bauiv1 as bui
 import bascenev1 as bs
-from bascenev1lib.game.surveyprogram import BaseSurveyWindow
 import babase as ba
 
 SURVEY_STEPS = [
@@ -37,7 +36,7 @@ class NameSurveyAllWindow(bui.MainWindow):
         self._r = 'renameWindow'
         uiscale = bui.app.ui_v1.uiscale
         width = 1000 if uiscale is bui.UIScale.SMALL else 800
-        height = 670
+        height = 500
         screensize = bui.get_virtual_screen_size()
         safesize = bui.get_virtual_safe_area_size()
         smallscale = min(2.0, 1.5 * screensize[0] / safesize[0])
@@ -71,9 +70,9 @@ class NameSurveyAllWindow(bui.MainWindow):
         )
 
         self._inputs: list[tuple[str, bui.Widget]] = []
-        offset = 150 if uiscale is not bui.UIScale.SMALL else 170
+        offset = 140
         start_y = self._height - offset
-        spacing = 100
+        spacing = 75
         x_center = self._width * 0.55
         self.should_continue = False
 
@@ -83,7 +82,7 @@ class NameSurveyAllWindow(bui.MainWindow):
             # Image
             bui.imagewidget(
                 parent=self._root_widget,
-                position=(x_center - 300, y - 40),
+                position=(x_center - 300, y),
                 size=(60, 60),
                 texture=bui.gettexture(step["texture"]),
             )
@@ -91,7 +90,7 @@ class NameSurveyAllWindow(bui.MainWindow):
             # Input field
             txt = bui.textwidget(
                 parent=self._root_widget,
-                position=(x_center - 200, y - 40),
+                position=(x_center - 200, y + 5),
                 size=(400, 40),
                 editable=True,
                 autoselect=(i == 0),
@@ -102,10 +101,9 @@ class NameSurveyAllWindow(bui.MainWindow):
             self._inputs.append((step["cfg"], txt))
 
         # Save button
+        y -= spacing
         position = (
-            (self._width * 0.5 - 90, 40) if uiscale
-            is not bui.UIScale.SMALL else
-            (self._width * 0.5 - 90, 90)
+            (self._width * 0.5 - 90, y)
         )
         self._save_btn = bui.buttonwidget(
             parent=self._root_widget,

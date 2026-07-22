@@ -16,7 +16,6 @@ class ParallaxImage(bs.Actor):
         self.position = position
         self.size = size
         self.speed = speed
-        #  this is a tabbed indent
         # Main image.
         self.node1 = bs.newnode(
             'image',

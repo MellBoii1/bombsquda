@@ -14,7 +14,7 @@ import babase as ba
 import random
 from bascenev1._dependency import DependencyComponent
 from bascenev1._messages import UNHANDLED
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 
 
 ERROR_APRILFOOLS_LIST = [

@@ -11,7 +11,7 @@ import bauiv1 as bui
 import bascenev1 as bs
 import os
 
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 
 from bauiv1lib.texturepicker import TexturePicker
 from bauiv1lib.colorpicker import ColorPicker

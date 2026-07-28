@@ -10,7 +10,7 @@ import bascenev1 as bs
 import babase
 import bauiv1 as bui
 import babase as ba
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 import json
 import os
 from babase._logging import squdalog

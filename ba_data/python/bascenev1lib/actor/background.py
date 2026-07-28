@@ -9,7 +9,7 @@ import weakref
 import logging
 from typing import TYPE_CHECKING, override
 from datetime import date
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 
 import bascenev1 as bs
 

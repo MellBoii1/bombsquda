@@ -11,7 +11,7 @@ import bascenev1 as bs
 from bascenev1lib.actor.popuptext import PopupText
 
 from bascenev1lib.gameutils import SharedObjects
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 
 if TYPE_CHECKING:
     from typing import Any, Sequence

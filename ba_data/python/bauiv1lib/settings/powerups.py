@@ -6,7 +6,7 @@ from typing import override
 
 import bascenev1 as bs
 import bauiv1 as bui
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 
 
 class PowerupSetupWindow(bui.MainWindow):

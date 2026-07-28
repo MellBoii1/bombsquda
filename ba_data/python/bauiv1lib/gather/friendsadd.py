@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, override
 
 import bauiv1 as bui
 import bascenev1 as bs
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 
 if TYPE_CHECKING:
     from typing import Any

@@ -15,7 +15,7 @@ from bascenev1lib.actor.overhead_text import OverheadText
 import bascenev1 as bs
 import bauiv1 as bui
 import babase as ba
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 from bascenev1lib.game.surveyprogram import SURVEYActivity, SurveySessionThing
 from bascenev1lib.actor.cutsceneplayer import CutscenePlayer
 from bascenev1lib.gameutils import SharedObjects
@@ -1105,7 +1105,7 @@ def _preload1() -> None:
         bs.gettexture(tex)
     bs.gettexture('bg')
     from bascenev1lib.actor.powerupbox import PowerupBoxFactory
-    from fromgoverhaul.mell_sfx import SoundFactory
+    from mellboii.mell_sfx import SoundFactory
 
     PowerupBoxFactory.get()
     SoundFactory.get()

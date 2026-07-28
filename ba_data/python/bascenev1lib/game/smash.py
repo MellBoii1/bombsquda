@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING, override
 
 import bascenev1 as bs
 import random
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 
 from bascenev1lib.actor.spazfactory import SpazFactory
 from bascenev1lib.actor.scoreboard import Scoreboard

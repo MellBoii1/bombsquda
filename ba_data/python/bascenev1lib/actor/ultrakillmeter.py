@@ -3,7 +3,7 @@
 from __future__ import annotations
 import bascenev1 as bs
 import babase as ba
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 
 # List of our ranks (a letter corresponding to a string and color).
 SCORE_RANKS = {

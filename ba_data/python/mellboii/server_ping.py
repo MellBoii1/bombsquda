@@ -1,5 +1,5 @@
 import babase as ba
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 import threading
 import urllib
 import asyncio
@@ -32,7 +32,7 @@ class ServerPing:
         self._current_thread.start()
 
     def _fetch_bs_id(self):
-        import fromgoverhaul.mell_resources as mell
+        import mellboii.mell_resources as mell
         self._bs_id = mell.get_unique_bs_id()
 
     def _build_payload(self) -> dict:

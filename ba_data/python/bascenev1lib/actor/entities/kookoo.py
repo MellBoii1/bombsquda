@@ -1,7 +1,7 @@
 """Script for Kookoo, where Spaz has to let go of anything when it's time."""
 from __future__ import annotations
 import bascenev1 as bs
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 import random
 from bascenev1lib.actor.image_looped import LoopingImageAnimation
 

@@ -8,7 +8,8 @@ import bauiv1 as bui
 import random
 from bascenev1lib.actor.parallax import ParallaxImage
 from bascenev1lib.actor.virtual_keyboard import VirtualKeyboard
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
+from mellboii.easing import choppify
 
 SURVEY_CHARS = [
     dict(
@@ -36,49 +37,6 @@ SURVEY_CHARS = [
         cfg="squda_ch4name",
     ),
 ]
-def choppify(keys, fps=30):
-    times = sorted(keys)
-
-    def lerp(a, b, frac):
-        return a + (b - a) * frac
-
-    def sample(t):
-        for i in range(len(times) - 1):
-            t1, t2 = times[i], times[i + 1]
-
-            if t1 <= t <= t2:
-                v1 = keys[t1]
-                v2 = keys[t2]
-
-                frac = (t - t1) / (t2 - t1)
-
-                # Number interpolation.
-                if isinstance(v1, (int, float)):
-                    return lerp(v1, v2, frac)
-
-                # Tuple/list interpolation.
-                return type(v1)(
-                    lerp(a, b, frac)
-                    for a, b in zip(v1, v2)
-                )
-
-        return keys[times[-1]]
-
-    result = {}
-    dt = 1.0 / fps
-    duration = times[-1]
-
-    t = 0.0
-    while t < duration:
-        value = sample(t)
-
-        result[t] = value
-        result[min(t + dt - 0.0001, duration)] = value
-
-        t += dt
-
-    result[duration] = keys[duration]
-    return result
     
 class SurveySessionThing(bs.Session):
     """Literally just start SURVEYActivity"""

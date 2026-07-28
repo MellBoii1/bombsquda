@@ -219,7 +219,7 @@ class InventoryWindow(bui.MainWindow):
     def _open_transfer(self) -> None:
         # pylint: disable=cyclic-import
         from bauiv1lib.transfer import TransferWindow
-        import fromgoverhaul.mell_resources as mell
+        import mellboii.mell_resources as mell
         
         # no-op if we're not currently in control.
         if not self.main_window_has_control():

@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 import babase
 import _bascenev1
 import bascenev1 as bs
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 from bascenev1._profile import get_player_profile_colors
 from bascenev1._gameutils import animate, animate_array
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import bascenev1 as bs
 import babase as ba
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 
 def clean_account_name(s: str) -> str:
     return "".join(c for c in s if not (0xE000 <= ord(c) <= 0xF8FF))

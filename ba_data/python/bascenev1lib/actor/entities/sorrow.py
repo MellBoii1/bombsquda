@@ -2,7 +2,7 @@
 from __future__ import annotations
 from bascenev1lib.actor.particles import BloodRaindrop
 import bascenev1 as bs
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 import random
 
 class Sorrow(bs.Actor):

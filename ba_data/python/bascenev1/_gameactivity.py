@@ -25,7 +25,7 @@ from bascenev1 import _map
 from bascenev1 import _music
 import bascenev1 as bs
 import babase as ba
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 from babase._logging import squdalog
 
 if TYPE_CHECKING:

@@ -12,7 +12,7 @@ import bascenev1 as bs
 import _babase
 import babase as ba
 import bauiv1
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 
 DEBUG_CUSTOM_GATHER = True
 

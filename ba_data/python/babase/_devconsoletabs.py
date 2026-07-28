@@ -13,7 +13,7 @@ import _babase
 import babase as ba
 import urllib.request
 import threading, time
-import fromgoverhaul.mell_resources as mellres
+import mellboii.mell_resources as mellres
 
 from babase._logging import description_for_logger
 from babase._devconsole import DevConsoleTab

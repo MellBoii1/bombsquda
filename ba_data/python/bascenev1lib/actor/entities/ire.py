@@ -2,7 +2,7 @@
 from __future__ import annotations
 from typing import override
 import bascenev1 as bs
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 import random
 from bascenev1lib.actor.image_looped import LoopingImageAnimation
 

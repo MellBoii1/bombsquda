@@ -4,7 +4,7 @@ from typing import Any, override
 from dataclasses import dataclass
 
 import bascenev1 as bs
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 import bauiv1 as bui
 
 @dataclass

@@ -5,7 +5,7 @@ import threading
 
 import bauiv1 as bui
 import bascenev1 as bs
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 
 
 class FriendChatWindow(bui.Window):

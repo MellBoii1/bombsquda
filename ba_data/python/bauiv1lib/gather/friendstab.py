@@ -17,7 +17,7 @@ from bauiv1lib.confirm import ConfirmWindow
 from bauiv1lib.gather.friendschat import FriendChatWindow
 from bauiv1lib.gather.friendsadd import AddFriendsWindow
 
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 import bauiv1 as bui
 import bascenev1 as bs
 import importlib

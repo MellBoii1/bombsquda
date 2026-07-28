@@ -15,7 +15,7 @@ from bacommon.login import LoginType
 import bascenev1 as bs
 import bauiv1 as bui
 import babase as ba
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 import threading
 
 from bascenev1lib.actor.text import Text

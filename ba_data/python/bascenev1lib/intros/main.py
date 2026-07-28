@@ -145,7 +145,7 @@ class SegaIntro(Intro):
 @register
 class MarioMakerIntro(Intro):
     def __init__(self):
-        import fromgoverhaul.mell_resources as mell
+        import mellboii.mell_resources as mell
         import random
         super().__init__()
         bs.getsound('slideWhistleReverse')
@@ -158,7 +158,7 @@ class MarioMakerIntro(Intro):
     @override
     def start(self):
         from bascenev1lib.actor.nodejumper import ImageJumper
-        import fromgoverhaul.mell_resources as mell
+        import mellboii.mell_resources as mell
         self.bg = bs.newnode(
             'image',
             delegate=self,
@@ -240,7 +240,7 @@ class MarioMakerIntro(Intro):
 @register
 class MarioKartIntro(Intro):
     def __init__(self):
-        import fromgoverhaul.mell_resources as mell
+        import mellboii.mell_resources as mell
         super().__init__()
         self.logos = []
         bs.getsound('mk64_logo')

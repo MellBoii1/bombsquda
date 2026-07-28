@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Sequence, override, cast
 import bauiv1 as bui
 import babase as ba
 import bascenev1 as bs
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 
 class TransferWindow(bui.MainWindow):
     """Allows transferring currency through a server."""

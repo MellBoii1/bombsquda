@@ -1307,11 +1307,11 @@
 	"coopScoreRankText": "SCORE: ${SCORE} RANK: ${RANK}",
 	"noOne": "No one",
 	"noPlayers": "no players?",
-	"charSelectText": "selecting characters",
+	"charSelectText": "choosing characters",
 	"lobbyText": "the lobby",
 	"partyNameFallback": "a Party",
 	"playingOnline": "playing online in ${PARTY}",
-	"playingOnlineSimple": "playing online",
+	"playingOnlineSimple": "playing Online",
 	"watchingReplay": "watching a replay",
 	"watchingCredits": "watching the credits",
 	"replayText": "replay"

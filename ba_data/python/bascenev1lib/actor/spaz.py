@@ -20,7 +20,7 @@ from bascenev1lib.actor.popuptext import PopupText
 from bascenev1lib.actor import spazappearance
 import bascenev1lib.actor.spazappearance as spazappearance
 from bascenev1._gameactivity import GameActivity
-from fromgoverhaul.watercooler import WaterCoolerSpawner
+from mellboii.watercooler import WaterCoolerSpawner
 from bascenev1lib.actor.bomb import Bomb, Blast, BombFactory
 from bascenev1lib.actor.powerupbox import PowerupBoxFactory, PowerupBox
 from bascenev1lib.actor.spazfactory import SpazFactory
@@ -29,9 +29,9 @@ from bascenev1lib.actor.hookfireball import UKHook, Fireball, Tear
 from bascenev1lib.actor.image_looped import LoopingImageAnimation
 from bascenev1lib.gameutils import SharedObjects, TouchedMessage
 from babase._logging import squdalog
-from fromgoverhaul.mell_sfx import SoundFactory
+from mellboii.mell_sfx import SoundFactory
 
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 import babase as ba
 
 from bascenev1lib.actor.entities.kookoo import Kookoo
@@ -2701,10 +2701,10 @@ class Spaz(bs.Actor):
                 owner=self.node,
                 attrs={
                     'position': self.node.position,
-                    'radius': 0.5,
+                    'radius': 0.7,
                     'height_attenuated': False,
                     'color': self.node.color,
-                    'intensity': 0.5,
+                    'intensity': 0.2,
                 },
             )
             self.node.connectattr('position', self._super_light, 'position')

@@ -294,7 +294,7 @@ class StoreSubsystem:
         assert plus
         for section in tabval:
             for item in section['items']:
-                import fromgoverhaul.mell_resources as mell
+                import mellboii.mell_resources as mell
                 mell.store_prices.get(item, 696969696969)
         return count
 

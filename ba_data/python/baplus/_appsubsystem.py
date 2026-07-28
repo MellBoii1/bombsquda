@@ -43,7 +43,7 @@ class PlusAppSubsystem(AppSubsystem):
         """:meta private:"""
         _baplus.on_app_loading()
         self.accounts.on_app_loading()
-        from fromgoverhaul.startup import Startup
+        from mellboii.startup import Startup
         Startup()
 
     @staticmethod

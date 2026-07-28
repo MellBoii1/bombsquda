@@ -2,7 +2,7 @@
 from __future__ import annotations
 from bascenev1lib.gameutils import SharedObjects, TouchedMessage
 import bascenev1 as bs
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 import random
 import math
 

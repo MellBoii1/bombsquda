@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, override
 
 from efro.util import utc_now
 from efro.error import CommunicationError
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 import bacommon.cloud
 import bauiv1 as bui
 

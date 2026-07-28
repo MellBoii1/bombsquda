@@ -10,7 +10,7 @@ import babase
 
 import _bascenev1
 from bascenev1._gameactivity import GameActivity
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 import bascenev1 as bs
 import random
 import babase as ba

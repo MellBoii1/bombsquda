@@ -13,7 +13,7 @@ import babase as ba
 import bascenev1 as bs
 
 import _bascenev1
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 from bascenev1._session import Session
 import bascenev1lib
 import bascenev1

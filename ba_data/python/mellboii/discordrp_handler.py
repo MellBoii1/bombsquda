@@ -1,43 +1,18 @@
-"""
-Handles rich presence for Discord.
-Classes:
-    RichPresence:
-        Handles the connection to Discord Rich Presence and updates the player's status
-        according to the current game state.
-        Attributes:
-            presence (Presence): The Discord Presence object for communication.
-            mode (str): The current mode/state of the game (e.g., 'menu', 'gameplay').
-            _r (str): Internal label for Rich Presence.
-            current_time (int): Timestamp when the current mode started.
-            map (str or None): The current map name.
-            last_mode (str or None): The previous mode/state.
-        Methods:
-            __init__():
-                Initializes the RichPresence object and starts the update timer.
-            update():
-                Updates the Discord Rich Presence status based on the current game state.
-                Handles different modes such as menu, gameplay, online, replay, credits, etc.
-                Sets appropriate details, images, timestamps, and party information.
-            check():
-                Checks the current game state and updates the mode accordingly.
-                Resets the starting time when the mode changes.
-                Schedules the next update.
-Globals:
-    portal_id (str): The Discord application ID for Rich Presence.
-    maps (dict): A mapping from in-game map names to their corresponding image keys for Discord.
-"""
+"""Handles rich presence for Discord."""
+# originated from rich presence, 
+# but i kinda rewrote it
 
 import time
 import threading
 import asyncio
-from fromgoverhaul.discordrp_folder import Presence
+from mellboii.discordrp_folder import Presence
 import babase
 import bascenev1 as bs
 from bascenev1lib.mainmenu import MainMenuActivity
 from bascenev1._activitytypes import JoinActivity
 from bascenev1._gameactivity import GameActivity
 from babase._logging import squdalog
-import fromgoverhaul.mell_resources as melly
+import mellboii.mell_resources as melly
 import bauiv1 as bui
 
 portal_id = "1419400467707859136"

@@ -16,7 +16,7 @@ import sys
 import traceback
 import datetime
 import bascenev1 as bs
-import fromgoverhaul.mell_resources as mell
+import mellboii.mell_resources as mell
 from .server_ping import ServerPing
 import threading, time
 import uuid
